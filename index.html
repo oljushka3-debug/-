@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Настройки для iPhone (чтобы работало как приложение) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Кошелек PRO">
+    
+    <title>Smart Wallet Pro</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
+        body { 
+            font-family: 'Inter', sans-serif; background-color: #f8fafc; 
+            padding-top: var(--sat); padding-bottom: calc(2rem + var(--sab)); 
+            -webkit-tap-highlight-color: transparent; color: #1e293b;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .active-tab { background: white !important; color: #4f46e5 !important; shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        input, select, button { font-size: 16px !important; outline: none; }
+        .card-shadow { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        .trans-card { background: white; border-radius: 1.5rem; padding: 1.1rem; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+        label { color: #94a3b8; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 8px; margin-bottom: 4px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[999] bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-bold shadow-2xl hidden items-center gap-2 transition-all">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastText">Готово</span>
+    </div>
+
+    <div class="max-w-md mx-auto px-5 pt-4">
+        <!-- Шапка -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-black tracking-tighter italic uppercase">Smart<span class="text-indigo-600">Wallet</span></h1>
+                <div id="syncStatus" class="text-[9px] font-bold uppercase opacity-40 tracking-widest mt-1 flex items-center gap-1">
+                    <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> <span id="statusText">Загрузка...</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.runExport()" class="p-3 bg-white rounded-2xl border text-indigo-600 active:scale-90 transition-all">
+                    <i data-lucide="share" class="w-5 h-5"></i>
+                </button>
+                <button onclick="window.toggleSettings()" class="p-3 bg-white rounded-2xl border text-slate-500 active:scale-90 transition-all">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Кошельки -->
+        <div id="accountsWrapper" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-5 px-5"></div>
+
+        <!-- Общий Баланс -->
+        <div class="bg-slate-900 card-shadow rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden">
+            <div class="relative z-10">
+                <p class="text-[10px] font-bold uppercase opacity-40 mb-1 tracking-widest">Общий капитал</p>
+                <h2 id="grandTotal" class="text-4xl font-black tracking-tighter">0.00 €</h2>
+                <div class="flex gap-4 mt-6">
+                    <div class="bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold border border-white/5" id="monthlyIncStat">+0 €</div>
+                    <div class="bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold border border-white/5" id="monthlyExpStat">-0 €</div>
+                </div>
+            </div>
+            <i data-lucide="layers" class="absolute -right-10 -bottom-10 opacity-20 w-40 h-40"></i>
+        </div>
+
+        <!-- Переключатель вкладок -->
+        <div class="bg-slate-200/50 p-1.5 rounded-3xl flex gap-1 mb-6 border border-slate-200">
+            <button onclick="window.setMode('expense')" id="btn-expense" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider active-tab">Расход</button>
+            <button onclick="window.setMode('income')" id="btn-income" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Доход</button>
+            <button onclick="window.setMode('transfer')" id="btn-transfer" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Перевод</button>
+        </div>
+
+        <!-- ФОРМА -->
+        <div class="bg-white rounded-[2.5rem] p-7 shadow-sm border border-slate-100 mb-10">
+            <form id="mainForm" onsubmit="window.submitForm(event)" class="space-y-4">
+                <input type="hidden" id="formMode" value="expense">
+                <input type="hidden" id="editId" value="">
+                
+                <div id="field-merchant">
+                    <label id="label-merchant">Где купили?</label>
+                    <input type="text" id="merchant" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-semibold focus:ring-2 ring-indigo-100">
+                </div>
+
+                <div>
+                    <label>Назначение / Комментарий</label>
+                    <input type="text" id="purpose" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-medium text-slate-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Сумма</label>
+                        <input type="number" id="amount" step="0.01" required class="w-full p-4 bg-slate-50 rounded-2xl border-none font-black text-xl outline-none">
+                    </div>
+                    <div>
+                        <label>Курс (1€ = ?₴)</label>
+                        <input type="number" id="entryRate" step="0.1" required class="w-full p-4 bg-indigo-50 text-indigo-600 rounded-2xl border-none font-bold text-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>Дата</label>
+                        <input type="date" id="date" required class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold">
+                    </div>
+                    <div>
+                        <label id="label-accFrom">Откуда</label>
+                        <select id="accFrom" class="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold appearance-none"></select>
+                    </div>
+                </div>
+
+                <div id="col-to" class="hidden">
+                    <label id="label-accTo">Кому (на счет)</label>
+                    <select id="accTo" class="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold appearance-none"></select>
+                </div>
+
+                <div id="field-category">
+                    <label>Категория</label>
+                    <select id="category" class="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold appearance-none">
+                        <optgroup label="🛍️ Покупки">
+                            <option value="🛒 Покупки">🛒 Покупки</option>
+                            <option value="🥩 Мясо/Рыба">🥩 Мясо/Рыба</option>
+                            <option value="🥛 Молочка">🥛 Молочка</option>
+                            <option value="🥦 Овощи/Фрукты">🥦 Овощи/Фрукты</option>
+                        </optgroup>
+                        <optgroup label="🍔 Еда и Транспорт">
+                            <option value="🍕 Еда/Кафе">🍕 Еда/Кафе</option>
+                            <option value="🚕 Транспорт">🚕 Транспорт</option>
+                        </optgroup>
+                        <optgroup label="🏠 Дом и Уход">
+                            <option value="🏠 Дом, Быт">🏠 Дом, Быт</option>
+                            <option value="🧴 Косметика">🧴 Косметика</option>
+                            <option value="🧺 Стирка">🧺 Стирка</option>
+                            <option value="🛁 Гигиена">🛁 Гигиена</option>
+                        </optgroup>
+                        <optgroup label="💊 Разное">
+                            <option value="📎 Канцелярия">📎 Канцелярия</option>
+                            <option value="💊 Здоровье">💊 Здоровье</option>
+                            <option value="⚙️ Другое" selected>⚙️ Другое</option>
+                        </optgroup>
+                        <optgroup label="💸 Финансы">
+                            <option value="💸 Переводы">💸 Переводы</option>
+                            <option value="💰 Доходы">💰 Доходы</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg active:scale-95 transition-all">Записать операцию</button>
+            </form>
+        </div>
+
+        <!-- История -->
+        <div class="mb-5 flex justify-between items-center px-2">
+            <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest text-[11px]">История транзакций</h2>
+            <select id="monthFilter" class="bg-transparent text-[13px] font-black text-indigo-600 outline-none"></select>
+        </div>
+        <div id="historyList" class="space-y-6 pb-10"></div>
+    </div>
+
+    <!-- Модалка настроек -->
+    <div id="modalSettings" class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="text-xl font-black mb-4 text-center">Настройки</h3>
+            <div class="space-y-6">
+                <div>
+                    <label>Курс системы (1€ = ?₴)</label>
+                    <input type="number" id="setRate" step="0.1" class="w-full p-4 bg-slate-100 rounded-2xl font-black">
+                </div>
+                <div>
+                    <label>Начальные балансы</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="setSparkasse" placeholder="Spark €" class="p-3 bg-slate-50 rounded-xl font-bold border">
+                        <input type="number" id="setUahCard" placeholder="Карта ₴" class="p-3 bg-slate-50 rounded-xl font-bold border">
+                        <input type="number" id="setCashEur" placeholder="Нал €" class="p-3 bg-slate-50 rounded-xl font-bold border">
+                        <input type="number" id="setCashUah" placeholder="Нал ₴" class="p-3 bg-slate-50 rounded-xl font-bold border">
+                    </div>
+                </div>
+                <div class="space-y-2 pt-4 border-t text-center">
+                    <button onclick="window.runExport()" class="w-full py-4 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Экспорт CSV
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Импорт CSV
+                    </button>
+                    <input type="file" id="importFile" accept=".csv" class="hidden" onchange="window.handleImport(event)">
+                    
+                    <button onclick="window.clearAllData()" class="w-full py-4 bg-rose-50 text-rose-500 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Удалить всё
+                    </button>
+                </div>
+                <button onclick="window.saveSetts()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest mt-4">Сохранить</button>
+                <button onclick="window.toggleSettings()" class="w-full py-2 text-slate-400 font-bold text-xs uppercase text-center block">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // Глобальное состояние
+        window.state = {
+            balances: { sparkasse: 0, uahcard: 0, casheur: 0, cashuah: 0 },
+            rate: 45.0,
+            transactions: []
+        };
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        let db, auth, currentUser = null;
+
+        const catIcons = {
+            '🛒 Покупки': { icon: 'shopping-cart', bg: 'bg-blue-50', text: 'text-blue-500' },
+            '🥩 Мясо/Рыба': { icon: 'beef', bg: 'bg-rose-50', text: 'text-rose-500' },
+            '🥛 Молочка': { icon: 'droplet', bg: 'bg-sky-50', text: 'text-sky-500' },
+            '🥦 Овощи/Фрукты': { icon: 'carrot', bg: 'bg-green-50', text: 'text-green-500' },
+            '🍕 Еда/Кафе': { icon: 'utensils', bg: 'bg-orange-50', text: 'text-orange-500' },
+            '🚕 Транспорт': { icon: 'car', bg: 'bg-yellow-50', text: 'text-yellow-600' },
+            '🏠 Дом, Быт': { icon: 'home', bg: 'bg-indigo-50', text: 'text-indigo-500' },
+            '🧴 Косметика': { icon: 'sparkles', bg: 'bg-pink-50', text: 'text-pink-500' },
+            '🧺 Стирка': { icon: 'shirt', bg: 'bg-cyan-50', text: 'text-cyan-500' },
+            '🛁 Гигиена': { icon: 'bath', bg: 'bg-teal-50', text: 'text-teal-500' },
+            '📎 Канцелярия': { icon: 'paperclip', bg: 'bg-amber-50', text: 'text-amber-500' },
+            '💊 Здоровье': { icon: 'heart-pulse', bg: 'bg-red-50', text: 'text-red-500' },
+            '⚙️ Другое': { icon: 'box', bg: 'bg-slate-100', text: 'text-slate-500' },
+            '💸 Переводы': { icon: 'arrow-right-left', bg: 'bg-indigo-600', text: 'text-white' },
+            '💰 Доходы': { icon: 'trending-up', bg: 'bg-emerald-50', text: 'text-emerald-500' }
+        };
+
+        async function start() {
+            if (firebaseConfig) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app); db = getFirestore(app);
+                    onAuthStateChanged(auth, user => {
+                        if (user) { currentUser = user; sync(); }
+                        else { signInAnonymously(auth); }
+                    });
+                } catch(e) { loadLocal(); }
+            } else { loadLocal(); }
+        }
+
+        function sync() {
+            updateStatus('online');
+            onSnapshot(doc(db, 'smart-wallet', currentUser.uid), (snap) => {
+                if (snap.exists()) {
+                    window.state.balances = snap.data().balances;
+                    window.state.rate = snap.data().rate;
+                    window.renderUI();
+                }
+            });
+            onSnapshot(collection(db, 'smart-wallet', currentUser.uid, 'history'), (snap) => {
+                window.state.transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                window.state.transactions.sort((a, b) => b.timestamp - a.timestamp);
+                window.renderUI();
+            });
+        }
+
+        function loadLocal() {
+            updateStatus('local');
+            const d = localStorage.getItem('sw_final_v_100');
+            if (d) window.state = JSON.parse(d);
+            window.renderUI();
+        }
+
+        function saveState() {
+            localStorage.setItem('sw_final_v_100', JSON.stringify(window.state));
+            if (currentUser && db) {
+                setDoc(doc(db, 'smart-wallet', currentUser.uid), { balances: window.state.balances, rate: window.state.rate }, { merge: true });
+            }
+        }
+
+        function adjustBalance(t, undo = false) {
+            const factor = undo ? 1 : -1;
+            const r = t.rate || window.state.rate;
+            if (t.type === 'expense') window.state.balances[t.account] += (factor * t.amount);
+            else if (t.type === 'income') window.state.balances[t.account] -= (factor * t.amount);
+            else if (t.type === 'transfer') {
+                window.state.balances[t.from] += (factor * t.amount);
+                let conv = t.from.includes('uah') && !t.to.includes('uah') ? t.amount / r : (!t.from.includes('uah') && t.to.includes('uah') ? t.amount * r : t.amount);
+                window.state.balances[t.to] -= (factor * conv);
+            }
+        }
+
+        window.submitForm = async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            const mode = document.getElementById('formMode').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const dateStr = document.getElementById('date').value;
+            const rate = parseFloat(document.getElementById('entryRate').value);
+
+            if (editId) {
+                const old = window.state.transactions.find(x => x.id === editId);
+                if (old) adjustBalance(old, true);
+            }
+
+            const t = {
+                type: mode, amount, date: dateStr, rate: rate,
+                timestamp: new Date(dateStr).getTime() + (Date.now() % 86400000),
+                merchant: document.getElementById('merchant').value || (mode === 'income' ? 'Доход' : 'Расход'),
+                purpose: document.getElementById('purpose').value || '',
+                category: mode === 'income' ? '💰 Доходы' : (mode === 'transfer' ? '💸 Переводы' : document.getElementById('category').value)
+            };
+
+            if (mode === 'transfer') {
+                t.from = document.getElementById('accFrom').value;
+                t.to = document.getElementById('accTo').value;
+            } else {
+                t.account = document.getElementById('accFrom').value;
+                t.currency = t.account.includes('uah') ? 'UAH' : 'EUR';
+            }
+
+            adjustBalance(t, false);
+            if (!editId) {
+                t.id = "temp-" + Date.now();
+                window.state.transactions.unshift(t);
+            } else {
+                const idx = window.state.transactions.findIndex(x => x.id === editId);
+                if (idx !== -1) window.state.transactions[idx] = { ...t, id: editId };
+            }
+            
+            document.getElementById('monthFilter').value = dateStr.substring(0, 7);
+            window.renderUI();
+            saveState();
+
+            if (currentUser && db) {
+                if (editId && !editId.startsWith('temp')) {
+                    await updateDoc(doc(db, 'smart-wallet', currentUser.uid, 'history', editId), t);
+                } else {
+                    await addDoc(collection(db, 'smart-wallet', currentUser.uid, 'history'), t);
+                }
+            }
+
+            e.target.reset();
+            document.getElementById('editId').value = "";
+            window.setMode(mode);
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('entryRate').value = window.state.rate;
+            toast("Записано");
+        };
+
+        window.renderUI = () => {
+            const b = window.state.balances; const r = window.state.rate;
+            const accs = [
+                {id:'sparkasse', n:'Sparkasse', c:'€', v:b.sparkasse, cl:'bg-indigo-600'},
+                {id:'uahcard', n:'Карта UAH', c:'₴', v:b.uahcard, cl:'bg-violet-600', sub:true},
+                {id:'casheur', n:'Нал EUR', c:'€', v:b.casheur, cl:'bg-emerald-600'},
+                {id:'cashuah', n:'Нал UAH', c:'₴', v:b.cashuah, cl:'bg-slate-800', sub:true}
+            ];
+
+            const wrapper = document.getElementById('accountsWrapper');
+            if(wrapper) {
+                wrapper.innerHTML = accs.map(a => `
+                    <div class="${a.cl} text-white p-6 rounded-[2.5rem] min-w-[155px] flex-1 card-shadow">
+                        <p class="text-[9px] font-black uppercase opacity-50 mb-2">${a.n}</p>
+                        <p class="text-xl font-black tracking-tight">${a.v.toFixed(2)} ${a.c}</p>
+                        ${a.sub ? `<p class="text-[9px] opacity-40 mt-1 font-bold">≈ ${(a.v/r).toFixed(2)} €</p>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            const accOptions = accs.map(a => `<option value="${a.id}">${a.n}</option>`).join('');
+            if (!document.getElementById('accFrom').innerHTML) {
+                document.getElementById('accFrom').innerHTML = accOptions;
+                document.getElementById('accTo').innerHTML = accOptions;
+            }
+
+            document.getElementById('grandTotal').textContent = (b.sparkasse + b.casheur + (b.uahcard/r) + (b.cashuah/r)).toFixed(2) + ' €';
+
+            const filter = document.getElementById('monthFilter');
+            const nowM = new Date().toISOString().substring(0, 7);
+            const months = [...new Set(window.state.transactions.map(t => t.date.substring(0, 7)))];
+            if (!months.includes(nowM)) months.push(nowM);
+            months.sort().reverse();
+            const currentM = filter.value || nowM;
+            filter.innerHTML = months.map(m => `<option value="${m}" ${m===currentM?'selected':''}>${new Date(m+'-01').toLocaleDateString('ru',{month:'long', year:'numeric'})}</option>`).join('');
+
+            const hist = window.state.transactions.filter(t => t.date && t.date.substring(0, 7) === currentM);
+            const groups = {}; let mExp = 0, mInc = 0;
+            hist.forEach(t => {
+                if (!groups[t.date]) groups[t.date] = [];
+                groups[t.date].push(t);
+                if (t.type !== 'transfer') {
+                    const v = t.currency === 'UAH' ? t.amount / (t.rate || r) : t.amount;
+                    if (t.type === 'expense') mExp += v; else mInc += v;
+                }
+            });
+
+            document.getElementById('monthlyIncStat').textContent = `+${mInc.toFixed(0)} €`;
+            document.getElementById('monthlyExpStat').textContent = `-${mExp.toFixed(0)} €`;
+
+            let html = '';
+            Object.keys(groups).sort().reverse().forEach(date => {
+                html += `<div class="mb-6"><div class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">${date}</div><div class="space-y-2">`;
+                groups[date].map(t => {
+                    const cfg = catIcons[t.category] || catIcons['⚙️ Другое'];
+                    const isIncome = t.type === 'income';
+                    const isTransfer = t.type === 'transfer';
+                    html += `
+                    <div class="trans-card">
+                        <div class="w-12 h-12 ${cfg.bg} ${cfg.text} rounded-2xl flex items-center justify-center mr-4 shrink-0"><i data-lucide="${cfg.icon}" class="w-6 h-6"></i></div>
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h4 class="text-[14px] font-black text-slate-800 uppercase truncate">
+                                ${isIncome ? 'ОТ: ' : ''}${t.merchant}
+                                ${t.purpose ? `<span class="text-[10px] font-normal opacity-50 lowercase ml-1">(${t.purpose})</span>` : ''}
+                            </h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mt-0.5 truncate">${isTransfer ? `${t.from}➔${t.to}` : t.account} • ${t.category}</p>
+                        </div>
+                        <div class="text-right flex flex-col items-end shrink-0">
+                             <p class="text-[14px] font-black ${t.type==='expense'?'text-rose-500':(isTransfer ?'text-indigo-600':'text-emerald-500')}">
+                                ${t.type==='expense'?'-':(isTransfer ?'•':'+')}${t.amount} ${t.currency==='UAH'?'₴':'€'}
+                             </p>
+                             <div class="flex gap-2 mt-1 items-center">
+                                ${t.currency==='UAH' ? `<span class="text-[8px] font-bold text-slate-300 mr-1">Курс ${t.rate}</span>` : ''}
+                                <button onclick="window.editTrans('${t.id}')" class="text-slate-200 hover:text-indigo-500 transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                                <button onclick="window.delTrans('${t.id}')" class="text-slate-200 hover:text-rose-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                             </div>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            });
+            document.getElementById('historyList').innerHTML = html || '<div class="py-20 text-center opacity-20 font-black uppercase text-xs">Нет данных</div>';
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.editTrans = (id) => {
+            const t = window.state.transactions.find(x => x.id === id);
+            if (!t) return;
+            window.setMode(t.type);
+            document.getElementById('editId').value = id;
+            document.getElementById('amount').value = t.amount;
+            document.getElementById('date').value = t.date;
+            document.getElementById('entryRate').value = t.rate || window.state.rate;
+            document.getElementById('merchant').value = t.merchant;
+            document.getElementById('purpose').value = t.purpose || '';
+            document.getElementById('accFrom').value = t.account || t.from;
+            if (t.type === 'transfer') document.getElementById('accTo').value = t.to;
+            if (t.category) document.getElementById('category').value = t.category;
+            document.getElementById('submitBtn').innerText = "Обновить запись";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.delTrans = async (id) => {
+            const t = window.state.transactions.find(x => x.id === id);
+            if (t) adjustBalance(t, true);
+            window.state.transactions = window.state.transactions.filter(x => x.id !== id);
+            window.renderUI();
+            saveState();
+            if (currentUser && db && !id.startsWith('temp')) {
+                await deleteDoc(doc(db, 'smart-wallet', currentUser.uid, 'history', id));
+            }
+        };
+
+        window.saveSetts = () => {
+            window.state.rate = parseFloat(document.getElementById('setRate').value) || 45;
+            window.state.balances.sparkasse = parseFloat(document.getElementById('setSparkasse').value) || 0;
+            window.state.balances.uahcard = parseFloat(document.getElementById('setUahCard').value) || 0;
+            window.state.balances.casheur = parseFloat(document.getElementById('setCashEur').value) || 0;
+            window.state.balances.cashuah = parseFloat(document.getElementById('setCashUah').value) || 0;
+            document.getElementById('entryRate').value = window.state.rate;
+            saveState(); window.renderUI(); window.toggleSettings();
+            toast("Балансы обновлены");
+        };
+
+        window.runExport = () => {
+            let csv = "\uFEFFТип,Дата,Название,Назначение,Сумма,Валюта,Категория,Счет,Курс\n";
+            window.state.transactions.forEach(t => {
+                csv += `${t.type},${t.date},"${t.merchant}","${t.purpose || ''}",${t.amount},${t.currency},${t.category},${t.account || t.from+'->'+t.to},${t.rate}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = "wallet_export.csv"; a.click();
+        };
+
+        window.handleImport = (event) => {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const lines = e.target.result.split("\n").slice(1);
+                for (let line of lines) {
+                    const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.trim().replace(/^"|"$/g, ''));
+                    if (c.length < 5) continue;
+                    const t = { type: c[0], date: c[1], merchant: c[2], purpose: c[3], amount: parseFloat(c[4]), currency: c[5], category: c[6], account: c[7], rate: parseFloat(c[8]), timestamp: new Date(c[1]).getTime() };
+                    if (currentUser && db) await addDoc(collection(db, 'smart-wallet', currentUser.uid, 'history'), t);
+                    else window.state.transactions.push(t);
+                }
+                location.reload();
+            };
+            reader.readAsText(file);
+        };
+
+        window.setMode = (m) => {
+            document.getElementById('formMode').value = m;
+            const isEdit = document.getElementById('editId').value !== "";
+            const btn = document.getElementById('submitBtn');
+            const pInput = document.getElementById('purpose');
+            const mInput = document.getElementById('merchant');
+            const lMerch = document.getElementById('label-merchant');
+            const lFrom = document.getElementById('label-accFrom');
+            const lTo = document.getElementById('label-accTo');
+            const colTo = document.getElementById('col-to');
+
+            ['expense', 'income', 'transfer'].forEach(x => document.getElementById('btn-'+x).classList.toggle('active-tab', x === m));
+
+            if (m === 'expense') {
+                document.getElementById('field-merchant').style.display = 'block';
+                lMerch.innerText = "Где купили?";
+                mInput.placeholder = "Название магазина";
+                pInput.placeholder = "Напр: закупка на неделю";
+                lFrom.innerText = "Откуда (счет)";
+                colTo.classList.add('hidden');
+                btn.innerText = isEdit ? "Обновить запись" : "Записать операцию";
+            } else if (m === 'income') {
+                document.getElementById('field-merchant').style.display = 'block';
+                lMerch.innerText = "От кого доход?";
+                mInput.placeholder = ""; pInput.placeholder = ""; 
+                lFrom.innerText = "Кому (на счет)";
+                colTo.classList.add('hidden');
+                document.getElementById('category').value = "💰 Доходы";
+                btn.innerText = isEdit ? "Обновить запись" : "Зачислить доход";
+            } else if (m === 'transfer') {
+                document.getElementById('field-merchant').style.display = 'none';
+                pInput.placeholder = ""; lFrom.innerText = "ОТ КОГО / ОТКУДА";
+                lTo.innerText = "КОМУ / КУДА";
+                colTo.classList.remove('hidden');
+                document.getElementById('category').value = "💸 Переводы";
+                btn.innerText = isEdit ? "Обновить запись" : "Выполнить перевод";
+            }
+        };
+
+        window.toggleSettings = () => {
+            const m = document.getElementById('modalSettings');
+            if (m.classList.contains('hidden')) {
+                document.getElementById('setRate').value = window.state.rate || 45;
+                document.getElementById('setSparkasse').value = window.state.balances.sparkasse || 0;
+                document.getElementById('setUahCard').value = window.state.balances.uahcard || 0;
+                document.getElementById('setCashEur').value = window.state.balances.casheur || 0;
+                document.getElementById('setCashUah').value = window.state.balances.cashuah || 0;
+            }
+            m.classList.toggle('hidden');
+        };
+
+        window.updateStatus = (s) => {
+            const dot = document.getElementById('statusDot');
+            const txt = document.getElementById('statusText');
+            if (s === 'online') { dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500'; txt.innerText = 'Облако'; }
+            else { dot.className = 'w-1.5 h-1.5 rounded-full bg-indigo-500'; txt.innerText = 'Локально'; }
+        };
+
+        start();
+    </script>
+
+    <script>
+        function toast(text) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastText').textContent = text;
+            t.classList.remove('hidden'); t.classList.add('flex');
+            setTimeout(() => { t.classList.add('hidden'); t.classList.remove('flex'); }, 2000);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>
