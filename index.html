@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Pro 3.0</title>
+    <title>Smart Wallet Privat Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; }
+        .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; white-space: nowrap; }
         .selected-cat { background-color: #2563eb !important; color: white !important; border-color: #2563eb !important; }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4">
-        <div id="rates-header" class="text-center text-[10px] font-bold text-blue-500 mb-4 uppercase italic">Курс загружается...</div>
+        <div id="rates-header" class="text-center text-[10px] font-bold text-blue-500 mb-4 uppercase italic tracking-widest text-slate-400">Курс ПриватБанка обновляется...</div>
         
-        <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6 text-center relative overflow-hidden">
-            <p class="text-[10px] uppercase font-bold opacity-50 mb-1 tracking-widest">Общий капитал (EUR)</p>
+        <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6 text-center">
+            <p class="text-[10px] uppercase font-bold opacity-50 mb-1 tracking-tighter">Ваш капитал в эквиваленте EUR</p>
             <div id="total-val" class="text-4xl font-black italic tracking-tighter">0.00 €</div>
         </div>
 
-        <div id="balance-grid" class="grid grid-cols-2 gap-2 mb-6 text-[11px]"></div>
+        <div id="balance-grid" class="grid grid-cols-2 gap-2 mb-6"></div>
 
         <div class="bg-white p-5 rounded-[32px] shadow-xl border border-slate-100 mb-8">
             <div class="flex gap-1 mb-4 bg-slate-100 p-1 rounded-2xl">
@@ -28,144 +29,163 @@
                 <button onclick="setMode('transfer')" id="m-transfer" class="flex-1 py-2 rounded-xl text-[10px] font-bold uppercase text-slate-400">Перевод</button>
             </div>
 
-            <input id="sum" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none mb-4 text-blue-600">
+            <div class="text-center mb-4">
+                <input id="sum" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-blue-600 mb-1">
+                <p id="convert-hint" class="text-[10px] font-bold text-green-600 uppercase h-4"></p>
+            </div>
             
-            <input id="desc" type="text" placeholder="Магазин или описание..." class="w-full p-3 mb-4 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
-
-            <div id="acc-box" class="space-y-2 mb-4">
-                <select id="acc1" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-center border-none text-sm appearance-none cursor-pointer"></select>
-                <div id="to-arrow" class="hidden text-center text-blue-500 text-xs font-bold">⬇️ ПЕРЕВОД НА ⬇️</div>
-                <select id="acc2" class="hidden w-full p-3 bg-slate-50 rounded-xl font-bold text-center border-none text-sm appearance-none cursor-pointer"></select>
+            <div class="space-y-2 mb-4 text-center">
+                <select id="acc1" onchange="updateHint()" class="w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none"></select>
+                <div id="to-arrow" class="hidden text-blue-500 text-xs font-bold">⬇️ ПЕРЕВОД ⬇️</div>
+                <select id="acc2" class="hidden w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none"></select>
             </div>
 
-            <div id="cats" class="flex flex-wrap gap-1.5 justify-center mb-6"></div>
+            <div id="cats" class="flex overflow-x-auto gap-2 mb-4 pb-2 px-1"></div>
+            <select id="subcat-select" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center border-none text-sm appearance-none mb-4"></select>
             
-            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-transform">СОХРАНИТЬ</button>
+            <input id="desc" type="text" placeholder="Магазин / Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
+            
+            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest">Записать транзакцию</button>
         </div>
 
-        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-3 px-2 tracking-widest">История транзакций</h3>
+        <h3 class="text-[10px] font-black uppercase text-slate-400 mb-3 px-2 tracking-widest font-bold">История (счета и остатки)</h3>
         <div id="history" class="space-y-3"></div>
     </div>
 
     <script>
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzGJ9_5qateBOvSJCObuRaoqdj_DRDnoR7o7TPUoXpc80pkNwhSYNFh39e1W1MbtiHUKg/exec"; 
-        window.mode = 'expense'; window.cat = 'Разное'; window.currentRate = 42.0; window.editId = null;
+        window.mode = 'expense'; window.cat = 'Продукты'; window.currentRate = 43.5; window.editId = null;
 
         const accounts = {
-            sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Нал EUR', c: 'EUR'},
-            uahcard: {n: 'UAH Card', c: 'UAH'}, cashuah: {n: 'Нал UAH', c: 'UAH'}
+            sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Наличные EUR', c: 'EUR'},
+            uahcard: {n: 'Приват UAH', c: 'UAH'}, cashuah: {n: 'Наличные UAH', c: 'UAH'}
         };
 
-        const catData = {
-            expense: ['🛒 Продукты (Lidl/Rewe)', '☕ Кафе/Еда', '🚗 Топливо/Авто', '🚌 Общественный тр.', '🏠 Аренда/Дом', '💊 Здоровье', '🛍️ Одежда/Шопинг', '📱 Связь/Интернет', '🎁 Подарки', '❓ Разное'],
-            income: ['💰 Зарплата', '🎁 Подарок', '📈 Процент', '💵 Возврат'],
-            transfer: ['♻️ Перевод/Обмен']
+        const taxonomy = {
+            expense: {
+                'Продукты': ['Lidl', 'Rewe', 'Aldi', 'Netto', 'Edeka', 'Kaufland', 'Другое'],
+                'Транспорт': ['Бензин/Дизель', 'Парковка', 'Билеты (DB)', 'Такси'],
+                'Еда вне дома': ['Кафе/Ресторан', 'Döner/Фастфуд', 'Кофе'],
+                'Дом/Семья': ['Аренда', 'Связь/Интернет', 'Аптека', 'Шопинг'],
+                'Разное': ['Комиссия', 'Снятие', 'Другое']
+            },
+            income: { 'Доходы': ['Зарплата', 'Помощь', 'Подарок'] },
+            transfer: { 'Обмен': ['Перевод', 'Обмен валюты'] }
         };
 
         async function updateRate() {
             try {
                 const r = await fetch('https://open.er-api.com/v6/latest/EUR');
-                const d = await r.json(); window.currentRate = d.rates.UAH;
-                document.getElementById('rates-header').innerText = `Курс: 1 € = ${window.currentRate.toFixed(2)} ₴`;
+                const d = await r.json(); 
+                // Приватбанк обычно добавляет ~3-4% к рыночному курсу для карт
+                window.currentRate = d.rates.UAH * 1.035; 
+                document.getElementById('rates-header').innerText = `Курс Приват (карта): ~${window.currentRate.toFixed(2)} ₴`;
             } catch(e) {}
         }
 
+        function updateHint() {
+            const acc = document.getElementById('acc1').value;
+            const hint = document.getElementById('convert-hint');
+            if(acc === 'uahcard' && window.mode === 'expense') {
+                hint.innerText = "Сумма в € (спишем с Привата в ₴)";
+            } else { hint.innerText = ""; }
+        }
+
         function setMode(m) {
-            window.mode = m;
+            window.mode = m; window.cat = Object.keys(taxonomy[m])[0];
             ['expense', 'income', 'transfer'].forEach(k => {
                 document.getElementById('m-'+k).className = m === k ? 'flex-1 py-2 rounded-xl text-[10px] font-bold uppercase bg-white shadow-sm' : 'flex-1 py-2 rounded-xl text-[10px] font-bold uppercase text-slate-400';
             });
             document.getElementById('acc2').classList.toggle('hidden', m!=='transfer');
             document.getElementById('to-arrow').classList.toggle('hidden', m!=='transfer');
-            renderCats();
+            updateHint(); renderCats();
         }
 
         function renderCats() {
-            document.getElementById('cats').innerHTML = catData[window.mode].map(c => `
-                <button onclick="window.cat='${c}';renderCats()" class="px-3 py-2 rounded-xl text-[9px] font-bold border cat-btn ${window.cat===c?'selected-cat':'bg-white text-slate-500'}">${c}</button>
+            const catList = Object.keys(taxonomy[window.mode]);
+            document.getElementById('cats').innerHTML = catList.map(c => `
+                <button onclick="window.cat='${c}';renderCats()" class="px-4 py-2 rounded-xl text-[10px] font-bold border cat-btn ${window.cat===c?'selected-cat':'bg-white text-slate-500'}">${c}</button>
             `).join('');
+            const subCats = taxonomy[window.mode][window.cat] || [];
+            document.getElementById('subcat-select').innerHTML = subCats.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
         async function save() {
-            const amount = parseFloat(document.getElementById('sum').value);
-            const desc = document.getElementById('desc').value;
-            if(!amount) return alert("Введите сумму");
+            let amount = parseFloat(document.getElementById('sum').value);
+            const acc = document.getElementById('acc1').value;
+            const subcat = document.getElementById('subcat-select').value;
+            const shop = document.getElementById('desc').value;
+            if(!amount) return;
             
-            document.getElementById('save-btn').innerText = "ОБРАБОТКА...";
+            document.getElementById('save-btn').innerText = "СОХРАНЯЮ В ТАБЛИЦУ...";
+            if(window.editId) await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: window.editId})});
+
+            let finalAmount = amount;
+            let comment = shop;
             
-            // Если мы редактируем — сначала удаляем старую запись
-            if(window.editId) {
-                await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: window.editId})});
+            // Специфика ПРИВАТА: расчет в евро -> списание в гривнах
+            if(acc === 'uahcard' && window.mode === 'expense') {
+                finalAmount = amount * window.currentRate;
+                comment = `[${amount}€ по ${window.currentRate.toFixed(1)}] ${shop}`;
             }
 
             let ops = [];
             if(window.mode === 'transfer') {
-                ops.push({type:'expense', amount, account: document.getElementById('acc1').value, category:'♻️ Перевод', desc: desc, rate: window.currentRate});
-                ops.push({type:'income', amount, account: document.getElementById('acc2').value, category:'♻️ Перевод', desc: desc, rate: window.currentRate});
+                ops.push({type:'expense', amount: finalAmount, account: acc, category:'♻️ Перевод', desc: comment, rate: window.currentRate});
+                ops.push({type:'income', amount: finalAmount, account: document.getElementById('acc2').value, category:'♻️ Перевод', desc: comment, rate: window.currentRate});
             } else {
-                ops.push({type:window.mode, amount, account: document.getElementById('acc1').value, category:window.cat, desc: desc, rate: window.currentRate});
+                ops.push({type:window.mode, amount: finalAmount, account: acc, category: `${window.cat}: ${subcat}`, desc: comment, rate: window.currentRate});
             }
             
             for(let op of ops) await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify(op)});
             location.reload();
         }
 
+        async function deleteItem(id) {
+            if(!confirm("Удалить операцию?")) return;
+            await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: id})});
+            location.reload();
+        }
+
         function startEdit(id, amt, acc, ct, ds, type) {
-            window.editId = id;
-            window.mode = type;
+            window.editId = id; window.mode = type;
             document.getElementById('sum').value = amt;
             document.getElementById('desc').value = ds;
             document.getElementById('acc1').value = acc;
-            window.cat = ct;
+            window.cat = ct.split(':')[0];
             setMode(type);
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('save-btn').innerText = "ОБНОВИТЬ ЗАПИСЬ";
-            document.getElementById('save-btn').className = "w-full bg-orange-500 text-white py-4 rounded-2xl font-black shadow-lg";
-        }
-
-        async function deleteItem(id) {
-            if(!confirm("Удалить безвозвратно?")) return;
-            await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: id})});
-            location.reload();
         }
 
         async function load() {
             const r = await fetch(GOOGLE_URL);
             const data = await r.json();
             let bals = {sparkasse:0, casheur:0, uahcard:0, cashuah:0}, hist = "";
-            let runningTotalEur = 0;
-
-            // Сначала посчитаем начальные балансы для истории
-            const rows = data.slice(1);
-            
-            rows.forEach((row, index) => {
+            data.slice(1).forEach((row) => {
                 const [type, date, title, desc, amt, cur, cat, acc, rate] = row;
                 const val = parseFloat(amt);
-                const currentOpRate = parseFloat(rate) || window.currentRate;
-
+                const rVal = parseFloat(rate) || window.currentRate;
                 if(bals.hasOwnProperty(acc)) bals[acc] += (type==='income' ? val : -val);
-                
-                // Считаем общий баланс в EUR на ТЕКУЩИЙ момент транзакции
-                let instantTotal = bals.sparkasse + bals.casheur + (bals.uahcard / currentOpRate) + (bals.cashuah / currentOpRate);
+                let instantTotal = bals.sparkasse + bals.casheur + (bals.uahcard / rVal) + (bals.cashuah / rVal);
 
-                hist = `<div class="bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 mb-3">
+                hist = `<div class="bg-white p-4 rounded-[28px] shadow-sm border border-slate-100 mb-3">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <p class="font-black text-sm text-slate-800">${cat}</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${desc || 'Без описания'}</p>
+                            <p class="font-black text-xs text-slate-800">${cat}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">${desc || '-'}</p>
                         </div>
                         <div class="text-right">
-                            <p class="font-black text-sm ${type==='income'?'text-green-500':'text-red-500'}">${type==='income'?'+':'-'}${val.toFixed(2)}</p>
-                            <p class="text-[9px] text-slate-300 font-bold italic">курс ${currentOpRate.toFixed(2)}</p>
+                            <p class="font-black text-sm ${type==='income'?'text-green-500':'text-red-500'}">${type==='income'?'+':'-'}${val.toFixed(2)} ${accounts[acc].c==='EUR'?'€':'₴'}</p>
+                            <p class="text-[8px] text-slate-300 font-bold uppercase">${accounts[acc].n}</p>
                         </div>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-                        <div class="flex gap-3">
-                            <button onclick="startEdit('${date}', ${val}, '${acc}', '${cat}', '${desc}', '${type}')" class="text-blue-400 text-xs">✏️</button>
-                            <button onclick="deleteItem('${date}')" class="text-slate-300 text-xs">🗑️</button>
+                        <div class="flex gap-4">
+                            <button onclick="startEdit('${date}', ${val}, '${acc}', '${cat}', '${desc}', '${type}')" class="text-blue-400 font-bold text-[9px] uppercase">✏️ Правка</button>
+                            <button onclick="deleteItem('${date}')" class="text-slate-300">🗑️</button>
                         </div>
-                        <div class="text-[9px] font-black text-slate-400 uppercase">
-                            Всего: <span class="text-slate-900">${instantTotal.toFixed(2)} €</span>
+                        <div class="text-[9px] font-black text-slate-400 uppercase bg-slate-50 px-2 py-1 rounded-lg">
+                            Итог: <span class="text-slate-900">${instantTotal.toFixed(2)} €</span>
                         </div>
                     </div>
                 </div>` + hist;
@@ -173,13 +193,12 @@
 
             const finalTotal = bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate) + (bals.cashuah / window.currentRate);
             document.getElementById('total-val').innerText = finalTotal.toLocaleString(undefined, {minimumFractionDigits:2}) + ' €';
-
             document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `
-                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">
                     <p class="text-[8px] text-slate-400 uppercase font-black mb-1 leading-none">${accounts[id].n}</p>
-                    <p class="font-bold ${v<0?'text-red-500':'text-slate-800'}">${v.toFixed(2)} ${accounts[id].c==='EUR'?'€':'₴'}</p>
+                    <p class="font-bold text-[13px] tracking-tighter ${v<0?'text-red-500':'text-slate-800'}">${v.toFixed(2)} ${accounts[id].c==='EUR'?'€':'₴'}</p>
                 </div>`).join('');
-            document.getElementById('history').innerHTML = hist || '<p class="text-center text-slate-300 py-10">Транзакций пока нет</p>';
+            document.getElementById('history').innerHTML = hist;
         }
 
         const accSelects = Object.entries(accounts).map(([id, a]) => `<option value="${id}">${a.n} (${a.c})</option>`).join('');
