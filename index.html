@@ -532,11 +532,28 @@
                 document.getElementById('field-merchant').style.display = 'none';
                 pInput.placeholder = ""; lFrom.innerText = "ОТ КОГО / ОТКУДА";
                 lTo.innerText = "КОМУ / КУДА";
-                colTo.classList.remove('hidden');
-                document.getElementById('category').value = "💸 Переводы";
-                btn.innerText = isEdit ? "Обновить запись" : "Выполнить перевод";
-            }
-        };
+                // Строка 535
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            fetch('wallet_export3.txt?v=' + Date.now())
+                .then(r => r.text())
+                .then(t => {
+                    const rows = t.trim().split('\n');
+                    const lastRow = rows[rows.length - 1];
+                    const data = lastRow.split(',');
+                    
+                    if (data.length >= 4) {
+                        window.state.balances.sparkasse = parseFloat(data[0]) || 0;
+                        window.state.balances.uahcard = parseFloat(data[1]) || 0;
+                        window.state.balances.casheur = parseFloat(data[2]) || 0;
+                        window.state.balances.cashuah = parseFloat(data[3]) || 0;
+                        
+                        if(window.renderUI) window.renderUI();
+                    }
+                })
+                .catch(e => console.log("Файл не найден"));
+        }); // Строка 555 (примерно)
 
         window.toggleSettings = () => {
             const m = document.getElementById('modalSettings');
@@ -569,6 +586,16 @@
         }
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            // Загрузка данных из файла
+            fetch('wallet_export3.txt?v=' + Date.now())
+                .then(r => r.text())
+                .then(t => {
+                    console.log("Данные загружены");
+                    // Если файл прочитался, пробуем обновить экран
+                    if(window.renderUI) window.renderUI();
+                })
+                .catch(e => console.log("Файл не найден"));
         });
     </script>
 </body>
