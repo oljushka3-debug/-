@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Privat Edition</title>
+    <title>Smart Wallet Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; white-space: nowrap; }
@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4 text-center">
-        <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic">Синхронизация...</div>
+        <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic text-center">Синхронизация...</div>
         
         <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6">
             <p class="text-[10px] uppercase font-bold opacity-50 mb-1">Всего (EUR)</p>
@@ -23,40 +23,40 @@
         <div id="balance-grid" class="grid grid-cols-2 gap-2 mb-6"></div>
 
         <div class="bg-white p-5 rounded-[32px] shadow-xl border border-slate-100 mb-8">
-            <div class="mb-4 text-center">
-                <input id="trans-date" type="date" class="p-2 bg-slate-50 rounded-xl font-bold text-xs text-slate-500 outline-none w-full text-center border-none">
+            <div class="mb-4">
+                <input id="trans-date" type="date" class="p-2 bg-slate-50 rounded-xl font-bold text-xs text-slate-500 w-full text-center outline-none">
             </div>
 
             <div class="flex gap-1 mb-4 bg-slate-100 p-1 rounded-2xl text-[10px] font-bold uppercase">
-                <button onclick="setMode('expense')" id="m-expense" class="flex-1 py-2 rounded-xl bg-white shadow-sm text-blue-600">Расход</button>
-                <button onclick="setMode('income')" id="m-income" class="flex-1 py-2 rounded-xl text-slate-400">Доход</button>
-                <button onclick="setMode('transfer')" id="m-transfer" class="flex-1 py-2 rounded-xl text-slate-400">Обмен</button>
+                <button onclick="setMode('expense')" id="m-expense" class="flex-1 py-2 rounded-xl">Расход</button>
+                <button onclick="setMode('income')" id="m-income" class="flex-1 py-2 rounded-xl">Доход</button>
+                <button onclick="setMode('transfer')" id="m-transfer" class="flex-1 py-2 rounded-xl">Обмен</button>
             </div>
 
             <div id="std-input">
-                <input id="sum" type="number" inputmode="decimal" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-blue-600 mb-1 bg-transparent border-none">
-                <p id="convert-hint" class="text-[10px] font-bold text-green-600 uppercase h-4"></p>
+                <input id="sum" type="number" inputmode="decimal" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-blue-600 mb-1 bg-transparent">
+                <p onclick="manualRate()" id="convert-hint" class="text-[10px] font-bold text-green-600 uppercase h-4 cursor-pointer underline decoration-dotted"></p>
             </div>
 
             <div id="ex-input" class="hidden space-y-3 mb-4 text-left">
-                <div class="bg-red-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-red-400 uppercase">Списано (UAH)</p><input id="sum-from" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-red-600 border-none outline-none"></div>
-                <div class="bg-green-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-green-400 uppercase">Получено (EUR)</p><input id="sum-to" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-green-600 border-none outline-none"></div>
+                <div class="bg-red-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-red-400 uppercase">Списано (₴)</p><input id="sum-from" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-red-600 outline-none border-none"></div>
+                <div class="bg-green-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-green-400 uppercase">Получено (€)</p><input id="sum-to" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-green-600 outline-none border-none"></div>
             </div>
             
             <div class="space-y-2 mb-4">
                 <select id="acc1" onchange="updateUI()" class="w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
-                <div id="to-arrow" class="hidden text-blue-500 font-bold text-xs py-1 italic">⬇️ перевести на ⬇️</div>
+                <div id="to-arrow" class="hidden text-blue-500 font-bold text-xs py-1">⬇️ ПЕРЕВЕСТИ НА ⬇️</div>
                 <select id="acc2" onchange="updateUI()" class="hidden w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
             </div>
 
             <div id="cat-section">
                 <div id="cats-container" class="flex overflow-x-auto gap-2 mb-4 pb-2 px-1"></div>
-                <select id="subcat-select" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center border-none text-sm appearance-none mb-4 outline-none"></select>
+                <select id="subcat-select" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center border-none text-sm appearance-none mb-4"></select>
             </div>
 
-            <input id="desc" type="text" placeholder="Магазин / Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
+            <input id="desc" type="text" placeholder="Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
             
-            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-transform">Записать</button>
+            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase active:scale-95 transition-transform">Записать</button>
         </div>
 
         <div id="history" class="space-y-3 text-left"></div>
@@ -73,16 +73,24 @@
             try { 
                 const r = await fetch('https://open.er-api.com/v6/latest/EUR'); 
                 const d = await r.json(); 
-                // Корректируем биржевой курс под реальный карточный курс Привата
-                window.currentRate = d.rates.UAH * 1.185; 
+                window.currentRate = d.rates.UAH * 1.05; // Базовый +5%
+                if (window.currentRate > 52) window.currentRate = 50.76; // Защита от ошибок
             } catch(e) { window.currentRate = 50.76; } 
+            updateUI();
+        }
+
+        function manualRate() {
+            const val = prompt("Введите актуальный курс ПриватБанка:", window.currentRate.toFixed(2));
+            if (val) {
+                window.currentRate = parseFloat(val);
+                updateUI();
+                load(); // пересчитать капитал сверху
+            }
         }
 
         function setMode(m) {
             window.mode = m; window.currentCat = Object.keys(taxonomy[m])[0];
-            ['expense', 'income', 'transfer'].forEach(k => {
-                document.getElementById('m-'+k).className = m === k ? 'flex-1 py-2 rounded-xl bg-white shadow-sm text-blue-600' : 'flex-1 py-2 rounded-xl text-slate-400';
-            });
+            ['expense', 'income', 'transfer'].forEach(k => document.getElementById('m-'+k).className = m === k ? 'flex-1 py-2 rounded-xl bg-white shadow-sm text-blue-600' : 'flex-1 py-2 rounded-xl text-slate-400');
             document.getElementById('cat-section').classList.toggle('hidden', m === 'transfer');
             updateUI(); renderCats();
         }
@@ -101,7 +109,7 @@
             document.getElementById('ex-input').classList.toggle('hidden', !isEx);
             document.getElementById('acc2').classList.toggle('hidden', window.mode !== 'transfer');
             document.getElementById('to-arrow').classList.toggle('hidden', window.mode !== 'transfer');
-            document.getElementById('convert-hint').innerText = (acc1 === 'uahcard' && window.mode === 'expense') ? `Курс ПриватКарта: ~${window.currentRate.toFixed(2)}` : "";
+            document.getElementById('convert-hint').innerText = (acc1 === 'uahcard' && window.mode === 'expense') ? `Курс (нажми): ${window.currentRate.toFixed(2)}` : "";
         }
 
         async function save() {
@@ -131,19 +139,19 @@
                 rows.slice(1).forEach(row => {
                     const [type, date, title, desc, amt, cur, cat, acc, rate] = row;
                     const val = parseFloat(amt); if(bals.hasOwnProperty(acc)) bals[acc] += (type === 'income' ? val : -val);
-                    const rVal = parseFloat(rate) || 50.76;
-                    hist = `<div class="bg-white p-4 rounded-[24px] shadow-sm border mb-2 text-left text-xs">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="font-black">${cat}</span>
-                            <span class="${type==='income'?'text-green-600':'text-red-600'} font-bold">${type==='income'?'+':'-'}${val.toFixed(2)}</span>
+                    const rVal = parseFloat(rate) || window.currentRate;
+                    hist = `<div class="bg-white p-4 rounded-[24px] shadow-sm border mb-2 text-left">
+                        <div class="flex justify-between items-start mb-1 leading-none">
+                            <span class="font-black text-xs">${cat}</span>
+                            <span class="${type==='income'?'text-green-600':'text-red-600'} font-bold text-sm">${type==='income'?'+':'-'}${val.toFixed(2)}</span>
                         </div>
-                        <div class="flex justify-between text-[10px] text-slate-400 uppercase font-bold">
-                            <span>${new Date(date).toLocaleDateString()} • ${acc}</span>
-                            <button onclick="deleteItem('${date}')" class="text-slate-200">УДАЛИТЬ</button>
+                        <div class="flex justify-between text-[9px] text-slate-300 font-bold uppercase tracking-tighter">
+                            <span>${new Date(date).toLocaleDateString()} • ${acc} • ${desc || '-'}</span>
+                            <button onclick="deleteItem('${date}')" class="text-slate-200 ml-2">УДАЛИТЬ</button>
                         </div>
                     </div>` + hist;
                 });
-                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center"><p class="text-[8px] font-bold text-slate-400 uppercase">${accounts[id].n}</p><p class="font-bold text-sm">${v.toFixed(2)}</p></div>`).join('');
+                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center shadow-sm"><p class="text-[8px] font-bold text-slate-400 uppercase mb-1">${accounts[id].n}</p><p class="font-bold text-xs tracking-tighter">${v.toFixed(2)}</p></div>`).join('');
                 document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate) + (bals.cashuah / window.currentRate)).toFixed(2) + ' €';
                 document.getElementById('history').innerHTML = hist;
                 document.getElementById('status-bar').innerText = "ОБНОВЛЕНО";
