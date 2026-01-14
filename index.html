@@ -3,71 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Cloud</title>
+    <title>Smart Wallet Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-900 pb-20">
+<body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4">
-        <h1 class="text-2xl font-black italic text-blue-700 mb-6 text-center">SMARTWALLET CLOUD</h1>
+        <h1 class="text-2xl font-black italic text-blue-700 mb-6 text-center tracking-tighter">SMARTWALLET PRO</h1>
         
+        <div id="rates" class="flex justify-center gap-4 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
+            Загрузка курсов...
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Sparkasse</p>
+                <p id="disp-sparkasse" class="text-lg font-bold">0.00 €</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Наличные EUR</p>
+                <p id="disp-casheur" class="text-lg font-bold">0.00 €</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">UAH Card</p>
+                <p id="disp-uahcard" class="text-lg font-bold">0.00 ₴</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Наличные UAH</p>
+                <p id="disp-cashuah" class="text-lg font-bold">0.00 ₴</p>
+            </div>
+        </div>
+
         <div class="bg-white p-6 rounded-[32px] shadow-xl mb-6 border border-slate-100">
-            <p class="text-center text-[10px] uppercase font-bold text-slate-400 mb-2">Введите сумму</p>
-            <input id="main-amount" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-slate-800">
-            
-            <select id="main-account" class="w-full mt-4 p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center">
+            <input id="main-amount" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-slate-800 mb-4">
+            <select id="main-account" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center">
                 <option value="sparkasse">Sparkasse (EUR)</option>
                 <option value="casheur">Наличные (EUR)</option>
                 <option value="uahcard">UAH Card (₴)</option>
+                <option value="cashuah">Наличные (UAH ₴)</option>
             </select>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="sendData('expense')" class="bg-red-500 text-white py-5 rounded-2xl font-black shadow-lg shadow-red-200">РАСХОД</button>
-            <button onclick="sendData('income')" class="bg-green-500 text-white py-5 rounded-2xl font-black shadow-lg shadow-green-200">ДОХОД</button>
+        <div class="grid grid-cols-2 gap-3 mb-8">
+            <button onclick="sendData('expense')" class="bg-slate-900 text-white py-5 rounded-2xl font-black shadow-lg shadow-slate-200">РАСХОД</button>
+            <button onclick="sendData('income')" class="bg-blue-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-blue-200">ДОХОД</button>
+        </div>
+
+        <h2 class="text-xs font-black uppercase text-slate-400 mb-4 px-2">Последние транзакции</h2>
+        <div id="history" class="space-y-2 bg-white rounded-3xl p-2 border border-slate-100">
+            <p class="text-center text-xs py-4 text-slate-300 italic">История загружается...</p>
         </div>
     </div>
 
     <script>
-        // ВОТ ЭТА СТРОЧКА (ВСТАВЬТЕ ССЫЛКУ МЕЖДУ КАВЫЧЕК НИЖЕ):
-        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxJ82U4u-xvs3wt9wzozIf8uVPdNt9Y3t4QXfx_cCKHfZeBsAJ6p4VQVm4d_wxwEhwCIQ/exec"; 
+        // ВСТАВЬТЕ ВАШУ ССЫЛКУ НИЖЕ
+        const GOOGLE_URL = "ВАША_ССЫЛКА_ИЗ_APPS_SCRIPT"; 
 
+        // 1. ПОЛУЧЕНИЕ КУРСОВ ВАЛЮТ
+        async function getRates() {
+            try {
+                const r = await fetch('https://open.er-api.com/v6/latest/EUR');
+                const d = await r.json();
+                document.getElementById('rates').innerText = `1 EUR = ${d.rates.UAH.toFixed(2)} UAH | ${new Date().toLocaleDateString()}`;
+            } catch(e) { document.getElementById('rates').innerText = "Курс временно недоступен"; }
+        }
+
+        // 2. ОТПРАВКА ДАННЫХ
         function sendData(type) {
             const amount = document.getElementById('main-amount').value;
             const account = document.getElementById('main-account').value;
-            
             if (!amount || amount <= 0) { alert("Введите сумму!"); return; }
 
             const data = {
                 type: type,
                 amount: amount,
                 account: account,
-                title: "Операция с телефона",
-                desc: "Cloud Sync",
                 currency: account.includes('uah') ? "UAH" : "EUR",
-                category: "Разное"
+                title: "Моб. транзакция"
             };
 
-            // Визуальная индикация отправки
             const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "ОТПРАВКА...";
             btn.disabled = true;
+            btn.innerText = "СИНХРОНИЗАЦИЯ...";
 
             fetch(GOOGLE_URL, {
                 method: "POST",
                 mode: "no-cors",
                 body: JSON.stringify(data)
             }).then(() => {
-                alert("Данные отправлены в таблицу!");
+                alert("Успешно!");
                 document.getElementById('main-amount').value = "";
-                btn.innerText = originalText;
                 btn.disabled = false;
-            }).catch(e => {
-                alert("Ошибка: " + e);
-                btn.innerText = originalText;
-                btn.disabled = false;
+                btn.innerText = type.toUpperCase();
+                loadData(); // Обновляем балансы и историю
             });
         }
+
+        // 3. ЗАГРУЗКА БАЛАНСОВ И ИСТОРИИ ИЗ ТАБЛИЦЫ
+        async function loadData() {
+            try {
+                const r = await fetch(GOOGLE_URL);
+                const data = await r.json(); // Наш doGet из Apps Script
+                
+                let balances = { sparkasse: 0, casheur: 0, uahcard: 0, cashuah: 0 };
+                let historyHTML = "";
+
+                // Пропускаем шапку и идем с конца (последние 5 записей)
+                for (let i = data.length - 1; i >= 1; i--) {
+                    const row = data[i]; // [Тип, Дата, Назв, Назн, Сумма, Вал, Кат, Счет]
+                    const type = row[0];
+                    const amount = parseFloat(row[4]);
+                    const acc = row[7];
+
+                    // Считаем балансы (упрощенно: доход +, расход -)
+                    if (balances.hasOwnProperty(acc)) {
+                        balances[acc] += (type === 'income' ? amount : -amount);
+                    }
+
+                    // Формируем историю (только последние 5)
+                    if (i > data.length - 6) {
+                        const color = type === 'income' ? 'text-green-600' : 'text-red-500';
+                        const sign = type === 'income' ? '+' : '-';
+                        historyHTML += `<div class="flex justify-between p-3 border-b border-slate-50 last:border-0 text-sm">
+                            <span class="font-bold text-slate-500">${acc}</span>
+                            <span class="font-black ${color}">${sign}${amount}</span>
+                        </div>`;
+                    }
+                }
+
+                // Вывод балансов
+                document.getElementById('disp-sparkasse').innerText = balances.sparkasse.toFixed(2) + ' €';
+                document.getElementById('disp-casheur').innerText = balances.casheur.toFixed(2) + ' €';
+                document.getElementById('disp-uahcard').innerText = balances.uahcard.toFixed(2) + ' ₴';
+                document.getElementById('disp-cashuah').innerText = balances.cashuah.toFixed(2) + ' ₴';
+                document.getElementById('history').innerHTML = historyHTML || '<p class="text-center py-4 text-slate-300">Нет записей</p>';
+
+            } catch(e) { console.log("Ошибка загрузки данных"); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getRates();
+            loadData();
+        });
     </script>
 </body>
 </html>
