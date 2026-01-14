@@ -1,0 +1,17 @@
+﻿Тип,Дата,Название,Назначение,Сумма,Валюта,Категория,Счет,Курс
+expense,2026-01-02,"R+V Allgemeine Versicherung Aktiengesellschaft 30419002020 Kfz HN-OC296 / 203.3...","Absicherung und Vorsorge",203.37,EUR,🚕 Транспорт,sparkasse,51
+expense,2026-01-02,"UKV Union Krankenversicherung AG KRANKEN KK-5295-8217 Krankenvers... -54,89","",54.89,EUR,💊 Здоровье,sparkasse,51
+expense,2026-01-02,"Kaufland Fil. 67102//Bad Friedrichshall/DE 2025-12-30T13:46 Debitk.02...","Lebensmittel und Drogerie",62.34,EUR,🛒 Покупки,sparkasse,51
+expense,2026-01-02,"LERIKA LEBENSMITTEL//BAD FRIEDRICHSHALL/DE 2025-12-30T11:36 Debitk.0 2...","Lebensmittel und Drogerie",15.21,EUR,🛒 Покупки,sparkasse,51
+expense,2026-01-13,"HB-Handy-Laden PUSHTAN/DE 2025-12-31T14:42:41 Mobilfunknum….","Telekommunikation",15,EUR,⚙️ Другое,sparkasse,51
+expense,2026-01-05,"TRBT.tribute.tg//Paphos","Sonstiges",20.6,EUR,💊 Здоровье,sparkasse,51
+expense,2026-01-02,"Itzehoer ITZEHOER VERS.VEREIN 27071928-850 RECHTSSCHUTZ-V 9...","Absicherung und Vorsorge",9.07,EUR,💊 Здоровье,sparkasse,51
+expense,2026-01-07,"REWE SAGT DANKE. 45400478/ Bruehlstr./Bad Wimpfen /DE 2026-01-05T14:43 Debitk.02...","Категорія Lebensmittel und Drogerie ",14.32,EUR,⚙️ Другое,sparkasse,51
+expense,2026-01-07,"ALDI SE U. CO. KG/BRUEHLSTR. 1/ BAD WIMPFEN/DE","",24.5,EUR,🛒 Покупки,sparkasse,51
+expense,2025-12-28,"LifeCell","Поповнення мобільного",550,UAH,⚙️ Другое,uahcard,51
+expense,2026-01-13,"LIDL","Супермаркети та продукти (9.27 EUR)",472.96,UAH,🛒 Покупки,uahcard,51
+expense,2026-01-13,"Kaufland","Супермаркети та продукти (9.09 EUR)",463.78,UAH,🛒 Покупки,uahcard,51
+expense,2026-01-12,"LIDL","Супермаркети та продукти (6.28 EUR)",320.41,UAH,⚙️ Другое,uahcard,51
+expense,2026-01-12,"Скарбничка","Заощадження",400,UAH,⚙️ Другое,uahcard,51
+expense,2026-01-11,"LifeCell","Поповнення мобільного",250,UAH,⚙️ Другое,uahcard,51
+expense,2026-01-06,"Гнилицька T.","🎂🌸ДР",603.02,UAH,⚙️ Другое,uahcard,51
