@@ -2,9 +2,83 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <script type="module">
-        // ... (весь ваш верхний блок с Firebase и state остается) ...
-        // Я сокращаю для примера, но вставьте свой полный код до функции window.setMode
+<body class="bg-gray-900 text-white font-sans pb-24">
+    <div id="app">
+        <div id="loader" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center text-xl font-bold">
+            ЗАГРУЗКА...
+        </div>
+
+        <div class="p-4 max-w-md mx-auto">
+            <h1 class="text-2xl font-bold mb-6">Мой Кошелек</h1>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-gray-800 p-4 rounded-xl border border-blue-500/30">
+                    <p class="text-xs text-gray-400 uppercase">Sparkasse</p>
+                    <p id="bal-sparkasse" class="text-xl font-bold">0.00 €</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-green-500/30">
+                    <p class="text-xs text-gray-400 uppercase">UAH Card</p>
+                    <p id="bal-uahcard" class="text-xl font-bold">0.00 ₴</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-yellow-500/30">
+                    <p class="text-xs text-gray-400 uppercase">Наличные EUR</p>
+                    <p id="bal-casheur" class="text-xl font-bold">0.00 €</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-orange-500/30">
+                    <p class="text-xs text-gray-400 uppercase">Наличные UAH</p>
+                    <p id="bal-cashuah" class="text-xl font-bold">0.00 ₴</p>
+                </div>
+            </div>
+
+            <p class="text-gray-500 text-center text-sm">Данные загружены из wallet_export3.txt</p>
+        </div>
+    </div>
+
+    <script>
+        // Простая логика отображения
+        window.state = {
+            balances: { sparkasse: 0, uahcard: 0, casheur: 0, cashuah: 0 }
+        };
+
+        function renderUI() {
+            document.getElementById('bal-sparkasse').innerText = window.state.balances.sparkasse.toFixed(2) + ' €';
+            document.getElementById('bal-uahcard').innerText = window.state.balances.uahcard.toFixed(2) + ' ₴';
+            document.getElementById('bal-casheur').innerText = window.state.balances.casheur.toFixed(2) + ' €';
+            document.getElementById('bal-cashuah').innerText = window.state.balances.cashuah.toFixed(2) + ' ₴';
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('wallet_export3.txt?v=' + Date.now())
+                .then(r => r.text())
+                .then(t => {
+                    const rows = t.trim().split('\n');
+                    if (rows.length < 2) { renderUI(); return; }
+
+                    // Берем последнюю строку и парсим CSV
+                    const lastRow = rows[rows.length - 1];
+                    const data = lastRow.split(',');
+
+                    // Согласно вашему файлу: Сумма — это 5-й элемент (индекс 4)
+                    // Но для балансов нам нужно знать, какой это счет. 
+                    // Пока просто выведем сумму в Sparkasse для проверки связи:
+                    const amount = parseFloat(data[4]) || 0;
+                    const account = data[7] ? data[7].replace(/"/g, '') : '';
+
+                    if (account === 'sparkasse') window.state.balances.sparkasse = amount;
+                    // Добавьте логику для остальных счетов здесь
+                    
+                    renderUI();
+                })
+                .catch(e => {
+                    console.error(e);
+                    document.getElementById('loader').innerText = "ОШИБКА ФАЙЛА";
+                });
+        });
+    </script>
+</body>
+</html>
