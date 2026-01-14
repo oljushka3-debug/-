@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Pro</title>
+    <title>Smart Wallet Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; white-space: nowrap; }
         .selected-cat { background-color: #2563eb !important; color: white !important; border-color: #2563eb !important; }
         ::-webkit-scrollbar { display: none; }
+        .history-card { border-radius: 24px; padding: 16px; background: white; border: 1px solid #f1f5f9; margin-bottom: 8px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4 text-center">
-        <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic text-center">Синхронизация...</div>
+        <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic">Синхронизация...</div>
         
         <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6">
             <p class="text-[10px] uppercase font-bold opacity-50 mb-1">Всего (EUR)</p>
@@ -39,13 +40,13 @@
             </div>
 
             <div id="ex-input" class="hidden space-y-3 mb-4 text-left">
-                <div class="bg-red-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-red-400 uppercase">Списано (₴)</p><input id="sum-from" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-red-600 outline-none border-none"></div>
-                <div class="bg-green-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-green-400 uppercase">Получено (€)</p><input id="sum-to" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-green-600 outline-none border-none"></div>
+                <div class="bg-red-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-red-400 uppercase">Списано</p><input id="sum-from" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-red-600 border-none outline-none"></div>
+                <div class="bg-green-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-green-400 uppercase">Получено</p><input id="sum-to" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-green-600 border-none outline-none"></div>
             </div>
             
             <div class="space-y-2 mb-4">
                 <select id="acc1" onchange="updateUI()" class="w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
-                <div id="to-arrow" class="hidden text-blue-500 font-bold text-xs py-1">⬇️ ПЕРЕВЕСТИ НА ⬇️</div>
+                <div id="to-arrow" class="hidden text-blue-500 font-bold text-xs py-1 italic">⬇️ перевести на ⬇️</div>
                 <select id="acc2" onchange="updateUI()" class="hidden w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
             </div>
 
@@ -56,7 +57,7 @@
 
             <input id="desc" type="text" placeholder="Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
             
-            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase active:scale-95 transition-transform">Записать</button>
+            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-transform">Записать</button>
         </div>
 
         <div id="history" class="space-y-3 text-left"></div>
@@ -65,27 +66,27 @@
     <script>
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
         const accounts = { sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Нал EUR', c: 'EUR'}, uahcard: {n: 'Приват UAH', c: 'UAH'}, cashuah: {n: 'Нал UAH', c: 'UAH'} };
-        const taxonomy = { expense: { 'Продукты': ['Lidl', 'Rewe', 'Aldi', 'Netto', 'Edeka', 'Kaufland', 'Другое'], 'Транспорт': ['Бензин', 'Парковка', 'Билеты', 'Такси'], 'Еда': ['Ресторан', 'Фастфуд', 'Кофе'], 'Дом': ['Аренда', 'Связь', 'Аптека', 'Шопинг'] }, income: { 'Доходы': ['Зарплата', 'Помощь', 'Остаток'] }, transfer: { 'Обмен': ['Снятие', 'Обмен'] } };
+        const taxonomy = { 
+            expense: { 'Продукты': ['Lidl', 'Rewe', 'Aldi', 'Netto', 'Edeka', 'Kaufland', 'DM', 'Другое'], 'Транспорт': ['Бензин', 'Парковка', 'Билеты', 'Такси'], 'Еда': ['Ресторан', 'Фастфуд', 'Кофе'], 'Дом': ['Аренда', 'Связь', 'Аптека', 'Шопинг'] }, 
+            income: { 'Доходы': ['Зарплата', 'Помощь', 'Остаток'] }, 
+            transfer: { 'Обмен': ['Снятие', 'Обмен'] } 
+        };
         
-        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76;
+        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76; window.editId = null;
 
         async function updateRate() { 
             try { 
                 const r = await fetch('https://open.er-api.com/v6/latest/EUR'); 
                 const d = await r.json(); 
-                window.currentRate = d.rates.UAH * 1.05; // Базовый +5%
-                if (window.currentRate > 52) window.currentRate = 50.76; // Защита от ошибок
+                let base = d.rates.UAH * 1.05;
+                window.currentRate = (base > 52 || base < 40) ? 50.76 : base;
             } catch(e) { window.currentRate = 50.76; } 
             updateUI();
         }
 
         function manualRate() {
-            const val = prompt("Введите актуальный курс ПриватБанка:", window.currentRate.toFixed(2));
-            if (val) {
-                window.currentRate = parseFloat(val);
-                updateUI();
-                load(); // пересчитать капитал сверху
-            }
+            const val = prompt("Курс ПриватБанка:", window.currentRate.toFixed(2));
+            if (val) { window.currentRate = parseFloat(val); updateUI(); load(); }
         }
 
         function setMode(m) {
@@ -103,8 +104,8 @@
         }
 
         function updateUI() {
-            const acc1 = document.getElementById('acc1').value; 
-            const isEx = window.mode === 'transfer' && accounts[acc1].c !== accounts[document.getElementById('acc2').value].c;
+            const acc1 = document.getElementById('acc1').value; const acc2 = document.getElementById('acc2').value;
+            const isEx = window.mode === 'transfer' && accounts[acc1].c !== accounts[acc2].c;
             document.getElementById('std-input').classList.toggle('hidden', isEx);
             document.getElementById('ex-input').classList.toggle('hidden', !isEx);
             document.getElementById('acc2').classList.toggle('hidden', window.mode !== 'transfer');
@@ -114,19 +115,20 @@
 
         async function save() {
             const btn = document.getElementById('save-btn'); btn.disabled = true; btn.innerText = "ЗАПИСЬ...";
+            if(window.editId) await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: window.editId})});
             const acc1 = document.getElementById('acc1').value; const acc2 = document.getElementById('acc2').value;
             const date = document.getElementById('trans-date').value || new Date().toISOString();
             const desc = document.getElementById('desc').value; const subcat = document.getElementById('subcat-select').value;
             let data = [];
             if(window.mode === 'transfer' && accounts[acc1].c !== accounts[acc2].c) {
                 const sF = parseFloat(document.getElementById('sum-from').value); const sT = parseFloat(document.getElementById('sum-to').value);
-                data.push({type:'expense', amount: sF, account: acc1, category:'Обмен', date: date, desc: `Курс ${ (sF/sT).toFixed(2) } | ${desc}`, rate: sF/sT});
+                data.push({type:'expense', amount: sF, account: acc1, category:'Обмен', date: date, desc: `Курс ${(sF/sT).toFixed(2)} | ${desc}`, rate: sF/sT});
                 data.push({type:'income', amount: sT, account: acc2, category:'Обмен', date: date, desc: `Из ${acc1} | ${desc}`, rate: sF/sT});
             } else {
                 let amount = parseFloat(document.getElementById('sum').value);
-                let finalRate = (acc1.includes('uah') || acc2.includes('uah')) ? window.currentRate : 1;
-                if(acc1 === 'uahcard' && window.mode === 'expense') amount *= finalRate;
-                data.push({type: window.mode, amount: amount, account: acc1, category: `${window.currentCat}: ${subcat}`, date: date, desc: desc, rate: finalRate});
+                let rate = (acc1.includes('uah')) ? window.currentRate : 1;
+                if(acc1 === 'uahcard' && window.mode === 'expense') amount *= rate;
+                data.push({type: window.mode, amount: amount, account: acc1, category: `${window.currentCat}: ${subcat}`, date: date, desc: desc, rate: rate});
             }
             for(let op of data) { await fetch(GOOGLE_URL, {method: "POST", mode: "no-cors", body: JSON.stringify(op)}); }
             location.reload();
@@ -140,18 +142,24 @@
                     const [type, date, title, desc, amt, cur, cat, acc, rate] = row;
                     const val = parseFloat(amt); if(bals.hasOwnProperty(acc)) bals[acc] += (type === 'income' ? val : -val);
                     const rVal = parseFloat(rate) || window.currentRate;
-                    hist = `<div class="bg-white p-4 rounded-[24px] shadow-sm border mb-2 text-left">
-                        <div class="flex justify-between items-start mb-1 leading-none">
+                    hist = `<div class="history-card">
+                        <div class="flex justify-between items-start mb-1">
                             <span class="font-black text-xs">${cat}</span>
-                            <span class="${type==='income'?'text-green-600':'text-red-600'} font-bold text-sm">${type==='income'?'+':'-'}${val.toFixed(2)}</span>
+                            <span class="${type==='income'?'text-green-600':'text-red-600'} font-bold">${type==='income'?'+':'-'}${val.toFixed(2)}</span>
                         </div>
-                        <div class="flex justify-between text-[9px] text-slate-300 font-bold uppercase tracking-tighter">
-                            <span>${new Date(date).toLocaleDateString()} • ${acc} • ${desc || '-'}</span>
-                            <button onclick="deleteItem('${date}')" class="text-slate-200 ml-2">УДАЛИТЬ</button>
+                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mb-2">
+                            <span>${new Date(date).toLocaleDateString()} • ${acc}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                            <div class="flex gap-4">
+                                <button onclick="startEdit('${date}', ${val}, '${acc}', '${cat}', '${desc}', '${type}', ${rVal}, '${date}')" class="text-blue-500 text-[9px] font-black uppercase">✏️ Правка</button>
+                                <button onclick="deleteItem('${date}')" class="text-slate-200 text-[9px] font-black uppercase">🗑️</button>
+                            </div>
+                            <span class="text-[9px] font-black text-slate-800">КАПИТАЛ: ${(bals.sparkasse + bals.casheur + (bals.uahcard / rVal) + (bals.cashuah / rVal)).toFixed(2)} €</span>
                         </div>
                     </div>` + hist;
                 });
-                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center shadow-sm"><p class="text-[8px] font-bold text-slate-400 uppercase mb-1">${accounts[id].n}</p><p class="font-bold text-xs tracking-tighter">${v.toFixed(2)}</p></div>`).join('');
+                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center shadow-sm"><p class="text-[8px] font-bold text-slate-400 uppercase mb-1">${accounts[id].n}</p><p class="font-bold text-xs">${v.toFixed(2)}</p></div>`).join('');
                 document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate) + (bals.cashuah / window.currentRate)).toFixed(2) + ' €';
                 document.getElementById('history').innerHTML = hist;
                 document.getElementById('status-bar').innerText = "ОБНОВЛЕНО";
@@ -160,6 +168,14 @@
 
         async function deleteItem(id) { if(confirm("Удалить?")) { await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: id})}); location.reload(); } }
         
+        function startEdit(id, amt, acc, ct, ds, type, oldRate, oldDate) {
+            window.editId = id; window.mode = type; document.getElementById('sum').value = amt; document.getElementById('desc').value = ds; document.getElementById('acc1').value = acc;
+            document.getElementById('trans-date').value = new Date(oldDate).toISOString().split('T')[0];
+            setMode(type); window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('save-btn').innerText = "ОБНОВИТЬ";
+            document.getElementById('save-btn').className = "w-full bg-orange-500 text-white py-4 rounded-2xl font-black shadow-lg uppercase";
+        }
+
         document.getElementById('trans-date').valueAsDate = new Date();
         const accHTML = Object.entries(accounts).map(([id, a]) => `<option value="${id}">${a.n}</option>`).join('');
         document.getElementById('acc1').innerHTML = accHTML; document.getElementById('acc2').innerHTML = accHTML;
