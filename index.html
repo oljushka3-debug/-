@@ -5,145 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Smart Wallet Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-tab { background-color: #1d4ed8; color: white; }
+        .cat-btn { border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #64748b; transition: 0.2s; }
+        .cat-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4">
-        <h1 class="text-2xl font-black italic text-blue-700 mb-6 text-center tracking-tighter">SMARTWALLET PRO</h1>
-        
-        <div id="rates" class="flex justify-center gap-4 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
-            Загрузка курсов...
-        </div>
+        <h1 class="text-2xl font-black italic text-blue-700 mb-6 text-center">SMARTWALLET PRO</h1>
 
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Sparkasse</p>
-                <p id="disp-sparkasse" class="text-lg font-bold">0.00 €</p>
+        <div id="balance-grid" class="grid grid-cols-2 gap-3 mb-6">
             </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Наличные EUR</p>
-                <p id="disp-casheur" class="text-lg font-bold">0.00 €</p>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">UAH Card</p>
-                <p id="disp-uahcard" class="text-lg font-bold">0.00 ₴</p>
-            </div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Наличные UAH</p>
-                <p id="disp-cashuah" class="text-lg font-bold">0.00 ₴</p>
-            </div>
+
+        <div class="flex bg-white p-1 rounded-2xl shadow-sm mb-6 border border-slate-100">
+            <button onclick="setMode('expense')" id="tab-expense" class="flex-1 py-3 rounded-xl font-bold text-xs active-tab uppercase">Расход</button>
+            <button onclick="setMode('income')" id="tab-income" class="flex-1 py-3 rounded-xl font-bold text-xs text-slate-400 uppercase">Доход</button>
+            <button onclick="setMode('transfer')" id="tab-transfer" class="flex-1 py-3 rounded-xl font-bold text-xs text-slate-400 uppercase">Перевод</button>
         </div>
 
         <div class="bg-white p-6 rounded-[32px] shadow-xl mb-6 border border-slate-100">
-            <input id="main-amount" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-slate-800 mb-4">
-            <select id="main-account" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center">
-                <option value="sparkasse">Sparkasse (EUR)</option>
-                <option value="casheur">Наличные (EUR)</option>
-                <option value="uahcard">UAH Card (₴)</option>
-                <option value="cashuah">Наличные (UAH ₴)</option>
+            <input id="main-amount" type="number" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none mb-4">
+            
+            <div id="transfer-logic" class="hidden space-y-3 mb-4">
+                <select id="acc-from" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center border">
+                    <option value="">ОТКУДА (Счет)</option>
+                    <option value="sparkasse">Sparkasse</option>
+                    <option value="casheur">Наличные EUR</option>
+                    <option value="uahcard">UAH Card</option>
+                    <option value="cashuah">Наличные UAH</option>
+                </select>
+                <div class="text-center text-blue-500">⬇️</div>
+                <select id="acc-to" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center border">
+                    <option value="">КУДА (Счет)</option>
+                    <option value="sparkasse">Sparkasse</option>
+                    <option value="casheur">Наличные EUR</option>
+                    <option value="uahcard">UAH Card</option>
+                    <option value="cashuah">Наличные UAH</option>
+                </select>
+            </div>
+
+            <select id="main-account" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 appearance-none text-center mb-4">
+                <option value="sparkasse">Sparkasse</option>
+                <option value="casheur">Наличные EUR</option>
+                <option value="uahcard">UAH Card</option>
+                <option value="cashuah">Наличные UAH</option>
             </select>
+
+            <div id="categories-box" class="flex flex-wrap gap-2 mb-4 justify-center">
+                </div>
+            
+            <button onclick="processAction()" id="action-btn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-lg">СОХРАНИТЬ</button>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-8">
-            <button onclick="sendData('expense')" class="bg-slate-900 text-white py-5 rounded-2xl font-black shadow-lg shadow-slate-200">РАСХОД</button>
-            <button onclick="sendData('income')" class="bg-blue-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-blue-200">ДОХОД</button>
-        </div>
-
-        <h2 class="text-xs font-black uppercase text-slate-400 mb-4 px-2">Последние транзакции</h2>
-        <div id="history" class="space-y-2 bg-white rounded-3xl p-2 border border-slate-100">
-            <p class="text-center text-xs py-4 text-slate-300 italic">История загружается...</p>
-        </div>
+        <h2 class="text-xs font-black uppercase text-slate-400 mb-4 px-2">История (Правка в Google Таблице)</h2>
+        <div id="history" class="space-y-2"></div>
     </div>
 
     <script>
-        // ВСТАВЬТЕ ВАШУ ССЫЛКУ НИЖЕ
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxE8xruU4-l8eCDLA8XzwNo4_Rt30aTnbbq9YWjKWSJuiLzeslS_KYxCaITBPhl3303xQ/exec"; 
+        let currentMode = 'expense';
+        let selectedCategory = 'Разное';
+        
+        const cats = {
+            expense: ['🛒 Продукты', '☕ Кафе', '🚗 Транспорт', '🏠 Аренда', '💊 Здоровье', '🛍️ Шопинг'],
+            income: ['💰 Зарплата', '🎁 Подарок', '📈 Процент'],
+            transfer: ['♻️ Обмен/Перевод']
+        };
 
-        // 1. ПОЛУЧЕНИЕ КУРСОВ ВАЛЮТ
-        async function getRates() {
-            try {
-                const r = await fetch('https://open.er-api.com/v6/latest/EUR');
-                const d = await r.json();
-                document.getElementById('rates').innerText = `1 EUR = ${d.rates.UAH.toFixed(2)} UAH | ${new Date().toLocaleDateString()}`;
-            } catch(e) { document.getElementById('rates').innerText = "Курс временно недоступен"; }
+        function setMode(mode) {
+            currentMode = mode;
+            ['expense', 'income', 'transfer'].forEach(m => {
+                document.getElementById('tab-'+m).className = m === mode ? 'flex-1 py-3 rounded-xl font-bold text-xs active-tab uppercase' : 'flex-1 py-3 rounded-xl font-bold text-xs text-slate-400 uppercase';
+            });
+            
+            document.getElementById('transfer-logic').classList.toggle('hidden', mode !== 'transfer');
+            document.getElementById('main-account').classList.toggle('hidden', mode === 'transfer');
+            renderCategories();
         }
 
-        // 2. ОТПРАВКА ДАННЫХ
-        function sendData(type) {
-            const amount = document.getElementById('main-amount').value;
-            const account = document.getElementById('main-account').value;
-            if (!amount || amount <= 0) { alert("Введите сумму!"); return; }
+        function renderCategories() {
+            const box = document.getElementById('categories-box');
+            box.innerHTML = cats[currentMode].map(c => `<button onclick="selectedCategory='${c}'; renderCategories()" class="cat-btn ${selectedCategory === c ? 'selected' : ''}">${c}</button>`).join('');
+        }
 
-            const data = {
-                type: type,
-                amount: amount,
-                account: account,
-                currency: account.includes('uah') ? "UAH" : "EUR",
-                title: "Моб. транзакция"
-            };
+        async function processAction() {
+            const amount = parseFloat(document.getElementById('main-amount').value);
+            if (!amount) return alert("Введите сумму");
 
-            const btn = event.target;
+            const btn = document.getElementById('action-btn');
             btn.disabled = true;
             btn.innerText = "СИНХРОНИЗАЦИЯ...";
 
-            fetch(GOOGLE_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify(data)
-            }).then(() => {
-                alert("Успешно!");
-                document.getElementById('main-amount').value = "";
-                btn.disabled = false;
-                btn.innerText = type.toUpperCase();
-                loadData(); // Обновляем балансы и историю
-            });
+            let entries = [];
+            if (currentMode === 'transfer') {
+                const from = document.getElementById('acc-from').value;
+                const to = document.getElementById('acc-to').value;
+                if (!from || !to) return alert("Выберите счета");
+                entries.push({ type: 'expense', amount, account: from, category: 'Перевод', title: 'Перевод (исх)' });
+                entries.push({ type: 'income', amount, account: to, category: 'Перевод', title: 'Перевод (вх)' });
+            } else {
+                entries.push({ type: currentMode, amount, account: document.getElementById('main-account').value, category: selectedCategory, title: 'Транзакция' });
+            }
+
+            for (let data of entries) {
+                await fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(data) });
+            }
+
+            alert("Выполнено!");
+            location.reload();
         }
 
-        // 3. ЗАГРУЗКА БАЛАНСОВ И ИСТОРИИ ИЗ ТАБЛИЦЫ
         async function loadData() {
-            try {
-                const r = await fetch(GOOGLE_URL);
-                const data = await r.json(); // Наш doGet из Apps Script
+            const r = await fetch(GOOGLE_URL);
+            const data = await r.json();
+            let balances = { sparkasse: 0, casheur: 0, uahcard: 0, cashuah: 0 };
+            let historyHTML = "";
+
+            data.slice(1).forEach(row => {
+                const [type, date, title, desc, amount, cur, cat, acc] = row;
+                const val = parseFloat(amount);
+                if (balances.hasOwnProperty(acc)) balances[acc] += (type === 'income' ? val : -val);
                 
-                let balances = { sparkasse: 0, casheur: 0, uahcard: 0, cashuah: 0 };
-                let historyHTML = "";
+                historyHTML = `<div class="bg-white p-4 rounded-2xl flex justify-between items-center mb-2 shadow-sm border border-slate-50">
+                    <div>
+                        <p class="font-black text-slate-700">${cat}</p>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold">${acc} • ${new Date(date).toLocaleDateString()}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black ${type === 'income' ? 'text-green-500' : 'text-red-500'}">${type === 'income' ? '+' : '-'}${val}</p>
+                        <p class="text-[10px] text-slate-300 font-bold">Остаток: ${balances[acc].toFixed(2)}</p>
+                    </div>
+                </div>` + historyHTML;
+            });
 
-                // Пропускаем шапку и идем с конца (последние 5 записей)
-                for (let i = data.length - 1; i >= 1; i--) {
-                    const row = data[i]; // [Тип, Дата, Назв, Назн, Сумма, Вал, Кат, Счет]
-                    const type = row[0];
-                    const amount = parseFloat(row[4]);
-                    const acc = row[7];
-
-                    // Считаем балансы (упрощенно: доход +, расход -)
-                    if (balances.hasOwnProperty(acc)) {
-                        balances[acc] += (type === 'income' ? amount : -amount);
-                    }
-
-                    // Формируем историю (только последние 5)
-                    if (i > data.length - 6) {
-                        const color = type === 'income' ? 'text-green-600' : 'text-red-500';
-                        const sign = type === 'income' ? '+' : '-';
-                        historyHTML += `<div class="flex justify-between p-3 border-b border-slate-50 last:border-0 text-sm">
-                            <span class="font-bold text-slate-500">${acc}</span>
-                            <span class="font-black ${color}">${sign}${amount}</span>
-                        </div>`;
-                    }
-                }
-
-                // Вывод балансов
-                document.getElementById('disp-sparkasse').innerText = balances.sparkasse.toFixed(2) + ' €';
-                document.getElementById('disp-casheur').innerText = balances.casheur.toFixed(2) + ' €';
-                document.getElementById('disp-uahcard').innerText = balances.uahcard.toFixed(2) + ' ₴';
-                document.getElementById('disp-cashuah').innerText = balances.cashuah.toFixed(2) + ' ₴';
-                document.getElementById('history').innerHTML = historyHTML || '<p class="text-center py-4 text-slate-300">Нет записей</p>';
-
-            } catch(e) { console.log("Ошибка загрузки данных"); }
+            document.getElementById('balance-grid').innerHTML = Object.entries(balances).map(([name, val]) => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-[9px] text-slate-400 uppercase font-black mb-1">${name}</p>
+                    <p class="text-lg font-bold">${val.toFixed(2)} ${name.includes('uah') ? '₴' : '€'}</p>
+                </div>
+            `).join('');
+            document.getElementById('history').innerHTML = historyHTML;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            getRates();
-            loadData();
-        });
+        document.addEventListener('DOMContentLoaded', () => { renderCategories(); loadData(); });
     </script>
 </body>
 </html>
