@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smart Wallet Scan Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; white-space: nowrap; }
+        .selected-cat { background-color: #2563eb !important; color: white !important; border-color: #2563eb !important; }
+        ::-webkit-scrollbar { display: none; }
+        #reader { width: 100%; border-radius: 24px; overflow: hidden; display: none; margin-bottom: 20px; border: 2px solid #2563eb; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 pb-10">
+    <div class="max-w-md mx-auto p-4 text-center">
+        <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic">Режим сканера активен</div>
+        
+        <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6 text-center">
+            <p class="text-[10px] uppercase font-bold opacity-50 mb-1">Общий баланс (EUR)</p>
+            <div id="total-val" class="text-4xl font-black italic tracking-tighter">0.00 €</div>
+        </div>
+
+        <div id="reader"></div>
+        <div class="flex gap-2 mb-6">
+            <button id="start-btn" onclick="startScan()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg flex items-center justify-center gap-2">
+                📷 СКАНИРОВАТЬ QR
+            </button>
+            <button id="stop-btn" onclick="stopScan()" class="hidden bg-red-100 text-red-600 px-6 rounded-2xl font-black text-xs uppercase">
+                ЗАКРЫТЬ
+            </button>
+        </div>
+
+        <div class="bg-white p-5 rounded-[32px] shadow-xl border border-slate-100 mb-8">
+            <div class="mb-4">
+                <input id="trans-date" type="date" class="p-2 bg-slate-50 rounded-xl font-bold text-xs text-slate-500 w-full text-center outline-none border-none">
+            </div>
+
+            <div id="std-input">
+                <input id="sum" type="number" inputmode="decimal" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-blue-600 mb-1 bg-transparent border-none">
+                <p id="convert-hint" class="text-[10px] font-bold text-green-600 uppercase h-4"></p>
+            </div>
+            
+            <div class="mb-4">
+                <select id="acc1" onchange="updateUI()" class="w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
+            </div>
+
+            <div id="cat-section" class="mb-4">
+                <div id="cats-container" class="flex overflow-x-auto gap-2 mb-4 pb-2"></div>
+                <select id="subcat-select" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center border-none text-sm appearance-none outline-none"></select>
+            </div>
+
+            <input id="desc" type="text" placeholder="Магазин / Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
+            
+            <button onclick="save()" id="save-btn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-transform">Записать чек</button>
+        </div>
+
+        <div id="history" class="space-y-3 text-left"></div>
+    </div>
+
+    <script>
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
+        const accounts = { sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Нал EUR', c: 'EUR'}, uahcard: {n: 'Приват UAH', c: 'UAH'}, cashuah: {n: 'Нал UAH', c: 'UAH'} };
+        const taxonomy = { expense: { 'Продукты': ['Lidl', 'Rewe', 'Aldi', 'Netto', 'Edeka', 'Kaufland', 'DM', 'Другое'], 'Транспорт': ['Бензин', 'Парковка'], 'Еда': ['Ресторан', 'Кофе'], 'Дом': ['Аренда', 'Шопинг'] } };
+        
+        let html5QrCode;
+        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76;
+
+        function startScan() {
+            document.getElementById('reader').style.display = 'block';
+            document.getElementById('stop-btn').classList.remove('hidden');
+            document.getElementById('start-btn').classList.add('hidden');
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+                (decodedText) => {
+                    parseQR(decodedText);
+                    stopScan();
+                }, 
+                (errorMessage) => {}
+            ).catch(err => alert("Ошибка камеры: " + err));
+        }
+
+        function stopScan() {
+            if(html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('stop-btn').classList.add('hidden');
+                    document.getElementById('start-btn').classList.remove('hidden');
+                });
+            }
+        }
+
+        function parseQR(text) {
+            // Базовая попытка вытащить данные из немецкого QR (TSE)
+            // Ищем дату
+            const dateMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if(dateMatch) document.getElementById('trans-date').value = dateMatch[0];
+            
+            // Пытаемся найти сумму (в немецких чеках она зашифрована, но иногда идет после 'sum=' или ';' )
+            if(text.includes('sum=')) {
+                const s = text.split('sum=')[1].split('&')[0];
+                document.getElementById('sum').value = s.replace(',', '.');
+            }
+            
+            document.getElementById('desc').value = "Чек отсканирован";
+            alert("QR-код распознан!");
+        }
+
+        function updateUI() {
+            const acc1 = document.getElementById('acc1').value;
+            document.getElementById('convert-hint').innerText = (acc1 === 'uahcard') ? `Курс: ${window.currentRate.toFixed(2)}` : "";
+        }
+
+        function renderCats() {
+            const cats = Object.keys(taxonomy.expense);
+            document.getElementById('cats-container').innerHTML = cats.map(c => `<button onclick="window.currentCat='${c}';renderCats()" class="px-4 py-2 rounded-xl text-[10px] font-bold border cat-btn ${window.currentCat===c?'selected-cat':'bg-white text-slate-500'}">${c}</button>`).join('');
+            const subs = taxonomy.expense[window.currentCat] || [];
+            document.getElementById('subcat-select').innerHTML = subs.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+
+        async function save() {
+            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.innerText = "ЗАПИСЬ...";
+            const acc1 = document.getElementById('acc1').value;
+            let amount = parseFloat(document.getElementById('sum').value);
+            let rate = (acc1.includes('uah')) ? window.currentRate : 1;
+            if(acc1 === 'uahcard') amount *= rate;
+
+            const op = {
+                type: 'expense', 
+                amount: amount, 
+                account: acc1, 
+                category: `${window.currentCat}: ${document.getElementById('subcat-select').value}`, 
+                date: document.getElementById('trans-date').value, 
+                desc: document.getElementById('desc').value, 
+                rate: rate
+            };
+            await fetch(GOOGLE_URL, {method: "POST", mode: "no-cors", body: JSON.stringify(op)});
+            location.reload();
+        }
+
+        async function load() {
+            try {
+                const r = await fetch(GOOGLE_URL); const rows = await r.json();
+                let bals = {sparkasse:0, casheur:0, uahcard:0, cashuah:0}, hist = "";
+                rows.slice(1).forEach(row => {
+                    const [type, date, title, desc, amt, cur, cat, acc, rate] = row;
+                    const val = parseFloat(amt); if(bals.hasOwnProperty(acc)) bals[acc] += (type === 'income' ? val : -val);
+                    const rVal = parseFloat(rate) || 50.76;
+                    hist = `<div class="bg-white p-3 rounded-2xl border mb-2 text-left text-[10px] flex justify-between items-center">
+                        <div><b class="text-slate-800 uppercase">${cat}</b><br><span class="text-slate-400">${new Date(date).toLocaleDateString()} • ${acc}</span></div>
+                        <div class="text-right font-black ${type==='income'?'text-green-500':'text-red-500'}">${type==='income'?'+':'-'}${val.toFixed(2)} €</div>
+                    </div>` + hist;
+                });
+                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-2 rounded-xl border text-center"><p class="text-[7px] font-bold text-slate-400 uppercase">${accounts[id].n}</p><p class="font-bold text-[11px]">${v.toFixed(2)}</p></div>`).join('');
+                document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate) + (bals.cashuah / window.currentRate)).toFixed(2) + ' €';
+                document.getElementById('history').innerHTML = hist;
+            } catch(e) {}
+        }
+
+        document.getElementById('trans-date').valueAsDate = new Date();
+        document.getElementById('acc1').innerHTML = Object.entries(accounts).map(([id, a]) => `<option value="${id}">${a.n}</option>`).join('');
+        renderCats(); load(); updateUI();
+    </script>
+</body>
+</html>
