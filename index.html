@@ -11,9 +11,9 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-tab { background: white !important; color: #4f46e5 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card-shadow { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
         .trans-card { background: white; border-radius: 1.5rem; padding: 1.1rem; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
         label { color: #94a3b8; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 8px; margin-bottom: 4px; display: block; text-align: left; }
-        .action-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
@@ -23,7 +23,7 @@
             <div>
                 <h1 class="text-2xl font-black italic uppercase tracking-tighter">Smart<span class="text-indigo-600">Wallet</span></h1>
                 <div class="text-[9px] font-bold uppercase opacity-40 mt-1 flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 
+                    <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 
                     <span class="flex items-center gap-1 cursor-pointer bg-slate-100 px-2 py-0.5 rounded-full text-slate-600" onclick="changeRate()">
                         КУРС: 1€ = <span id="currentRateLabel">50.76</span> ₴
                         <i data-lucide="edit-3" class="w-2.5 h-2.5"></i>
@@ -31,14 +31,14 @@
                 </div>
             </div>
             <button onclick="loadData()" class="p-3 bg-white rounded-2xl border active:scale-90 transition-all shadow-sm">
-                <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600"></i>
+                <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600" id="refresh-icon"></i>
             </button>
         </header>
 
         <div id="accountsWrapper" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-5 px-5 text-left"></div>
 
         <div class="bg-slate-900 card-shadow rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden text-left">
-            <p class="text-[10px] font-bold uppercase opacity-40 mb-1 tracking-widest text-left">Общий капитал (EUR)</p>
+            <p class="text-[10px] font-bold uppercase opacity-40 mb-1 tracking-widest">Общий капитал (EUR)</p>
             <h2 id="grandTotal" class="text-4xl font-black tracking-tighter">0.00 €</h2>
             <i data-lucide="layers" class="absolute -right-10 -bottom-10 opacity-20 w-40 h-40"></i>
         </div>
@@ -59,74 +59,64 @@
                 </div>
 
                 <div id="secondary-row" class="hidden">
-                    <label id="label-secondary">ЦЕЛЬ ДОХОДА / ПРИМЕЧАНИЕ</label>
-                    <input type="text" id="secondaryField" placeholder="Описание..." class="w-full p-4 bg-slate-100 rounded-2xl border-none font-semibold outline-none">
+                    <label id="label-secondary">ПРИМЕЧАНИЕ / ЦЕЛЬ</label>
+                    <input type="text" id="secondaryField" placeholder="..." class="w-full p-4 bg-slate-100 rounded-2xl border-none font-semibold outline-none">
                 </div>
 
                 <div id="check-constructor" class="space-y-3">
-                    <label>СПИСОК ПОКУПОК (В ЕВРО €)</label>
-                    <div id="itemsList" class="space-y-2 text-left"></div>
-                    <button type="button" onclick="addItemRow()" class="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> ДОБАВИТЬ ТОВАР (€)
+                    <label>СПИСОК ПОКУПОК (€)</label>
+                    <div id="itemsList" class="space-y-2"></div>
+                    <button type="button" onclick="addItemRow()" class="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> ДОБАВИТЬ ТОВАР
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-2">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label id="label-amount-main">ИТОГО СУММА</label>
-                        <input type="number" id="totalAmount" step="0.01" placeholder="0.00" oninput="manualEntry()" class="w-full p-4 bg-indigo-50 text-indigo-600 rounded-2xl border-none font-black text-xl outline-none">
-                        <p id="convHint" class="text-[9px] font-bold text-slate-400 mt-1 ml-2 hidden italic"></p>
+                        <label>СУММА</label>
+                        <input type="number" id="totalAmount" step="0.01" class="w-full p-4 bg-indigo-50 text-indigo-600 rounded-2xl border-none font-black text-xl outline-none">
                     </div>
                     <div>
-                        <label id="label-accFrom">СЧЕТ</label>
+                        <label>СЧЕТ</label>
                         <select id="accFrom" onchange="calcTotal()" class="w-full p-4 bg-slate-50 rounded-2xl text-[11px] font-bold appearance-none outline-none">
-                            <option value="Sparkasse">Sparkasse (€)</option>
-                            <option value="Приват">Приват (₴)</option>
-                            <option value="Наличные EUR">Нал (€)</option>
-                            <option value="Наличные UAH">Нал (₴)</option>
+                            <option value="Sparkasse">Sparkasse</option>
+                            <option value="Приват">Приват</option>
+                            <option value="Наличные EUR">Нал EUR</option>
+                            <option value="Наличные UAH">Нал UAH</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="row-transfer" class="hidden">
-                    <label>КУДА (НА СЧЕТ)</label>
+                    <label>КУДА</label>
                     <select id="accTo" class="w-full p-4 bg-slate-100 rounded-2xl text-[11px] font-bold appearance-none outline-none">
                         <option value="Sparkasse">Sparkasse</option>
                         <option value="Приват">Приват</option>
-                        <option value="Наличные EUR">Наличные €</option>
-                        <option value="Наличные UAH">Наличные ₴</option>
+                        <option value="Наличные EUR">Нал EUR</option>
+                        <option value="Наличные UAH">Нал UAH</option>
                     </select>
                 </div>
 
-                <button type="button" id="submitBtn" onclick="sendToGoogle()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg active:scale-95 transition-all mt-4 uppercase">Записать в таблицу</button>
+                <button type="button" onclick="alert('Для записи обновите Google Script!')" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg active:scale-95 transition-all mt-4">ЗАПИСАТЬ</button>
             </form>
         </div>
 
-        <div class="mb-5 flex justify-between items-center px-2">
-            <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest text-[11px]">ПОСЛЕДНИЕ ЗАПИСИ:</h2>
-            <i data-lucide="list" class="w-4 h-4 text-slate-400"></i>
-        </div>
         <div id="history" class="space-y-4 pb-10"></div>
     </div>
 
     <script>
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwjQUE8oIex8bt4fDcyRFxuxsHMPMm7RiLmBmZQ7AVoDfXIhkxS7F0sne1tqoAsoIY/exec";
-        
-        let P_RATE = 50.76; 
-        const GENERAL_RATE = 42.00; 
+        let P_RATE = 50.76;
+        const GEN_RATE = 42.0;
 
         function changeRate() {
-            const newRate = prompt("Введите новый курс (1€ = ?₴):", P_RATE);
-            if (newRate !== null && !isNaN(newRate)) {
-                P_RATE = parseFloat(newRate);
-                document.getElementById('currentRateLabel').innerText = P_RATE;
-                calcTotal();
-            }
+            const val = prompt("Введите курс:", P_RATE);
+            if(val) { P_RATE = parseFloat(val); document.getElementById('currentRateLabel').innerText = P_RATE; calcTotal(); }
         }
 
         function addItemRow() {
             const id = Date.now();
-            const html = `<div id="row-${id}" class="item-row flex gap-2 items-center bg-slate-50 p-2 rounded-2xl border border-slate-100"><input type="text" placeholder="Товар" class="p-2 bg-transparent text-xs font-bold flex-1 outline-none"><input type="number" placeholder="€" class="p-2 bg-white rounded-xl text-[10px] font-black w-14 outline-none price-input" oninput="calcTotal()"><span class="text-[10px] opacity-20 text-center">x</span><input type="number" placeholder="1" class="p-2 bg-white rounded-xl text-[10px] font-black w-8 outline-none qty-input" oninput="calcTotal()"><button type="button" onclick="removeRow(${id})" class="p-2 text-rose-400 action-btn"><i data-lucide="trash-2" class="w-4 h-4 text-center"></i></button></div>`;
+            const html = `<div id="row-${id}" class="item-row flex gap-2 items-center bg-slate-50 p-2 rounded-2xl border border-slate-100"><input type="text" placeholder="Товар" class="p-2 bg-transparent text-xs font-bold flex-1 outline-none"><input type="number" placeholder="€" class="p-2 bg-white rounded-xl text-[10px] font-black w-14 outline-none price-input" oninput="calcTotal()"><span class="text-[10px] opacity-20">x</span><input type="number" value="1" class="p-2 bg-white rounded-xl text-[10px] font-black w-8 outline-none qty-input" oninput="calcTotal()"><button type="button" onclick="removeRow(${id})" class="p-2 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4 text-center"></i></button></div>`;
             document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
             lucide.createIcons();
         }
@@ -134,44 +124,14 @@
         function removeRow(id) { document.getElementById(`row-${id}`).remove(); calcTotal(); }
 
         function calcTotal() {
-            let totalEUR = 0;
-            document.querySelectorAll('.item-row').forEach(row => {
-                const p = parseFloat(row.querySelector('.price-input').value) || 0;
-                const q = parseFloat(row.querySelector('.qty-input').value) || 1;
-                totalEUR += p * q;
+            let eur = 0;
+            document.querySelectorAll('.item-row').forEach(r => {
+                const p = parseFloat(r.querySelector('.price-input').value) || 0;
+                const q = parseFloat(r.querySelector('.qty-input').value) || 1;
+                eur += p * q;
             });
-
             const acc = document.getElementById('accFrom').value;
-            const hint = document.getElementById('convHint');
-            const amountInp = document.getElementById('totalAmount');
-
-            if (acc === "Приват" || acc === "Наличные UAH") {
-                const totalUAH = totalEUR * P_RATE;
-                amountInp.value = totalUAH.toFixed(2);
-                hint.innerText = `≈ ${totalEUR.toFixed(2)}€ по курсу ${P_RATE}`;
-                hint.classList.remove('hidden');
-            } else {
-                amountInp.value = totalEUR.toFixed(2);
-                hint.classList.add('hidden');
-            }
-        }
-
-        // ФУНКЦИЯ РЕДАКТИРОВАНИЯ (ОЖИВЛЕНИЕ КАРАНДАША)
-        function prepareEdit(shop, amt, acc, type) {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            setMode(type.includes('income') ? 'income' : 'expense');
-            document.getElementById('primaryField').value = shop;
-            document.getElementById('totalAmount').value = amt;
-            document.getElementById('accFrom').value = acc;
-            document.getElementById('submitBtn').innerText = "ОБНОВИТЬ ЗАПИСЬ";
-            document.getElementById('submitBtn').classList.replace('bg-indigo-600', 'bg-orange-500');
-        }
-
-        // ФУНКЦИЯ УДАЛЕНИЯ (ОЖИВЛЕНИЕ УРНЫ)
-        function prepareDelete(shop, amt) {
-            if(confirm(`Удалить запись: ${shop} на сумму ${amt}?`)) {
-                alert("Функция удаления будет подключена после обновления Google Script!");
-            }
+            document.getElementById('totalAmount').value = (acc.includes('Приват') || acc.includes('UAH')) ? (eur * P_RATE).toFixed(2) : eur.toFixed(2);
         }
 
         function setMode(m) {
@@ -180,66 +140,62 @@
                 document.getElementById('btn-'+x).classList.toggle('active-tab', x === m);
                 document.getElementById('btn-'+x).classList.toggle('text-slate-500', x !== m);
             });
-            const lPrimary = document.getElementById('label-primary');
-            const secRow = document.getElementById('secondary-row');
-            const checkCon = document.getElementById('check-constructor');
-            const rowTrans = document.getElementById('row-transfer');
-
-            if (m === 'expense') {
-                lPrimary.innerText = "ГДЕ КУПИЛИ?";
-                secRow.classList.add('hidden');
-                checkCon.classList.remove('hidden');
-                rowTrans.classList.add('hidden');
-            } else {
-                lPrimary.innerText = m === 'income' ? "ОТ КОГО (ИСТОЧНИК)?" : "ЦЕЛЬ ПЕРЕВОДА";
-                secRow.classList.remove('hidden');
-                checkCon.classList.add('hidden');
-                rowTrans.classList.toggle('hidden', m !== 'transfer');
-            }
+            document.getElementById('label-primary').innerText = m === 'expense' ? "ГДЕ КУПИЛИ?" : "ИСТОЧНИК / ЦЕЛЬ";
+            document.getElementById('check-constructor').classList.toggle('hidden', m !== 'expense');
+            document.getElementById('secondary-row').classList.toggle('hidden', m === 'expense');
+            document.getElementById('row-transfer').classList.toggle('hidden', m !== 'transfer');
         }
 
         function renderData(rows) {
-            if (!rows || rows.length <= 1) return;
+            if (!rows) return;
             let balances = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
             let html = "";
 
             for (let i = rows.length - 1; i >= 1; i--) {
-                const row = rows[i];
-                const shop = row[1] || "Запись";
-                const amt = parseFloat(row[6]) || 0;
-                const curr = row[7] || "EUR";
-                const cat = row[8] || "Прочее";
-                const acc = row[9] || "Sparkasse";
-                const date = row[0] ? row[0].toString().split('T')[0] : "";
-
+                const r = rows[i];
+                const amt = parseFloat(r[6]) || 0;
+                const acc = r[9] || "Sparkasse";
+                const cat = r[8] || "";
                 const isInc = cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.");
+                
                 let key = acc;
-                if (acc === "Наличные") key = (curr === "EUR" ? "Наличные EUR" : "Наличные UAH");
+                if (acc === "Наличные") key = (r[7] === "EUR" ? "Наличные EUR" : "Наличные UAH");
                 if (balances.hasOwnProperty(key)) balances[key] += isInc ? amt : -amt;
 
-                html += `<div class="trans-card mb-3 text-left">
-                    <div class="w-12 h-12 ${isInc ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} rounded-2xl flex items-center justify-center mr-4 shrink-0">
-                        <i data-lucide="${isInc ? 'trending-up' : 'shopping-cart'}" class="w-6 h-6 text-center"></i>
-                    </div>
-                    <div class="flex-1 min-w-0 pr-2">
-                        <h4 class="text-[13px] font-black text-slate-800 uppercase truncate">${shop}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mt-0.5 truncate">${acc} • ${cat}</p>
-                    </div>
-                    <div class="text-right shrink-0 flex flex-col items-end">
-                        <p class="text-[14px] font-black ${isInc ? 'text-emerald-500' : 'text-rose-500'}">${isInc ? '+' : '-'}${amt.toFixed(2)} ${curr === 'EUR' ? '€' : '₴'}</p>
-                        <div class="flex gap-3 mt-1 justify-end">
-                            <button onclick="prepareEdit('${shop}', ${amt}, '${acc}', '${cat}')" class="text-slate-300 hover:text-indigo-500 action-btn"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="prepareDelete('${shop}', ${amt})" class="text-slate-300 hover:text-rose-500 action-btn"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
-                    </div>
-                </div>`;
+                html += `<div class="trans-card mb-3"><div class="w-10 h-10 ${isInc ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} rounded-xl flex items-center justify-center mr-3"><i data-lucide="${isInc ? 'arrow-up' : 'shopping-cart'}" class="w-5 h-5"></i></div><div class="flex-1 text-left"><h4 class="text-xs font-black uppercase text-slate-800">${r[1] || 'Транзакция'}</h4><p class="text-[9px] font-bold text-slate-400 uppercase">${acc} • ${cat}</p></div><div class="text-right flex flex-col items-end"><p class="text-xs font-black ${isInc ? 'text-emerald-500' : 'text-rose-500'}">${isInc ? '+' : '-'}${amt.toFixed(2)} ${r[7] === 'EUR' ? '€' : '₴'}</p><div class="flex gap-2 mt-1"><button onclick="editRow('${r[1]}', ${amt}, '${acc}')" class="text-slate-200 hover:text-indigo-400"><i data-lucide="pencil" class="w-3 h-3 text-center"></i></button><button onclick="confirm('Удалить?') && alert('В разработке')" class="text-slate-200 hover:text-rose-400"><i data-lucide="trash-2" class="w-3 h-3 text-center"></i></button></div></div></div>`;
             }
 
-            const accList = [
+            const accs = [
                 {n:'Sparkasse', v:balances["Sparkasse"], c:'€', cl:'bg-indigo-600'},
                 {n:'Приват', v:balances["Приват"], c:'₴', cl:'bg-violet-600', sub:true},
                 {n:'Нал EUR', v:balances["Наличные EUR"], c:'€', cl:'bg-emerald-600'},
                 {n:'Нал UAH', v:balances["Наличные UAH"], c:'₴', cl:'bg-slate-800', sub:true}
             ];
 
-            document.getElementById('accountsWrapper').innerHTML = accList.map(a => `<div class="${a.cl} text-white p-6 rounded-[2.5rem] min-w-[160px] flex-1 card
+            document.getElementById('accountsWrapper').innerHTML = accs.map(a => `<div class="${a.cl} text-white p-6 rounded-[2.5rem] min-w-[160px] flex-1 card-shadow text-left"><p class="text-[9px] font-black uppercase opacity-50 mb-1">${a.n}</p><p class="text-xl font-black tracking-tight">${a.v.toFixed(2)} ${a.c}</p>${a.sub ? `<p class="text-[9px] opacity-40 font-bold">≈ ${(a.v/GEN_RATE).toFixed(2)} €</p>` : ''}</div>`).join('');
+            document.getElementById('grandTotal').innerText = (balances["Sparkasse"] + balances["Наличные EUR"] + (balances["Приват"] + balances["Наличные UAH"])/GEN_RATE).toFixed(2) + " €";
+            document.getElementById('history').innerHTML = html;
+            document.getElementById('statusDot').className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+            lucide.createIcons();
+        }
+
+        function editRow(shop, amt, acc) {
+            window.scrollTo({top:0, behavior:'smooth'});
+            document.getElementById('primaryField').value = shop;
+            document.getElementById('totalAmount').value = amt;
+            document.getElementById('accFrom').value = acc;
+        }
+
+        function loadData() {
+            const old = document.getElementById('google-script');
+            if (old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'google-script';
+            s.src = GOOGLE_URL + "?callback=renderData&t=" + Date.now();
+            document.body.appendChild(s);
+        }
+
+        window.onload = () => { loadData(); setMode('expense'); addItemRow(); };
+    </script>
+</body>
+</html>
