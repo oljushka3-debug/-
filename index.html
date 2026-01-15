@@ -10,127 +10,116 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .item-row { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        input, select { -webkit-appearance: none; outline: none; }
+        .active-tab { background: white !important; color: #4f46e5 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card-shadow { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        .trans-card { background: white; border-radius: 1.5rem; padding: 1.1rem; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+        label { color: #94a3b8; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 8px; margin-bottom: 4px; display: block; }
+        .item-row { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="max-w-md mx-auto px-5 pt-6">
-        <header class="flex justify-between items-center mb-6 text-left">
+    <div class="max-w-md mx-auto px-5 pt-4 text-left">
+        <header class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-2xl font-black italic uppercase">Smart<span class="text-indigo-600">Wallet</span></h1>
-                <p class="text-[10px] font-bold opacity-40">ДЕТАЛИЗАЦИЯ ПОКУПОК ВКЛЮЧЕНА</p>
+                <h1 class="text-2xl font-black italic uppercase tracking-tighter">Smart<span class="text-indigo-600">Wallet</span></h1>
+                <div class="text-[9px] font-bold uppercase opacity-40 mt-1 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> ОБЛАКО СИНХРОНИЗИРОВАНО
+                </div>
             </div>
-            <button onclick="location.reload()" class="p-3 bg-white rounded-2xl border shadow-sm"><i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600"></i></button>
+            <button onclick="loadData()" class="p-3 bg-white rounded-2xl border active:scale-90 transition-all shadow-sm">
+                <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600"></i>
+            </button>
         </header>
 
-        <div class="bg-white rounded-[2.5rem] p-6 shadow-xl border border-slate-100 text-left">
-            <div class="mb-6">
-                <label class="text-[10px] font-black text-slate-400 ml-2 uppercase">Где покупаем?</label>
-                <input type="text" id="mainStore" placeholder="Lidl, Aldi, DM..." class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-lg mt-1 focus:ring-2 ring-indigo-100">
-            </div>
+        <div id="accountsWrapper" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-5 px-5"></div>
 
-            <div class="space-y-3 mb-6">
-                <label class="text-[10px] font-black text-slate-400 ml-2 uppercase">Список товаров (чек)</label>
-                <div id="itemsContainer" class="space-y-2">
-                    </div>
+        <div class="bg-slate-900 card-shadow rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden">
+            <p class="text-[10px] font-bold uppercase opacity-40 mb-1 tracking-widest">Общий капитал (EUR)</p>
+            <h2 id="grandTotal" class="text-4xl font-black tracking-tighter">0.00 €</h2>
+            <i data-lucide="layers" class="absolute -right-10 -bottom-10 opacity-20 w-40 h-40"></i>
+        </div>
+
+        <div class="bg-slate-200/50 p-1.5 rounded-3xl flex gap-1 mb-6 border border-slate-200">
+            <button onclick="setMode('expense')" id="btn-expense" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider active-tab">Расход</button>
+            <button onclick="setMode('income')" id="btn-income" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Доход</button>
+            <button onclick="setMode('transfer')" id="btn-transfer" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Перевод</button>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] p-7 shadow-sm border border-slate-100 mb-10">
+            <form id="mainForm" class="space-y-4">
+                <input type="hidden" id="formMode" value="expense">
                 
-                <button onclick="addItemRow()" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase hover:border-indigo-300 hover:text-indigo-400 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Добавить товар в чек
-                </button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 ml-2 uppercase">ИТОГО ПО ЧЕКУ</label>
-                    <div id="totalDisplay" class="text-3xl font-black text-indigo-600 mt-1">0.00 €</div>
+                    <label id="label-merchant">ГДЕ КУПИЛИ?</label>
+                    <input type="text" id="merchant" placeholder="Lidl, Магазин, Источник..." class="w-full p-4 bg-slate-50 rounded-2xl border-none font-semibold outline-none focus:ring-2 ring-indigo-100">
                 </div>
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 ml-2 uppercase">Счет списания</label>
-                    <select id="accFrom" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-xs mt-1">
+
+                <div id="check-constructor" class="space-y-3">
+                    <label>СПИСОК ПОКУПОК (ЧЕК)</label>
+                    <div id="itemsList" class="space-y-2">
+                        </div>
+                    <button type="button" onclick="addItemRow()" class="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Добавить товар
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <div>
+                        <label>ИТОГО СУММА</label>
+                        <input type="number" id="totalAmount" step="0.01" placeholder="0.00" class="w-full p-4 bg-indigo-50 text-indigo-600 rounded-2xl border-none font-black text-xl outline-none">
+                    </div>
+                    <div>
+                        <label id="label-accFrom">ОТКУДА (СЧЕТ)</label>
+                        <select id="accFrom" class="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold appearance-none outline-none">
+                            <option value="Sparkasse">Sparkasse</option>
+                            <option value="Приват">Приват (UAH)</option>
+                            <option value="Наличные EUR">Наличные €</option>
+                            <option value="Наличные UAH">Наличные ₴</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="row-transfer" class="hidden">
+                    <label>КУДА (НА СЧЕТ)</label>
+                    <select id="accTo" class="w-full p-4 bg-slate-100 rounded-2xl text-xs font-bold appearance-none outline-none">
                         <option value="Sparkasse">Sparkasse</option>
                         <option value="Приват">Приват (UAH)</option>
-                        <option value="Наличные EUR">Наличные EUR</option>
+                        <option value="Наличные EUR">Наличные €</option>
+                        <option value="Наличные UAH">Наличные ₴</option>
                     </select>
                 </div>
-            </div>
 
-            <button onclick="submitCheck()" class="w-full mt-6 py-5 bg-slate-900 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-lg active:scale-95 transition-all">
-                Записать весь чек
-            </button>
+                <div id="row-category">
+                    <label>КАТЕГОРИЯ</label>
+                    <select id="category" class="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold appearance-none outline-none">
+                        <option value="🍎 Продукты">🍎 Продукты</option>
+                        <option value="🚕 Транспорт">🚕 Транспорт</option>
+                        <option value="🏠 Дом/Быт">🏠 Дом/Быт</option>
+                        <option value="💊 Здоровье">💊 Здоровье</option>
+                        <option value="⚙️ Прочее">⚙️ Прочее</option>
+                        <option value="💰 Доходы">💰 Доход</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="alert('Для записи нужно обновить Google Script!')" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg active:scale-95 transition-all mt-4">Записать в таблицу</button>
+            </form>
         </div>
+
+        <div class="mb-5 flex justify-between items-center px-2">
+            <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Последние транзакции</h2>
+            <i data-lucide="list" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <div id="historyList" class="space-y-4 pb-10"></div>
     </div>
 
     <script>
-        let items = [];
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwjQUE8oIex8bt4fDcyRFxuxsHMPMm7RiLmBmZQ7AVoDfXIhkxS7F0sne1tqoAsoIY/exec";
+        const RATE = 42;
 
+        // ЛОГИКА КОНСТРУКТОРА ЧЕКА
         function addItemRow() {
             const id = Date.now();
             const html = `
-                <div id="row-${id}" class="item-row flex gap-2 items-center bg-slate-50 p-2 rounded-xl">
-                    <input type="text" placeholder="Товар" class="name flex-1 bg-transparent p-2 font-bold text-sm outline-none" oninput="updateItem(${id})">
-                    <input type="number" placeholder="1.20" class="price w-16 bg-white rounded-lg p-2 text-xs font-bold shadow-sm" oninput="updateItem(${id})" step="0.01">
-                    <span class="text-[10px] font-black opacity-30">X</span>
-                    <input type="number" placeholder="1" class="qty w-10 bg-white rounded-lg p-2 text-xs font-bold shadow-sm" oninput="updateItem(${id})">
-                    <button onclick="removeRow(${id})" class="p-2 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
-            `;
-            document.getElementById('itemsContainer').insertAdjacentHTML('beforeend', html);
-            lucide.createIcons();
-        }
-
-        function updateItem(id) {
-            calculateTotal();
-        }
-
-        function removeRow(id) {
-            document.getElementById(`row-${id}`).remove();
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            let total = 0;
-            const rows = document.querySelectorAll('.item-row');
-            rows.forEach(row => {
-                const p = parseFloat(row.querySelector('.price').value) || 0;
-                const q = parseFloat(row.querySelector('.qty').value) || 0;
-                total += p * q;
-            });
-            document.getElementById('totalDisplay').innerText = total.toFixed(2) + ' €';
-        }
-
-        function submitCheck() {
-            const store = document.getElementById('mainStore').value;
-            if (!store) return alert("Введите название магазина!");
-            
-            let details = [];
-            let grandTotal = 0;
-            
-            document.querySelectorAll('.item-row').forEach(row => {
-                const n = row.querySelector('.name').value;
-                const p = row.querySelector('.price').value;
-                const q = row.querySelector('.qty').value;
-                if(n && p) {
-                    details.push(`${n} (${q}x${p})`);
-                    grandTotal += (parseFloat(p) * parseFloat(q));
-                }
-            });
-
-            const finalData = {
-                store: store,
-                total: grandTotal.toFixed(2),
-                comment: details.join(', '), // Это запишется в примечание
-                account: document.getElementById('accFrom').value
-            };
-
-            console.log("Отправляем в Google:", finalData);
-            alert(`Готово! В таблицу пойдет:\nМагазин: ${store}\nСумма: ${grandTotal.toFixed(2)} €\nСостав: ${finalData.comment}`);
-        }
-
-        // Добавим одну пустую строку сразу
-        window.onload = () => { addItemRow(); lucide.createIcons(); };
-    </script>
-</body>
-</html>
+                <div id="row-${id
