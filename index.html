@@ -3,57 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Pro</title>
+    <title>Smart Wallet Pro v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="bg-slate-50 text-slate-900 pb-20">
     <div class="max-w-md mx-auto p-4 text-center">
         <div class="flex justify-between items-center mb-6 px-1">
-            <div id="status-bar" class="text-[10px] font-bold text-blue-500 uppercase italic tracking-widest">Синхронизация...</div>
-            <div class="text-[10px] font-bold text-slate-300 uppercase italic">Oljushka Wallet v2.0</div>
+            <div id="status-bar" class="text-[10px] font-bold text-blue-600 uppercase italic tracking-widest">Синхронизация...</div>
+            <div class="flex gap-3">
+                <button onclick="location.reload()" class="text-slate-300 hover:text-blue-500 transition-colors"><i class="fas fa-redo-alt text-xs"></i></button>
+                <div class="text-[10px] font-bold text-slate-300 uppercase italic">Oljushka v2.0</div>
+            </div>
         </div>
         
-        <div class="bg-slate-900 rounded-[35px] p-8 text-white shadow-2xl mb-6 relative overflow-hidden">
+        <div class="bg-slate-900 rounded-[35px] p-8 text-white shadow-2xl mb-6 relative overflow-hidden group">
             <div class="relative z-10 text-left">
                 <p class="text-[10px] uppercase font-black opacity-40 mb-1 tracking-[0.2em]">Общий капитал (EUR)</p>
-                <div id="total-val" class="text-5xl font-black italic tracking-tighter">0.00 €</div>
+                <div id="total-val" class="text-5xl font-black italic tracking-tighter transition-all group-active:scale-95">0.00 €</div>
             </div>
-            <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl rotate-12"><i class="fas fa-wallet"></i></div>
+            <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl rotate-12 transition-transform group-hover:scale-110"><i class="fas fa-wallet"></i></div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-8">
-            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left">
+            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left hover:border-blue-200 transition-colors">
                 <p class="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-wider">Sparkasse</p>
-                <p id="bal-Sparkasse" class="font-bold text-sm text-slate-800">0.00 €</p>
+                <p id="bal-Sparkasse" class="font-bold text-sm text-slate-800 tracking-tight">0.00 €</p>
             </div>
-            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left">
+            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left hover:border-blue-200 transition-colors">
                 <p class="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-wider">ПриватБанк</p>
-                <p id="bal-Приват" class="font-bold text-sm text-slate-800">0.00 ₴</p>
+                <p id="bal-Приват" class="font-bold text-sm text-slate-800 tracking-tight">0.00 ₴</p>
             </div>
-            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left">
+            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left hover:border-blue-200 transition-colors">
                 <p class="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-wider">Наличные €</p>
-                <p id="bal-CashEUR" class="font-bold text-sm text-slate-800">0.00 €</p>
+                <p id="bal-CashEUR" class="font-bold text-sm text-slate-800 tracking-tight">0.00 €</p>
             </div>
-            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left">
+            <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm text-left hover:border-blue-200 transition-colors">
                 <p class="text-[8px] font-black text-slate-400 uppercase mb-1 tracking-wider">Наличные ₴</p>
-                <p id="bal-CashUAH" class="font-bold text-sm text-slate-800">0.00 ₴</p>
+                <p id="bal-CashUAH" class="font-bold text-sm text-slate-800 tracking-tight">0.00 ₴</p>
             </div>
         </div>
 
         <button onclick="loadData()" class="group w-full bg-blue-600 text-white py-5 rounded-[24px] font-black shadow-xl shadow-blue-100 uppercase mb-10 active:scale-95 transition-all flex items-center justify-center gap-3">
-            <i class="fas fa-sync-alt transition-transform"></i> Обновить данные
+            <i class="fas fa-sync-alt group-active:rotate-180 transition-transform"></i> Обновить данные
         </button>
 
-        <div class="text-left mb-4 flex justify-between items-center px-2">
+        <div class="text-left mb-5 flex justify-between items-center px-2">
             <span class="uppercase text-[11px] font-black text-slate-400 tracking-[0.15em]">История транзакций</span>
-            <div class="flex gap-4 text-slate-300 text-xs text-right">
-                <i class="fas fa-search"></i>
-                <i class="fas fa-filter"></i>
+            <div class="flex gap-4 text-slate-400">
+                <button title="Поиск" class="hover:text-blue-500 transition-colors"><i class="fas fa-search text-xs"></i></button>
+                <button title="Фильтр" class="hover:text-blue-500 transition-colors"><i class="fas fa-filter text-xs"></i></button>
             </div>
         </div>
         
-        <div id="history" class="space-y-3"></div>
+        <div id="history" class="space-y-4">
+            </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 px-8 py-4 flex justify-between items-center z-50">
+        <button class="text-blue-600"><i class="fas fa-home text-xl"></i></button>
+        <button class="text-slate-300 hover:text-blue-600 transition-colors"><i class="fas fa-chart-pie text-xl"></i></button>
+        <button class="text-slate-300 hover:text-blue-600 transition-colors"><i class="fas fa-plus-circle text-3xl shadow-lg rounded-full"></i></button>
+        <button class="text-slate-300 hover:text-blue-600 transition-colors"><i class="fas fa-exchange-alt text-xl"></i></button>
+        <button class="text-slate-300 hover:text-blue-600 transition-colors"><i class="fas fa-user text-xl"></i></button>
     </div>
 
     <script>
@@ -70,7 +82,8 @@
                 let balances = {"Sparkasse": 0, "Приват": 0, "CashEUR": 0, "CashUAH": 0};
                 let histHTML = "";
 
-                for (let i = 1; i < rows.length; i++) {
+                // Проходим по строкам (с конца в начало, чтобы новые были сверху)
+                for (let i = rows.length - 1; i >= 1; i--) {
                     const row = rows[i];
                     const date = row[0] ? row[0].toString().split('T')[0] : "";
                     const shop = row[1] || "Без названия";
@@ -90,33 +103,44 @@
                         balances[key] += isIncome ? amount : -amount;
                     }
 
+                    // Иконки категорий
                     let icon = "fa-shopping-cart";
-                    if (cat.includes("Продукт")) icon = "fa-utensils";
-                    if (cat.includes("Транспорт")) icon = "fa-car";
+                    if (cat.includes("Продукт") || cat.includes("Lidl") || cat.includes("Rewe") || cat.includes("Aldi")) icon = "fa-utensils";
+                    if (cat.includes("Транспорт") || cat.includes("Auto") || cat.includes("Tank")) icon = "fa-car";
+                    if (cat.includes("Дом") || cat.includes("Miete") || cat.includes("Amazon")) icon = "fa-home";
+                    if (cat.includes("Здоровье") || cat.includes("Apotheke")) icon = "fa-pills";
                     if (isIncome) icon = "fa-arrow-down text-green-500";
 
                     histHTML += `
-                        <div class="bg-white p-5 rounded-[26px] border border-slate-100 shadow-sm mb-3 flex items-center gap-4 relative group active:bg-slate-50 transition-colors">
-                            <div class="w-12 h-12 rounded-2xl ${isIncome ? 'bg-green-50' : 'bg-blue-50'} flex items-center justify-center text-lg">
-                                <i class="fas ${icon} ${isIncome ? 'text-green-500' : 'text-blue-500'}"></i>
+                        <div class="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm flex items-center gap-4 relative group hover:shadow-md transition-all active:scale-[0.98]">
+                            <div class="w-12 h-12 rounded-2xl ${isIncome ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500'} flex items-center justify-center text-lg shadow-inner">
+                                <i class="fas ${icon}"></i>
                             </div>
+                            
                             <div class="flex-1 text-left">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h4 class="font-bold text-[13px] text-slate-800 leading-none mb-1">${shop}</h4>
-                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">${cat} • ${acc}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-black text-[14px] ${isIncome ? 'text-green-600' : 'text-slate-900'}">
-                                            ${isIncome ? '+' : '-'}${amount.toFixed(2)} ${curr}
-                                        </p>
-                                        <p class="text-[8px] text-slate-300 font-bold uppercase">${date}</p>
-                                    </div>
+                                <h4 class="font-bold text-[14px] text-slate-800 leading-tight mb-1">${shop}</h4>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">${cat}</span>
+                                    <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">${acc}</span>
+                                </div>
+                            </div>
+
+                            <div class="text-right flex flex-col items-end gap-1">
+                                <p class="font-black text-[15px] ${isIncome ? 'text-green-600' : 'text-slate-900'}">
+                                    ${isIncome ? '+' : '-'}${amount.toFixed(2)} ${curr}
+                                </p>
+                                <p class="text-[8px] text-slate-300 font-bold uppercase tracking-widest">${date}</p>
+                                
+                                <div class="flex gap-2 mt-1">
+                                    <button onclick="editEntry(${i})" class="text-slate-300 hover:text-blue-500 transition-colors p-1"><i class="fas fa-pencil-alt text-[10px]"></i></button>
+                                    <button onclick="deleteEntry(${i})" class="text-slate-300 hover:text-red-500 transition-colors p-1"><i class="fas fa-trash text-[10px]"></i></button>
                                 </div>
                             </div>
                         </div>`;
                 }
 
+                // Обновление балансов на экране
                 document.getElementById('bal-Sparkasse').innerText = balances["Sparkasse"].toFixed(2) + " €";
                 document.getElementById('bal-Приват').innerText = balances["Приват"].toFixed(2) + " ₴";
                 document.getElementById('bal-CashEUR').innerText = balances["CashEUR"].toFixed(2) + " €";
@@ -124,6 +148,7 @@
                 
                 const totalEUR = balances["Sparkasse"] + balances["CashEUR"] + ((balances["Приват"] + balances["CashUAH"]) / 42);
                 document.getElementById('total-val').innerText = totalEUR.toFixed(2) + " €";
+                
                 document.getElementById('history').innerHTML = histHTML;
                 status.innerText = "ОБНОВЛЕНО";
 
@@ -133,11 +158,14 @@
             }
         }
 
+        // Заглушки для функций управления
+        function editEntry(id) { alert("Редактирование строки " + id + " скоро будет доступно!"); }
+        function deleteEntry(id) { if(confirm("Удалить эту запись?")) alert("Запись " + id + " удалена (виртуально)"); }
+
         function loadData() {
             document.getElementById('status-bar').innerText = "ЗАГРУЗКА...";
             const oldScript = document.getElementById('google-script');
             if (oldScript) oldScript.remove();
-            
             const script = document.createElement('script');
             script.id = 'google-script';
             script.src = GOOGLE_URL + "?callback=renderData&t=" + Date.now();
