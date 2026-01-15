@@ -39,58 +39,70 @@
 ";
 
         async function loadData() {
-            const status = document.getElementById('status-bar');
-            status.innerText = "ЗАГРУЗКА...";
-            
-            try {
-                const response = await fetch(GOOGLE_URL);
-                const rows = await response.json();
+    const status = document.getElementById('status-bar');
+    status.innerText = "ЗАГРУЗКА...";
+    
+    try {
+        // Добавляем случайный параметр, чтобы данные всегда были свежими
+        const response = await fetch(GOOGLE_URL + "?nocache=" + Math.random());
+        const rows = await response.json();
+        
+        console.log("Данные получены:", rows);
+        
+        if (rows && rows.length > 1) {
+            let totalEur = 0;
+            let balS = 0;
+            let balP = 0;
+            let histHTML = "";
+
+            // Начинаем с i=1 (пропускаем заголовки)
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                // Ваша структура: Сумма[6], Валюта[7], Категория[8], Счет[9]
+                const totalAmt = parseFloat(row[6]) || 0;
+                const curr = row[7];
+                const cat = row[8] || "";
+                const acc = row[9] || "";
+
+                // Логика балансов
+                if (acc === "Sparkasse") balS -= totalAmt;
+                if (acc === "Приват") balP -= totalAmt;
                 
-                let totalEur = 0;
-                let balS = 0;
-                let balP = 0;
-                let histHTML = "";
-
-                // Пропускаем шапку (i=1)
-                for (let i = 1; i < rows.length; i++) {
-                    const [date, shop, itemDE, itemRU, count, price, total, curr, cat, acc] = rows[i];
-                    const val = parseFloat(total);
-
-                    // Считаем балансы (упрощенно)
-                    if (acc === "Sparkasse") balS -= val;
-                    if (acc === "Приват") balP -= val;
-                    if (cat.includes("Зарплата") || cat.includes("вх")) {
-                        if (acc === "Sparkasse") balS += val * 2; // корректировка т.к. вычли выше
-                        if (acc === "Приват") balP += val * 2;
-                    }
-
-                    // Собираем карточку истории
-                    histHTML += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
-                            <div class="flex justify-between font-bold text-sm">
-                                <span>${shop}</span>
-                                <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
-                                    ${val.toFixed(2)} ${curr}
-                                </span>
-                            </div>
-                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
-                                <span>${cat}</span>
-                                <span>${new Date(date).toLocaleDateString()}</span>
-                            </div>
-                        </div>`;
+                // Проверка на доход
+                if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
+                    if (acc === "Sparkasse") balS += (totalAmt * 2);
+                    if (acc === "Приват") balP += (totalAmt * 2);
                 }
 
-                document.getElementById('bal-S').innerText = balS.toFixed(2);
-                document.getElementById('bal-P').innerText = balP.toFixed(2);
-                document.getElementById('history').innerHTML = histHTML;
-                document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €"; // Примерный курс
-                status.innerText = "ОБНОВЛЕНО";
-
-            } catch (e) {
-                console.error(e);
-                status.innerText = "ОШИБКА ДОСТУПА";
+                histHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2 text-left">
+                        <div class="flex justify-between font-bold text-sm">
+                            <span>${row[1] || 'Запись'}</span>
+                            <span class="${(cat.includes('Зарплата') || cat.includes('Подарок')) ? 'text-green-600' : 'text-red-600'}">
+                                ${totalAmt.toFixed(2)} ${curr}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
+                            <span>${cat}</span>
+                            <span>${row[0] ? row[0].split('T')[0] : ''}</span>
+                        </div>
+                    </div>`;
             }
+
+            document.getElementById('bal-S').innerText = balS.toFixed(2);
+            document.getElementById('bal-P').innerText = balP.toFixed(2);
+            document.getElementById('history').innerHTML = histHTML;
+            // Считаем общий итог (примерный курс 42)
+            document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
+            status.innerText = "ОБНОВЛЕНО";
+        } else {
+            status.innerText = "ТАБЛИЦА ПУСТА";
         }
+    } catch (e) {
+        console.error("Ошибка:", e);
+        status.innerText = "ОШИБКА ОБРАБОТКИ";
+    }
+}
 
         // Запуск при загрузке
         loadData();
