@@ -11,7 +11,9 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding-bottom: 50px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-tab { background: white !important; color: #4f46e5 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .acc-card { min-width: 130px; flex: 1; padding: 12px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Стили для сетки кошельков */
+        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .acc-card { padding: 15px; border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left; }
         .trans-card { background: white; border-radius: 18px; padding: 12px; display: flex; align-items: center; border: 1px solid #f1f5f9; margin-bottom: 8px; }
         label { color: #94a3b8; font-weight: 800; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; display: block; text-align: left; margin-left: 10px; }
     </style>
@@ -33,9 +35,9 @@
             </button>
         </header>
 
-        <div id="accountsWrapper" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4"></div>
+        <div id="accountsWrapper" class="acc-grid"></div>
 
-        <div class="bg-slate-900 rounded-[24px] p-6 text-white mb-6 relative overflow-hidden text-left shadow-lg">
+        <div class="bg-slate-900 rounded-[28px] p-6 text-white mb-6 relative overflow-hidden text-left shadow-lg">
             <p class="text-[9px] font-bold uppercase opacity-40 mb-1 tracking-widest">Капитал (EUR)</p>
             <h2 id="grandTotal" class="text-3xl font-black tracking-tighter">0.00 €</h2>
         </div>
@@ -52,7 +54,7 @@
                 
                 <div>
                     <label id="label-primary">ГДЕ КУПИЛИ?</label>
-                    <input type="text" id="primaryField" class="w-full p-3 bg-slate-50 rounded-xl border-none font-semibold text-sm outline-none">
+                    <input type="text" id="primaryField" class="w-full p-3 bg-slate-50 rounded-xl border-none font-semibold text-sm outline-none focus:ring-1 ring-indigo-200">
                 </div>
 
                 <div id="secondary-row" class="hidden">
@@ -94,7 +96,7 @@
                     </select>
                 </div>
 
-                <button type="button" onclick="alert('Готово к записи!')" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md mt-2">Записать</button>
+                <button type="button" onclick="alert('Готово!')" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md mt-2">Записать</button>
             </form>
         </div>
 
@@ -113,7 +115,7 @@
 
         function addItemRow() {
             const id = Date.now();
-            const html = `<div id="row-${id}" class="flex gap-2 items-center bg-slate-50 p-1.5 rounded-xl"><input type="text" placeholder="Товар" class="p-1.5 bg-transparent text-[10px] font-bold flex-1 outline-none"><input type="number" placeholder="€" class="p-1.5 bg-white rounded-lg text-[10px] font-black w-12 outline-none price-input" oninput="calcTotal()"><span class="text-[10px] opacity-20">x</span><input type="number" value="1" class="p-1.5 bg-white rounded-lg text-[10px] font-black w-8 outline-none qty-input" oninput="calcTotal()"><button type="button" onclick="document.getElementById('row-${id}').remove(); calcTotal();" class="p-1 text-rose-400"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>`;
+            const html = `<div id="row-${id}" class="flex gap-2 items-center bg-slate-50 p-1.5 rounded-xl"><input type="text" placeholder="Товар" class="p-1.5 bg-transparent text-[10px] font-bold flex-1 outline-none"><input type="number" placeholder="€" class="p-1.5 bg-white rounded-lg text-[10px] font-black w-12 outline-none price-input" oninput="calcTotal()"><span class="text-[10px] opacity-20">x</span><input type="number" value="1" class="p-1.5 bg-white rounded-lg text-[10px] font-black w-8 outline-none qty-input" oninput="calcTotal()"><button type="button" onclick="document.getElementById('row-${id}').remove(); calcTotal();" class="p-1 text-rose-400"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-center"></i></button></div>`;
             document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
             lucide.createIcons();
         }
@@ -159,7 +161,7 @@
                 {n:'Нал EUR', v:bal["Наличные EUR"], c:'€', cl:'bg-emerald-600'},
                 {n:'Нал UAH', v:bal["Наличные UAH"], c:'₴', cl:'bg-slate-800', s:true}
             ];
-            document.getElementById('accountsWrapper').innerHTML = accs.map(a => `<div class="${a.cl} acc-card text-white text-left"><p class="text-[8px] font-black uppercase opacity-60 mb-0.5">${a.n}</p><p class="text-base font-black tracking-tight">${a.v.toFixed(2)}${a.c}</p>${a.s?`<p class="text-[8px] opacity-40 font-bold">≈ ${(a.v/GEN_RATE).toFixed(2)}€</p>`:''}</div>`).join('');
+            document.getElementById('accountsWrapper').innerHTML = accs.map(a => `<div class="${a.cl} acc-card text-white"><p class="text-[8px] font-black uppercase opacity-60 mb-0.5">${a.n}</p><p class="text-base font-black tracking-tight">${a.v.toFixed(2)}${a.c}</p>${a.s?`<p class="text-[8px] opacity-40 font-bold">≈ ${(a.v/GEN_RATE).toFixed(2)}€</p>`:''}</div>`).join('');
             document.getElementById('grandTotal').innerText = (bal.Sparkasse + bal["Наличные EUR"] + (bal.Приват + bal["Наличные UAH"])/GEN_RATE).toFixed(2) + " €";
             document.getElementById('history').innerHTML = hHTML;
             lucide.createIcons();
