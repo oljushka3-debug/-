@@ -43,48 +43,64 @@
             status.innerText = "ЗАГРУЗКА...";
             
             try {
-                // Прямой запрос к Google Apps Script
-                const response = await fetch(GOOGLE_URL);
-                const rows = await response.json();
+        // Мы добавляем параметры, чтобы обойти блокировку Safari/CORS
+        const response = await fetch(GOOGLE_URL, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        const rows = await response.json();
+        
+        if (rows && rows.length > 1) {
+            let balS = 0;
+            let balP = 0;
+            let histHTML = "";
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const shop = row[1] || "Без названия";
+                const totalAmt = parseFloat(row[6]) || 0;
+                const curr = row[7] || "EUR";
+                const cat = row[8] || "Прочее";
+                const acc = row[9] || "";
+
+                if (acc === "Sparkasse") balS -= totalAmt;
+                if (acc === "Приват") balP -= totalAmt;
                 
-                if (rows && rows.length > 1) {
-                    let balS = 0;
-                    let balP = 0;
-                    let histHTML = "";
+                if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
+                    if (acc === "Sparkasse") balS += (totalAmt * 2);
+                    if (acc === "Приват") balP += (totalAmt * 2);
+                }
 
-                    // Обработка строк таблицы
-                    for (let i = 1; i < rows.length; i++) {
-                        const row = rows[i];
-                        const shop = row[1] || "Без названия";
-                        const totalAmt = parseFloat(row[6]) || 0;
-                        const curr = row[7] || "EUR";
-                        const cat = row[8] || "Прочее";
-                        const acc = row[9] || "";
+                histHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
+                        <div class="flex justify-between font-bold text-sm">
+                            <span>${shop}</span>
+                            <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
+                                ${totalAmt.toFixed(2)} ${curr}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
+                            <span>${cat}</span>
+                            <span>${row[0] ? row[0].toString().split('T')[0] : ""}</span>
+                        </div>
+                    </div>`;
+            }
 
-                        // Подсчет баланса
-                        if (acc === "Sparkasse") balS -= totalAmt;
-                        if (acc === "Приват") balP -= totalAmt;
-                        
-                        // Если доход
-                        if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
-                            if (acc === "Sparkasse") balS += (totalAmt * 2);
-                            if (acc === "Приват") balP += (totalAmt * 2);
-                        }
-
-                        histHTML += `
-                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
-                                <div class="flex justify-between font-bold text-sm">
-                                    <span>${shop}</span>
-                                    <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
-                                        ${totalAmt.toFixed(2)} ${curr}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
-                                    <span>${cat}</span>
-                                    <span>${row[0] ? row[0].toString().split('T')[0] : ""}</span>
-                                </div>
-                            </div>`;
-                    }
+            document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
+            document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
+            document.getElementById('history').innerHTML = histHTML;
+            document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
+            status.innerText = "ОБНОВЛЕНО";
+        }
+    } catch (e) {
+        // Если обычный способ не сработал, пробуем запасной вариант
+        console.error(e);
+        status.innerText = "ПРОБУЮ ОБХОДНОЙ ПУТЬ...";
+        const script = document.createElement('script');
+        script.src = GOOGLE_URL + "?callback=renderData";
+        document.body.appendChild(script);
+    }
 
                     document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
                     document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
