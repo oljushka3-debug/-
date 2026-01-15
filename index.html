@@ -35,13 +35,11 @@
     </div>
 
     <script>
+        // Твоя новая рабочая ссылка
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwjQUE8oIex8bt4fDcyRFxuxsHMPMm7RiLmBmZQ7AVoDfXIhkxS7F0sne1tqoAsoIY/exec";
 
-        // Функция, которую вызывает Google при ответе
         function renderData(rows) {
-            console.log("Данные получены:", rows);
             const status = document.getElementById('status-bar');
-            
             if (!rows || rows.length <= 1) {
                 status.innerText = "ТАБЛИЦА ПУСТА";
                 return;
@@ -70,7 +68,7 @@
                         <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
                             <div class="flex justify-between font-bold text-sm">
                                 <span>${shop}</span>
-                                <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
+                                <span class="${(cat.includes('Зарплата') || cat.includes('Подарок')) ? 'text-green-600' : 'text-red-600'}">
                                     ${totalAmt.toFixed(2)} ${curr}
                                 </span>
                             </div>
@@ -99,7 +97,6 @@
 
             const script = document.createElement('script');
             script.id = 'google-script';
-            // Используем JSONP для обхода CORS
             script.src = GOOGLE_URL + "?callback=renderData&t=" + Date.now();
             document.body.appendChild(script);
         }
