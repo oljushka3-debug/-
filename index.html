@@ -35,80 +35,71 @@
     </div>
 
     <script>
-        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwjQUE8oIex8bt4fDcyRFxuxsHMPMm7RiLmBmZQ7AVoDfXIhkxS7F0sne1tqoAsoIY/exec
-";
+        // ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШУ РАБОЧУЮ ССЫЛКУ ИЗ ПРОВЕРКИ №1
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
 
-       async function loadData() {
-    const status = document.getElementById('status-bar');
-    status.innerText = "ЗАГРУЗКА...";
-    
-    try {
-        // Добавляем случайное число, чтобы данные всегда были свежими
-        const response = await fetch(GOOGLE_URL + "?nocache=" + Math.random());
-        const rows = await response.json();
-        
-        console.log("Данные получены:", rows);
-        
-        if (rows && rows.length > 1) {
-            let balS = 0;
-            let balP = 0;
-            let histHTML = "";
-
-            // Начинаем с i=1 (пропускаем строку заголовков)
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                
-                // Извлекаем данные по номерам колонок из вашей таблицы
-                const totalAmt = parseFloat(row[6]) || 0; // Сумма
-                const curr = row[7];                      // Валюта
-                const cat = row[8] || "";                // Категория
-                const acc = row[9] || "";                // Счет
-
-                // Логика подсчета остатков на счетах
-                if (acc === "Sparkasse") balS -= totalAmt;
-                if (acc === "Приват") balP -= totalAmt;
-                
-                // Проверка: если это доход, прибавляем обратно (т.к. вычли выше)
-                if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
-                    if (acc === "Sparkasse") balS += (totalAmt * 2);
-                    if (acc === "Приват") balP += (totalAmt * 2);
-                }
-
-                // Создаем карточку истории для каждой записи
-                histHTML += `
-                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2 text-left">
-                        <div class="flex justify-between font-bold text-sm">
-                            <span>${row[1] || 'Запись'}</span>
-                            <span class="${(cat.includes('Зарплата') || cat.includes('Подарок')) ? 'text-green-600' : 'text-red-600'}">
-                                ${totalAmt.toFixed(2)} ${curr}
-                            </span>
-                        </div>
-                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
-                            <span>${cat}</span>
-                            <span>${row[0] ? row[0].split('T')[0] : ''}</span>
-                        </div>
-                    </div>`;
-            }
-
-            // Обновляем цифры на экране
-            document.getElementById('bal-S').innerText = balS.toFixed(2);
-            document.getElementById('bal-P').innerText = balP.toFixed(2);
-            document.getElementById('history').innerHTML = histHTML;
+        async function loadData() {
+            const status = document.getElementById('status-bar');
+            status.innerText = "ЗАГРУЗКА...";
             
-            // Считаем общий итог в EUR (курс ~42 UAH за 1 EUR)
-            document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
-            status.innerText = "ОБНОВЛЕНО";
-        } else {
-            status.innerText = "ТАБЛИЦА ПУСТА";
-        }
-    } catch (e) {
-        console.error("Ошибка:", e);
-        status.innerText = "ОШИБКА ОБРАБОТКИ";
-    }
-}
+            try {
+                // Прямой запрос к Google Apps Script
+                const response = await fetch(GOOGLE_URL);
+                const rows = await response.json();
+                
+                if (rows && rows.length > 1) {
+                    let balS = 0;
+                    let balP = 0;
+                    let histHTML = "";
 
-        // Запуск при загрузке
-        loadData();
+                    // Обработка строк таблицы
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const shop = row[1] || "Без названия";
+                        const totalAmt = parseFloat(row[6]) || 0;
+                        const curr = row[7] || "EUR";
+                        const cat = row[8] || "Прочее";
+                        const acc = row[9] || "";
+
+                        // Подсчет баланса
+                        if (acc === "Sparkasse") balS -= totalAmt;
+                        if (acc === "Приват") balP -= totalAmt;
+                        
+                        // Если доход
+                        if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
+                            if (acc === "Sparkasse") balS += (totalAmt * 2);
+                            if (acc === "Приват") balP += (totalAmt * 2);
+                        }
+
+                        histHTML += `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
+                                <div class="flex justify-between font-bold text-sm">
+                                    <span>${shop}</span>
+                                    <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
+                                        ${totalAmt.toFixed(2)} ${curr}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
+                                    <span>${cat}</span>
+                                    <span>${row[0] ? row[0].toString().split('T')[0] : ""}</span>
+                                </div>
+                            </div>`;
+                    }
+
+                    document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
+                    document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
+                    document.getElementById('history').innerHTML = histHTML;
+                    document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
+                    status.innerText = "ОБНОВЛЕНО";
+                }
+            } catch (e) {
+                console.error(e);
+                status.innerText = "ОШИБКА ДОСТУПА ИЛИ КОРС";
+            }
+        }
+
+        // Автозагрузка
+        window.onload = loadData;
     </script>
 </body>
 </html>
