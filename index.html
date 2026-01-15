@@ -37,8 +37,9 @@
     <script>
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
 
-        // ГЛАВНАЯ ФУНКЦИЯ ОТРИСОВКИ (JSONP CALLBACK)
+        // Функция, которую вызывает Google при ответе
         function renderData(rows) {
+            console.log("Данные получены:", rows);
             const status = document.getElementById('status-bar');
             
             if (!rows || rows.length <= 1) {
@@ -47,24 +48,19 @@
             }
 
             try {
-                let balS = 0;
-                let balP = 0;
-                let histHTML = "";
+                let balS = 0, balP = 0, histHTML = "";
 
-                // Начинаем с i=1 (пропускаем шапку)
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i];
-                    const shop = row[1] || "Без названия";
+                    const shop = row[1] || "Запись";
                     const totalAmt = parseFloat(row[6]) || 0;
                     const curr = row[7] || "EUR";
                     const cat = row[8] || "Прочее";
                     const acc = row[9] || "";
 
-                    // Считаем балансы
                     if (acc === "Sparkasse") balS -= totalAmt;
                     if (acc === "Приват") balP -= totalAmt;
                     
-                    // Если доход (Зарплата, Подарок, вх.)
                     if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
                         if (acc === "Sparkasse") balS += (totalAmt * 2);
                         if (acc === "Приват") balP += (totalAmt * 2);
@@ -74,7 +70,7 @@
                         <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
                             <div class="flex justify-between font-bold text-sm">
                                 <span>${shop}</span>
-                                <span class="${(cat.includes('Зарплата') || cat.includes('Подарок')) ? 'text-green-600' : 'text-red-600'}">
+                                <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
                                     ${totalAmt.toFixed(2)} ${curr}
                                 </span>
                             </div>
@@ -92,33 +88,22 @@
                 status.innerText = "ОБНОВЛЕНО";
 
             } catch (err) {
-                console.error("Ошибка отрисовки:", err);
-                status.innerText = "ОШИБКА ДАННЫХ";
+                status.innerText = "ОШИБКА ОБРАБОТКИ";
             }
         }
 
-        // ФУНКЦИЯ ЗАГРУЗКИ (ОБХОД CORS ЧЕРЕЗ SCRIPT TAG)
         function loadData() {
-            const status = document.getElementById('status-bar');
-            status.innerText = "ЗАГРУЗКА...";
-            
-            // Удаляем старый скрипт если он был
-            const oldScript = document.getElementById('google-data-script');
+            document.getElementById('status-bar').innerText = "ЗАГРУЗКА...";
+            const oldScript = document.getElementById('google-script');
             if (oldScript) oldScript.remove();
 
             const script = document.createElement('script');
-            script.id = 'google-data-script';
-            // Добавляем параметр callback=renderData
-            script.src = GOOGLE_URL + "?callback=renderData&nocache=" + Math.random();
-            
-            script.onerror = function() {
-                status.innerText = "ОШИБКА СЕТИ";
-            };
-
+            script.id = 'google-script';
+            // Используем JSONP для обхода CORS
+            script.src = GOOGLE_URL + "?callback=renderData&t=" + Date.now();
             document.body.appendChild(script);
         }
 
-        // Автозагрузка при старте
         window.onload = loadData;
     </script>
 </body>
