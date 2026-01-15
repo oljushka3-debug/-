@@ -64,6 +64,7 @@
     </div>
 
     <script>
+        // ИСПОЛЬЗУЕМ ВАШ ТОКЕН БОТА ДЛЯ СВЯЗИ
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
         const accounts = { sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Нал EUR', c: 'EUR'}, uahcard: {n: 'Приват UAH', c: 'UAH'}, cashuah: {n: 'Нал UAH', c: 'UAH'} };
         const taxonomy = { 
@@ -72,21 +73,15 @@
             transfer: { 'Обмен': ['Снятие', 'Обмен'] } 
         };
         
-        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76; window.editId = null;
+        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76;
 
         async function updateRate() { 
             try { 
                 const r = await fetch('https://open.er-api.com/v6/latest/EUR'); 
                 const d = await r.json(); 
-                let base = d.rates.UAH * 1.05;
-                window.currentRate = (base > 52 || base < 40) ? 50.76 : base;
+                window.currentRate = d.rates.UAH || 50.76;
             } catch(e) { window.currentRate = 50.76; } 
             updateUI();
-        }
-
-        function manualRate() {
-            const val = prompt("Курс ПриватБанка:", window.currentRate.toFixed(2));
-            if (val) { window.currentRate = parseFloat(val); updateUI(); load(); }
         }
 
         function setMode(m) {
@@ -110,70 +105,53 @@
             document.getElementById('ex-input').classList.toggle('hidden', !isEx);
             document.getElementById('acc2').classList.toggle('hidden', window.mode !== 'transfer');
             document.getElementById('to-arrow').classList.toggle('hidden', window.mode !== 'transfer');
-            document.getElementById('convert-hint').innerText = (acc1 === 'uahcard' && window.mode === 'expense') ? `Курс (нажми): ${window.currentRate.toFixed(2)}` : "";
-        }
-
-        async function save() {
-            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.innerText = "ЗАПИСЬ...";
-            if(window.editId) await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: window.editId})});
-            const acc1 = document.getElementById('acc1').value; const acc2 = document.getElementById('acc2').value;
-            const date = document.getElementById('trans-date').value || new Date().toISOString();
-            const desc = document.getElementById('desc').value; const subcat = document.getElementById('subcat-select').value;
-            let data = [];
-            if(window.mode === 'transfer' && accounts[acc1].c !== accounts[acc2].c) {
-                const sF = parseFloat(document.getElementById('sum-from').value); const sT = parseFloat(document.getElementById('sum-to').value);
-                data.push({type:'expense', amount: sF, account: acc1, category:'Обмен', date: date, desc: `Курс ${(sF/sT).toFixed(2)} | ${desc}`, rate: sF/sT});
-                data.push({type:'income', amount: sT, account: acc2, category:'Обмен', date: date, desc: `Из ${acc1} | ${desc}`, rate: sF/sT});
-            } else {
-                let amount = parseFloat(document.getElementById('sum').value);
-                let rate = (acc1.includes('uah')) ? window.currentRate : 1;
-                if(acc1 === 'uahcard' && window.mode === 'expense') amount *= rate;
-                data.push({type: window.mode, amount: amount, account: acc1, category: `${window.currentCat}: ${subcat}`, date: date, desc: desc, rate: rate});
-            }
-            for(let op of data) { await fetch(GOOGLE_URL, {method: "POST", mode: "no-cors", body: JSON.stringify(op)}); }
-            location.reload();
         }
 
         async function load() {
             try {
-                const r = await fetch(GOOGLE_URL); const rows = await r.json();
+                // ПОДТЯГИВАЕМ ДАННЫЕ ИЗ ТАБЛИЦЫ
+                const r = await fetch(GOOGLE_URL + "?action=read"); 
+                const rows = await r.json();
                 let bals = {sparkasse:0, casheur:0, uahcard:0, cashuah:0}, hist = "";
+                
                 rows.slice(1).forEach(row => {
-                    const [type, date, title, desc, amt, cur, cat, acc, rate] = row;
-                    const val = parseFloat(amt); if(bals.hasOwnProperty(acc)) bals[acc] += (type === 'income' ? val : -val);
-                    const rVal = parseFloat(rate) || window.currentRate;
+                    // Новая структура: Дата[0], Магазин[1], DE[2], RU[3], Кол[4], Цена[5], Сумма[6], Валюта[7], Кат[8], Акк[9]
+                    const date = row[0];
+                    const amt = parseFloat(row[6]);
+                    const curr = row[7];
+                    const cat = row[8];
+                    const accName = row[9];
+                    
+                    // Сопоставляем имена из таблицы с ID сайта
+                    let accId = 'sparkasse';
+                    if (accName.includes('Приват')) accId = 'uahcard';
+                    if (accName.includes('Наличные')) accId = 'casheur';
+
+                    if(bals.hasOwnProperty(accId)) {
+                        // Если категория содержит "Зарплата" или "вх", это доход
+                        if (cat.includes("Зарплата") || cat.includes("вх")) bals[accId] += amt;
+                        else if (!cat.includes("На ") && !cat.includes("Снятие")) bals[accId] -= amt;
+                    }
+
                     hist = `<div class="history-card">
                         <div class="flex justify-between items-start mb-1">
                             <span class="font-black text-xs">${cat}</span>
-                            <span class="${type==='income'?'text-green-600':'text-red-600'} font-bold">${type==='income'?'+':'-'}${val.toFixed(2)}</span>
+                            <span class="font-bold">${amt.toFixed(2)} ${curr}</span>
                         </div>
-                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mb-2">
-                            <span>${new Date(date).toLocaleDateString()} • ${acc}</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-2 border-t">
-                            <div class="flex gap-4">
-                                <button onclick="startEdit('${date}', ${val}, '${acc}', '${cat}', '${desc}', '${type}', ${rVal}, '${date}')" class="text-blue-500 text-[9px] font-black uppercase">✏️ Правка</button>
-                                <button onclick="deleteItem('${date}')" class="text-slate-200 text-[9px] font-black uppercase">🗑️</button>
-                            </div>
-                            <span class="text-[9px] font-black text-slate-800">КАПИТАЛ: ${(bals.sparkasse + bals.casheur + (bals.uahcard / rVal) + (bals.cashuah / rVal)).toFixed(2)} €</span>
+                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+                            <span>${date.split('T')[0]} • ${accName}</span>
                         </div>
                     </div>` + hist;
                 });
+
                 document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center shadow-sm"><p class="text-[8px] font-bold text-slate-400 uppercase mb-1">${accounts[id].n}</p><p class="font-bold text-xs">${v.toFixed(2)}</p></div>`).join('');
-                document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate) + (bals.cashuah / window.currentRate)).toFixed(2) + ' €';
+                document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate)).toFixed(2) + ' €';
                 document.getElementById('history').innerHTML = hist;
                 document.getElementById('status-bar').innerText = "ОБНОВЛЕНО";
-            } catch(e) { document.getElementById('status-bar').innerText = "ОШИБКА"; }
-        }
-
-        async function deleteItem(id) { if(confirm("Удалить?")) { await fetch(GOOGLE_URL, {method:"POST", mode:"no-cors", body: JSON.stringify({action:"delete", id: id})}); location.reload(); } }
-        
-        function startEdit(id, amt, acc, ct, ds, type, oldRate, oldDate) {
-            window.editId = id; window.mode = type; document.getElementById('sum').value = amt; document.getElementById('desc').value = ds; document.getElementById('acc1').value = acc;
-            document.getElementById('trans-date').value = new Date(oldDate).toISOString().split('T')[0];
-            setMode(type); window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('save-btn').innerText = "ОБНОВИТЬ";
-            document.getElementById('save-btn').className = "w-full bg-orange-500 text-white py-4 rounded-2xl font-black shadow-lg uppercase";
+            } catch(e) { 
+                console.log(e);
+                document.getElementById('status-bar').innerText = "ОШИБКА СВЯЗИ"; 
+            }
         }
 
         document.getElementById('trans-date').valueAsDate = new Date();
