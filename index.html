@@ -3,161 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Wallet Ultimate</title>
+    <title>Smart Wallet Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .cat-btn { transition: 0.2s; border: 1px solid #f1f5f9; white-space: nowrap; }
-        .selected-cat { background-color: #2563eb !important; color: white !important; border-color: #2563eb !important; }
-        ::-webkit-scrollbar { display: none; }
-        .history-card { border-radius: 24px; padding: 16px; background: white; border: 1px solid #f1f5f9; margin-bottom: 8px; }
-    </style>
 </head>
 <body class="bg-slate-50 text-slate-900 pb-10">
     <div class="max-w-md mx-auto p-4 text-center">
         <div id="status-bar" class="text-[10px] font-bold text-blue-500 mb-4 uppercase italic">Синхронизация...</div>
         
         <div class="bg-slate-900 rounded-[32px] p-6 text-white shadow-xl mb-6">
-            <p class="text-[10px] uppercase font-bold opacity-50 mb-1">Всего (EUR)</p>
+            <p class="text-[10px] uppercase font-bold opacity-50 mb-1">Общий капитал (EUR)</p>
             <div id="total-val" class="text-4xl font-black italic tracking-tighter">0.00 €</div>
         </div>
 
-        <div id="balance-grid" class="grid grid-cols-2 gap-2 mb-6"></div>
-
-        <div class="bg-white p-5 rounded-[32px] shadow-xl border border-slate-100 mb-8">
-            <div class="mb-4">
-                <input id="trans-date" type="date" class="p-2 bg-slate-50 rounded-xl font-bold text-xs text-slate-500 w-full text-center outline-none">
+        <div id="balance-grid" class="grid grid-cols-2 gap-2 mb-6">
+            <div class="bg-white p-3 rounded-2xl border text-center shadow-sm">
+                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Sparkasse</p>
+                <p id="bal-S" class="font-bold text-xs">0.00</p>
             </div>
-
-            <div class="flex gap-1 mb-4 bg-slate-100 p-1 rounded-2xl text-[10px] font-bold uppercase">
-                <button onclick="setMode('expense')" id="m-expense" class="flex-1 py-2 rounded-xl">Расход</button>
-                <button onclick="setMode('income')" id="m-income" class="flex-1 py-2 rounded-xl">Доход</button>
-                <button onclick="setMode('transfer')" id="m-transfer" class="flex-1 py-2 rounded-xl">Обмен</button>
+            <div class="bg-white p-3 rounded-2xl border text-center shadow-sm">
+                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Приват</p>
+                <p id="bal-P" class="font-bold text-xs">0.00</p>
             </div>
-
-            <div id="std-input">
-                <input id="sum" type="number" inputmode="decimal" placeholder="0.00" class="w-full text-5xl font-black text-center outline-none text-blue-600 mb-1 bg-transparent">
-                <p onclick="manualRate()" id="convert-hint" class="text-[10px] font-bold text-green-600 uppercase h-4 cursor-pointer underline decoration-dotted"></p>
-            </div>
-
-            <div id="ex-input" class="hidden space-y-3 mb-4 text-left">
-                <div class="bg-red-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-red-400 uppercase">Списано</p><input id="sum-from" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-red-600 border-none outline-none"></div>
-                <div class="bg-green-50 p-3 rounded-xl"><p class="text-[8px] font-bold text-green-400 uppercase">Получено</p><input id="sum-to" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-transparent text-xl font-black text-green-600 border-none outline-none"></div>
-            </div>
-            
-            <div class="space-y-2 mb-4">
-                <select id="acc1" onchange="updateUI()" class="w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
-                <div id="to-arrow" class="hidden text-blue-500 font-bold text-xs py-1 italic">⬇️ перевести на ⬇️</div>
-                <select id="acc2" onchange="updateUI()" class="hidden w-full p-3 bg-slate-50 rounded-xl font-bold border-none text-sm appearance-none text-center outline-none"></select>
-            </div>
-
-            <div id="cat-section">
-                <div id="cats-container" class="flex overflow-x-auto gap-2 mb-4 pb-2 px-1"></div>
-                <select id="subcat-select" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl font-bold text-center border-none text-sm appearance-none mb-4"></select>
-            </div>
-
-            <input id="desc" type="text" placeholder="Описание" class="w-full p-3 mb-6 bg-slate-50 rounded-xl text-sm font-semibold border-none text-center outline-none">
-            
-            <button onclick="save()" id="save-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest active:scale-95 transition-transform">Записать</button>
         </div>
 
+        <button onclick="loadData()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase mb-8 active:scale-95 transition-transform">
+            Обновить данные
+        </button>
+
+        <div class="text-left mb-4 uppercase text-[10px] font-black text-slate-400">Последние записи:</div>
         <div id="history" class="space-y-3 text-left"></div>
     </div>
 
     <script>
-        // ИСПОЛЬЗУЕМ ВАШ ТОКЕН БОТА ДЛЯ СВЯЗИ
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
-        const accounts = { sparkasse: {n: 'Sparkasse', c: 'EUR'}, casheur: {n: 'Нал EUR', c: 'EUR'}, uahcard: {n: 'Приват UAH', c: 'UAH'}, cashuah: {n: 'Нал UAH', c: 'UAH'} };
-        const taxonomy = { 
-            expense: { 'Продукты': ['Lidl', 'Rewe', 'Aldi', 'Netto', 'Edeka', 'Kaufland', 'DM', 'Другое'], 'Транспорт': ['Бензин', 'Парковка', 'Билеты', 'Такси'], 'Еда': ['Ресторан', 'Фастфуд', 'Кофе'], 'Дом': ['Аренда', 'Связь', 'Аптека', 'Шопинг'] }, 
-            income: { 'Доходы': ['Зарплата', 'Помощь', 'Остаток'] }, 
-            transfer: { 'Обмен': ['Снятие', 'Обмен'] } 
-        };
-        
-        window.mode = 'expense'; window.currentCat = 'Продукты'; window.currentRate = 50.76;
 
-        async function updateRate() { 
-            try { 
-                const r = await fetch('https://open.er-api.com/v6/latest/EUR'); 
-                const d = await r.json(); 
-                window.currentRate = d.rates.UAH || 50.76;
-            } catch(e) { window.currentRate = 50.76; } 
-            updateUI();
-        }
-
-        function setMode(m) {
-            window.mode = m; window.currentCat = Object.keys(taxonomy[m])[0];
-            ['expense', 'income', 'transfer'].forEach(k => document.getElementById('m-'+k).className = m === k ? 'flex-1 py-2 rounded-xl bg-white shadow-sm text-blue-600' : 'flex-1 py-2 rounded-xl text-slate-400');
-            document.getElementById('cat-section').classList.toggle('hidden', m === 'transfer');
-            updateUI(); renderCats();
-        }
-
-        function renderCats() {
-            const cats = Object.keys(taxonomy[window.mode]);
-            document.getElementById('cats-container').innerHTML = cats.map(c => `<button onclick="window.currentCat='${c}';renderCats()" class="px-4 py-2 rounded-xl text-[10px] font-bold border cat-btn ${window.currentCat===c?'selected-cat':'bg-white text-slate-500'}">${c}</button>`).join('');
-            const subs = taxonomy[window.mode][window.currentCat] || [];
-            document.getElementById('subcat-select').innerHTML = subs.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
-        function updateUI() {
-            const acc1 = document.getElementById('acc1').value; const acc2 = document.getElementById('acc2').value;
-            const isEx = window.mode === 'transfer' && accounts[acc1].c !== accounts[acc2].c;
-            document.getElementById('std-input').classList.toggle('hidden', isEx);
-            document.getElementById('ex-input').classList.toggle('hidden', !isEx);
-            document.getElementById('acc2').classList.toggle('hidden', window.mode !== 'transfer');
-            document.getElementById('to-arrow').classList.toggle('hidden', window.mode !== 'transfer');
-        }
-
-        async function load() {
+        async function loadData() {
+            const status = document.getElementById('status-bar');
+            status.innerText = "ЗАГРУЗКА...";
+            
             try {
-                // ПОДТЯГИВАЕМ ДАННЫЕ ИЗ ТАБЛИЦЫ
-                const r = await fetch(GOOGLE_URL + "?action=read"); 
-                const rows = await r.json();
-                let bals = {sparkasse:0, casheur:0, uahcard:0, cashuah:0}, hist = "";
+                const response = await fetch(GOOGLE_URL);
+                const rows = await response.json();
                 
-                rows.slice(1).forEach(row => {
-                    // Новая структура: Дата[0], Магазин[1], DE[2], RU[3], Кол[4], Цена[5], Сумма[6], Валюта[7], Кат[8], Акк[9]
-                    const date = row[0];
-                    const amt = parseFloat(row[6]);
-                    const curr = row[7];
-                    const cat = row[8];
-                    const accName = row[9];
-                    
-                    // Сопоставляем имена из таблицы с ID сайта
-                    let accId = 'sparkasse';
-                    if (accName.includes('Приват')) accId = 'uahcard';
-                    if (accName.includes('Наличные')) accId = 'casheur';
+                let totalEur = 0;
+                let balS = 0;
+                let balP = 0;
+                let histHTML = "";
 
-                    if(bals.hasOwnProperty(accId)) {
-                        // Если категория содержит "Зарплата" или "вх", это доход
-                        if (cat.includes("Зарплата") || cat.includes("вх")) bals[accId] += amt;
-                        else if (!cat.includes("На ") && !cat.includes("Снятие")) bals[accId] -= amt;
+                // Пропускаем шапку (i=1)
+                for (let i = 1; i < rows.length; i++) {
+                    const [date, shop, itemDE, itemRU, count, price, total, curr, cat, acc] = rows[i];
+                    const val = parseFloat(total);
+
+                    // Считаем балансы (упрощенно)
+                    if (acc === "Sparkasse") balS -= val;
+                    if (acc === "Приват") balP -= val;
+                    if (cat.includes("Зарплата") || cat.includes("вх")) {
+                        if (acc === "Sparkasse") balS += val * 2; // корректировка т.к. вычли выше
+                        if (acc === "Приват") balP += val * 2;
                     }
 
-                    hist = `<div class="history-card">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="font-black text-xs">${cat}</span>
-                            <span class="font-bold">${amt.toFixed(2)} ${curr}</span>
-                        </div>
-                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase">
-                            <span>${date.split('T')[0]} • ${accName}</span>
-                        </div>
-                    </div>` + hist;
-                });
+                    // Собираем карточку истории
+                    histHTML += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
+                            <div class="flex justify-between font-bold text-sm">
+                                <span>${shop}</span>
+                                <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
+                                    ${val.toFixed(2)} ${curr}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
+                                <span>${cat}</span>
+                                <span>${new Date(date).toLocaleDateString()}</span>
+                            </div>
+                        </div>`;
+                }
 
-                document.getElementById('balance-grid').innerHTML = Object.entries(bals).map(([id, v]) => `<div class="bg-white p-3 rounded-2xl border text-center shadow-sm"><p class="text-[8px] font-bold text-slate-400 uppercase mb-1">${accounts[id].n}</p><p class="font-bold text-xs">${v.toFixed(2)}</p></div>`).join('');
-                document.getElementById('total-val').innerText = (bals.sparkasse + bals.casheur + (bals.uahcard / window.currentRate)).toFixed(2) + ' €';
-                document.getElementById('history').innerHTML = hist;
-                document.getElementById('status-bar').innerText = "ОБНОВЛЕНО";
-            } catch(e) { 
-                console.log(e);
-                document.getElementById('status-bar').innerText = "ОШИБКА СВЯЗИ"; 
+                document.getElementById('bal-S').innerText = balS.toFixed(2);
+                document.getElementById('bal-P').innerText = balP.toFixed(2);
+                document.getElementById('history').innerHTML = histHTML;
+                document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €"; // Примерный курс
+                status.innerText = "ОБНОВЛЕНО";
+
+            } catch (e) {
+                console.error(e);
+                status.innerText = "ОШИБКА ДОСТУПА";
             }
         }
 
-        document.getElementById('trans-date').valueAsDate = new Date();
-        const accHTML = Object.entries(accounts).map(([id, a]) => `<option value="${id}">${a.n}</option>`).join('');
-        document.getElementById('acc1').innerHTML = accHTML; document.getElementById('acc2').innerHTML = accHTML;
-        updateRate().then(load); setMode('expense');
+        // Запуск при загрузке
+        loadData();
     </script>
 </body>
 </html>
