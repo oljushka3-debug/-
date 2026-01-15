@@ -35,86 +35,90 @@
     </div>
 
     <script>
-        // ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШУ РАБОЧУЮ ССЫЛКУ ИЗ ПРОВЕРКИ №1
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzIkqH5G3g8jOFtTBKEHbt5HYY5vC1xRiZVKwOFHPTyEnw4WDe7fOiubZJuU4B1EACB1Q/exec";
 
-        async function loadData() {
+        // ГЛАВНАЯ ФУНКЦИЯ ОТРИСОВКИ (JSONP CALLBACK)
+        function renderData(rows) {
+            const status = document.getElementById('status-bar');
+            
+            if (!rows || rows.length <= 1) {
+                status.innerText = "ТАБЛИЦА ПУСТА";
+                return;
+            }
+
+            try {
+                let balS = 0;
+                let balP = 0;
+                let histHTML = "";
+
+                // Начинаем с i=1 (пропускаем шапку)
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const shop = row[1] || "Без названия";
+                    const totalAmt = parseFloat(row[6]) || 0;
+                    const curr = row[7] || "EUR";
+                    const cat = row[8] || "Прочее";
+                    const acc = row[9] || "";
+
+                    // Считаем балансы
+                    if (acc === "Sparkasse") balS -= totalAmt;
+                    if (acc === "Приват") balP -= totalAmt;
+                    
+                    // Если доход (Зарплата, Подарок, вх.)
+                    if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
+                        if (acc === "Sparkasse") balS += (totalAmt * 2);
+                        if (acc === "Приват") balP += (totalAmt * 2);
+                    }
+
+                    histHTML += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
+                            <div class="flex justify-between font-bold text-sm">
+                                <span>${shop}</span>
+                                <span class="${(cat.includes('Зарплата') || cat.includes('Подарок')) ? 'text-green-600' : 'text-red-600'}">
+                                    ${totalAmt.toFixed(2)} ${curr}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
+                                <span>${cat}</span>
+                                <span>${row[0] ? row[0].toString().split('T')[0] : ""}</span>
+                            </div>
+                        </div>`;
+                }
+
+                document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
+                document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
+                document.getElementById('history').innerHTML = histHTML;
+                document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
+                status.innerText = "ОБНОВЛЕНО";
+
+            } catch (err) {
+                console.error("Ошибка отрисовки:", err);
+                status.innerText = "ОШИБКА ДАННЫХ";
+            }
+        }
+
+        // ФУНКЦИЯ ЗАГРУЗКИ (ОБХОД CORS ЧЕРЕЗ SCRIPT TAG)
+        function loadData() {
             const status = document.getElementById('status-bar');
             status.innerText = "ЗАГРУЗКА...";
             
-          try {
-        // Мы добавляем параметры, чтобы обойти блокировку Safari/CORS
-        const response = await fetch(GOOGLE_URL, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-        });
-        
-        const rows = await response.json();
-        
-        if (rows && rows.length > 1) {
-            let balS = 0;
-            let balP = 0;
-            let histHTML = "";
+            // Удаляем старый скрипт если он был
+            const oldScript = document.getElementById('google-data-script');
+            if (oldScript) oldScript.remove();
 
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const shop = row[1] || "Без названия";
-                const totalAmt = parseFloat(row[6]) || 0;
-                const curr = row[7] || "EUR";
-                const cat = row[8] || "Прочее";
-                const acc = row[9] || "";
+            const script = document.createElement('script');
+            script.id = 'google-data-script';
+            // Добавляем параметр callback=renderData
+            script.src = GOOGLE_URL + "?callback=renderData&nocache=" + Math.random();
+            
+            script.onerror = function() {
+                status.innerText = "ОШИБКА СЕТИ";
+            };
 
-                if (acc === "Sparkasse") balS -= totalAmt;
-                if (acc === "Приват") balP -= totalAmt;
-                
-                if (cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.")) {
-                    if (acc === "Sparkasse") balS += (totalAmt * 2);
-                    if (acc === "Приват") balP += (totalAmt * 2);
-                }
-
-                histHTML += `
-                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-2">
-                        <div class="flex justify-between font-bold text-sm">
-                            <span>${shop}</span>
-                            <span class="${cat.includes('Зарплата') ? 'text-green-600' : 'text-red-600'}">
-                                ${totalAmt.toFixed(2)} ${curr}
-                            </span>
-                        </div>
-                        <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mt-1">
-                            <span>${cat}</span>
-                            <span>${row[0] ? row[0].toString().split('T')[0] : ""}</span>
-                        </div>
-                    </div>`;
-            }
-
-            document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
-            document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
-            document.getElementById('history').innerHTML = histHTML;
-            document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
-            status.innerText = "ОБНОВЛЕНО";
-        }
-    } catch (e) {
-        // Если обычный способ не сработал, пробуем запасной вариант
-        console.error(e);
-        status.innerText = "ПРОБУЮ ОБХОДНОЙ ПУТЬ...";
-        const script = document.createElement('script');
-        script.src = GOOGLE_URL + "?callback=renderData";
-        document.body.appendChild(script);
-    }
-
-                    document.getElementById('bal-S').innerText = balS.toFixed(2) + " €";
-                    document.getElementById('bal-P').innerText = balP.toFixed(2) + " UAH";
-                    document.getElementById('history').innerHTML = histHTML;
-                    document.getElementById('total-val').innerText = (balS + (balP / 42)).toFixed(2) + " €";
-                    status.innerText = "ОБНОВЛЕНО";
-                }
-            } catch (e) {
-                console.error(e);
-                status.innerText = "ОШИБКА ДОСТУПА ИЛИ КОРС";
-            }
+            document.body.appendChild(script);
         }
 
-        // Автозагрузка
+        // Автозагрузка при старте
         window.onload = loadData;
     </script>
 </body>
