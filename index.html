@@ -1,39 +1,211 @@
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .active-tab { background: white !important; color: #4f46e5 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    /* Обновленные компактные карточки */
-    .acc-card { 
-        min-width: 135px; 
-        flex: 1; 
-        padding: 1.25rem; 
-        border-radius: 2rem; 
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
-    }
-    .trans-card { background: white; border-radius: 1.5rem; padding: 1rem; display: flex; align-items: center; border: 1px solid #f1f5f9; }
-    label { color: #94a3b8; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: block; text-align: left; }
-</style>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smart Wallet Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .active-tab { background: white !important; color: #4f46e5 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .acc-card { min-width: 140px; flex: 1; padding: 1rem 1.2rem; border-radius: 1.8rem; box-shadow: 0 8px 15px -3px rgba(0,0,0,0.08); }
+        .trans-card { background: white; border-radius: 1.5rem; padding: 1rem; display: flex; align-items: center; border: 1px solid #f1f5f9; }
+        label { color: #94a3b8; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: block; text-align: left; margin-left: 8px;}
+        .item-row { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
 
-<script>
-    function renderData(rows) {
-        // ... (ваш существующий код логики расчетов) ...
-
-        const accList = [
-            {n:'Sparkasse', v:balances["Sparkasse"], c:'€', cl:'bg-indigo-600'},
-            {n:'Приват', v:balances["Приват"], c:'₴', cl:'bg-violet-600', sub:true},
-            {n:'Нал EUR', v:balances["Наличные EUR"], c:'€', cl:'bg-emerald-600'},
-            {n:'Нал UAH', v:balances["Наличные UAH"], c:'₴', cl:'bg-slate-800', sub:true}
-        ];
-
-        document.getElementById('accountsWrapper').innerHTML = accList.map(a => `
-            <div class="${a.cl} acc-card text-white text-left">
-                <p class="text-[8px] font-black uppercase opacity-60 mb-1">${a.n}</p>
-                <p class="text-lg font-black tracking-tight">${a.v.toFixed(2)} ${a.c}</p>
-                ${a.sub ? `<p class="text-[8px] opacity-50 font-bold">≈ ${(a.v/GEN_RATE).toFixed(2)} €</p>` : ''}
+    <div class="max-w-md mx-auto px-5 pt-4">
+        <header class="flex justify-between items-center mb-6 text-left">
+            <div>
+                <h1 class="text-2xl font-black italic uppercase tracking-tighter">Smart<span class="text-indigo-600">Wallet</span></h1>
+                <div class="text-[9px] font-bold uppercase opacity-40 mt-1 flex items-center gap-2 text-left">
+                    <span id="statusDot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 
+                    <span class="flex items-center gap-1 cursor-pointer bg-slate-100 px-2 py-0.5 rounded-full text-slate-600" onclick="changeRate()">
+                        КУРС: 1€ = <span id="currentRateLabel">50.76</span> ₴
+                        <i data-lucide="edit-3" class="w-2.5 h-2.5"></i>
+                    </span>
+                </div>
             </div>
-        `).join('');
+            <button onclick="loadData()" class="p-3 bg-white rounded-2xl border active:scale-90 transition-all shadow-sm">
+                <i data-lucide="refresh-cw" class="w-5 h-5 text-indigo-600" id="refresh-icon"></i>
+            </button>
+        </header>
 
-        // ... (остальной код функции) ...
-    }
-</script>
+        <div id="accountsWrapper" class="flex gap-3 overflow-x-auto pb-6 no-scrollbar -mx-5 px-5"></div>
+
+        <div class="bg-slate-900 rounded-[2.2rem] p-7 text-white mb-8 relative overflow-hidden text-left shadow-xl">
+            <p class="text-[9px] font-bold uppercase opacity-40 mb-1 tracking-widest text-left">Общий капитал (EUR)</p>
+            <h2 id="grandTotal" class="text-4xl font-black tracking-tighter">0.00 €</h2>
+            <i data-lucide="layers" class="absolute -right-10 -bottom-10 opacity-10 w-40 h-40"></i>
+        </div>
+
+        <div class="bg-slate-200/50 p-1.5 rounded-3xl flex gap-1 mb-6 border border-slate-200">
+            <button onclick="setMode('expense')" id="btn-expense" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider active-tab">Расход</button>
+            <button onclick="setMode('income')" id="btn-income" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Доход</button>
+            <button onclick="setMode('transfer')" id="btn-transfer" class="flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-500">Перевод</button>
+        </div>
+
+        <div class="bg-white rounded-[2.2rem] p-6 border border-slate-100 mb-10 text-left shadow-sm">
+            <form id="mainForm" class="space-y-4">
+                <input type="hidden" id="formMode" value="expense">
+                
+                <div>
+                    <label id="label-primary">ГДЕ КУПИЛИ?</label>
+                    <input type="text" id="primaryField" placeholder="..." class="w-full p-4 bg-slate-50 rounded-2xl border-none font-semibold outline-none focus:ring-2 ring-indigo-100">
+                </div>
+
+                <div id="secondary-row" class="hidden">
+                    <label id="label-secondary">ЦЕЛЬ / ПРИМЕЧАНИЕ</label>
+                    <input type="text" id="secondaryField" placeholder="..." class="w-full p-4 bg-slate-100 rounded-2xl border-none font-semibold outline-none">
+                </div>
+
+                <div id="check-constructor" class="space-y-3">
+                    <label>СПИСОК ПОКУПОК (€)</label>
+                    <div id="itemsList" class="space-y-2"></div>
+                    <button type="button" onclick="addItemRow()" class="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-center"></i> ДОБАВИТЬ ТОВАР
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label>СУММА</label>
+                        <input type="number" id="totalAmount" step="0.01" class="w-full p-4 bg-indigo-50 text-indigo-600 rounded-2xl border-none font-black text-xl outline-none">
+                    </div>
+                    <div>
+                        <label>СЧЕТ</label>
+                        <select id="accFrom" onchange="calcTotal()" class="w-full p-4 bg-slate-50 rounded-2xl text-[11px] font-bold appearance-none outline-none">
+                            <option value="Sparkasse">Sparkasse</option>
+                            <option value="Приват">Приват</option>
+                            <option value="Наличные EUR">Нал EUR</option>
+                            <option value="Наличные UAH">Нал UAH</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="row-transfer" class="hidden">
+                    <label>КУДА</label>
+                    <select id="accTo" class="w-full p-4 bg-slate-100 rounded-2xl text-[11px] font-bold appearance-none outline-none">
+                        <option value="Sparkasse">Sparkasse</option>
+                        <option value="Приват">Приват</option>
+                        <option value="Наличные EUR">Нал EUR</option>
+                        <option value="Наличные UAH">Нал UAH</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="alert('Для записи обновите Google Script!')" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg active:scale-95 transition-all mt-4">ЗАПИСАТЬ</button>
+            </form>
+        </div>
+
+        <div id="history" class="space-y-4 pb-10"></div>
+    </div>
+
+    <script>
+        const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwjQUE8oIex8bt4fDcyRFxuxsHMPMm7RiLmBmZQ7AVoDfXIhkxS7F0sne1tqoAsoIY/exec";
+        let P_RATE = 50.76;
+        const GEN_RATE = 42.0;
+
+        function changeRate() {
+            const val = prompt("Курс Привата (1€ = ?₴):", P_RATE);
+            if(val) { P_RATE = parseFloat(val); document.getElementById('currentRateLabel').innerText = P_RATE; calcTotal(); }
+        }
+
+        function addItemRow() {
+            const id = Date.now();
+            const html = `<div id="row-${id}" class="item-row flex gap-2 items-center bg-slate-50 p-2 rounded-2xl border border-slate-100"><input type="text" placeholder="Товар" class="p-2 bg-transparent text-[11px] font-bold flex-1 outline-none"><input type="number" placeholder="€" class="p-2 bg-white rounded-xl text-[10px] font-black w-14 outline-none price-input" oninput="calcTotal()"><span class="text-[10px] opacity-20">x</span><input type="number" value="1" class="p-2 bg-white rounded-xl text-[10px] font-black w-8 outline-none qty-input" oninput="calcTotal()"><button type="button" onclick="removeRow(${id})" class="p-2 text-rose-400"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-center"></i></button></div>`;
+            document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
+            lucide.createIcons();
+        }
+
+        function removeRow(id) { 
+            const el = document.getElementById(`row-${id}`);
+            if(el) el.remove(); 
+            calcTotal(); 
+        }
+
+        function calcTotal() {
+            let eur = 0;
+            document.querySelectorAll('.item-row').forEach(r => {
+                const p = parseFloat(r.querySelector('.price-input').value) || 0;
+                const q = parseFloat(r.querySelector('.qty-input').value) || 1;
+                eur += p * q;
+            });
+            const acc = document.getElementById('accFrom').value;
+            const final = (acc === 'Приват' || acc === 'Наличные UAH') ? (eur * P_RATE) : eur;
+            document.getElementById('totalAmount').value = final > 0 ? final.toFixed(2) : "";
+        }
+
+        function setMode(m) {
+            document.getElementById('formMode').value = m;
+            ['expense', 'income', 'transfer'].forEach(x => {
+                document.getElementById('btn-'+x).classList.toggle('active-tab', x === m);
+                document.getElementById('btn-'+x).classList.toggle('text-slate-500', x !== m);
+            });
+            document.getElementById('label-primary').innerText = m === 'expense' ? "ГДЕ КУПИЛИ?" : "ИСТОЧНИК / ЦЕЛЬ";
+            document.getElementById('check-constructor').classList.toggle('hidden', m !== 'expense');
+            document.getElementById('secondary-row').classList.toggle('hidden', m === 'expense');
+            document.getElementById('row-transfer').classList.toggle('hidden', m !== 'transfer');
+        }
+
+        function renderData(rows) {
+            if (!rows) return;
+            let balances = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
+            let html = "";
+
+            for (let i = rows.length - 1; i >= 1; i--) {
+                const r = rows[i];
+                const amt = parseFloat(r[6]) || 0;
+                const acc = r[9] || "Sparkasse";
+                const cat = r[8] || "";
+                const isInc = cat.includes("Зарплата") || cat.includes("Подарок") || cat.includes("вх.");
+                
+                let key = acc;
+                if (acc === "Наличные") key = (r[7] === "EUR" ? "Наличные EUR" : "Наличные UAH");
+                if (balances.hasOwnProperty(key)) balances[key] += isInc ? amt : -amt;
+
+                html += `<div class="trans-card mb-3"><div class="w-10 h-10 ${isInc ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} rounded-xl flex items-center justify-center mr-3 shrink-0"><i data-lucide="${isInc ? 'arrow-up' : 'shopping-cart'}" class="w-5 h-5"></i></div><div class="flex-1 text-left min-w-0"><h4 class="text-[12px] font-black uppercase text-slate-800 truncate">${r[1] || 'Транзакция'}</h4><p class="text-[9px] font-bold text-slate-400 uppercase">${acc} • ${cat}</p></div><div class="text-right flex flex-col items-end"><p class="text-[13px] font-black ${isInc ? 'text-emerald-500' : 'text-rose-500'}">${isInc ? '+' : '-'}${amt.toFixed(2)} ${r[7] === 'EUR' ? '€' : '₴'}</p><div class="flex gap-2 mt-1"><button onclick="editEntry('${r[1]}', ${amt}, '${acc}')" class="text-slate-200 hover:text-indigo-400 transition-colors"><i data-lucide="pencil" class="w-3.5 h-3.5 text-center"></i></button><button onclick="confirm('Удалить?') && alert('В разработке')" class="text-slate-200 hover:text-rose-400 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-center"></i></button></div></div></div>`;
+            }
+
+            const accs = [
+                {n:'Sparkasse', v:balances["Sparkasse"], c:'€', cl:'bg-indigo-600'},
+                {n:'Приват', v:balances["Приват"], c:'₴', cl:'bg-violet-600', sub:true},
+                {n:'Нал EUR', v:balances["Наличные EUR"], c:'€', cl:'bg-emerald-600'},
+                {n:'Нал UAH', v:balances["Наличные UAH"], c:'₴', cl:'bg-slate-800', sub:true}
+            ];
+
+            document.getElementById('accountsWrapper').innerHTML = accs.map(a => `<div class="${a.cl} acc-card text-white text-left"><p class="text-[8px] font-black uppercase opacity-60 mb-1 leading-none">${a.n}</p><p class="text-base font-black tracking-tight leading-none">${a.v.toFixed(2)} ${a.c}</p>${a.sub ? `<p class="text-[8px] opacity-40 font-bold mt-1">≈ ${(a.v/GEN_RATE).toFixed(2)} €</p>` : ''}</div>`).join('');
+            document.getElementById('grandTotal').innerText = (balances["Sparkasse"] + balances["Наличные EUR"] + (balances["Приват"] + balances["Наличные UAH"])/GEN_RATE).toFixed(2) + " €";
+            document.getElementById('history').innerHTML = html;
+            document.getElementById('statusDot').className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+            lucide.createIcons();
+        }
+
+        function editEntry(shop, amt, acc) {
+            window.scrollTo({top:0, behavior:'smooth'});
+            document.getElementById('primaryField').value = shop;
+            document.getElementById('totalAmount').value = amt;
+            document.getElementById('accFrom').value = acc;
+        }
+
+        function loadData() {
+            const icon = document.getElementById('refresh-icon');
+            if(icon) icon.classList.add('animate-spin');
+            const old = document.getElementById('google-script');
+            if (old) old.remove();
+            const s = document.createElement('script');
+            s.id = 'google-script';
+            s.src = GOOGLE_URL + "?callback=renderData&t=" + Date.now();
+            document.body.appendChild(s);
+            setTimeout(() => icon && icon.classList.remove('animate-spin'), 1000);
+        }
+
+        window.onload = () => { loadData(); setMode('expense'); addItemRow(); };
+    </script>
+</body>
+</html>
