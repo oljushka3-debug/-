@@ -42,7 +42,7 @@
             const status = document.getElementById('status-bar');
             status.innerText = "ЗАГРУЗКА...";
             
-            try {
+          try {
         // Мы добавляем параметры, чтобы обойти блокировку Safari/CORS
         const response = await fetch(GOOGLE_URL, {
             method: 'GET',
