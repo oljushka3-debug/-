@@ -2,57 +2,47 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartWallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
-        .acc-card { border-radius: 24px; padding: 16px; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
-        .trans-card { background: white; border-radius: 18px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        body { font-family: sans-serif; background-color: #f8fafc; }
+        .acc-card { border-radius: 20px; padding: 15px; color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; }
     </style>
 </head>
-<body class="pb-10">
-    <div class="p-6">
+<body class="p-6">
+    <div class="max-w-md mx-auto">
         <div class="flex justify-between items-center mb-6">
             <div>
                 <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Общий капитал</p>
-                <h1 id="grandTotal" class="text-3xl font-[900] text-slate-900 tracking-tighter">Загрузка...</h1>
+                <h1 id="total" class="text-3xl font-black text-slate-900 tracking-tighter">Загрузка...</h1>
             </div>
             <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
             </button>
         </div>
-
-        <div id="accountsWrapper" class="grid grid-cols-2 gap-3 mb-8">
-            </div>
-
-        <h3 class="font-black text-slate-800 uppercase text-[11px] tracking-widest mb-4">История</h3>
-        <div id="history">
-            </div>
+        
+        <div id="wallets" class="grid grid-cols-2 gap-3 mb-8"></div>
+        
+        <h3 class="font-bold text-[11px] uppercase text-slate-400 tracking-widest mb-4">История транзакций</h3>
+        <div id="hist"></div>
     </div>
 
     <script>
-        // ЗАМЕНИ ЭТУ ССЫЛКУ НА СВОЮ ИЗ GOOGLE APPS SCRIPT
+        // Ваша рабочая ссылка уже здесь:
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwYW2Flj7OOz7ngFj3uxSIbKvZpaP53CrU37j6XruCu4aeQq428g1sVaNZHT9wVv3tD/exec"; 
-
-        async function loadData() {
-            const script = document.createElement('script');
-            script.src = GOOGLE_URL + (GOOGLE_URL.includes('?') ? '&' : '?') + "callback=renderData";
-            document.body.appendChild(script);
-        }
 
         function renderData(rows) {
             if (!rows || rows.length < 2) return;
-            let bal = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
-            let hHTML = "";
+            let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
+            let h = "";
             
-            // Обработка данных (начиная со второй строки)
-            for (let i = 1; i < rows.length; i++) {
+            // Обработка данных с конца
+            for (let i = rows.length - 1; i >= 1; i--) {
                 const r = rows[i];
                 if (!r[6]) continue;
-
+                
                 const shop = r[1] || "Запись";
                 const itemRU = r[3] || "";
                 const amt = parseFloat(r[6]) || 0;
@@ -60,50 +50,42 @@
                 const cat = r[8] || "";
                 const acc = r[9] || "Sparkasse";
 
+                // Логика дохода/перевода для баланса
                 const isInc = cat.includes("💎") || cat.includes("Доход") || cat.includes("в ");
-
-                if (bal.hasOwnProperty(acc)) {
-                    bal[acc] += isInc ? amt : -amt;
+                
+                if (b.hasOwnProperty(acc)) {
+                    b[acc] += isInc ? amt : -amt;
                 }
 
-                hHTML = `
-                <div class="trans-card">
-                    <div class="w-9 h-9 ${isInc ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} rounded-xl flex items-center justify-center mr-3 shrink-0">
-                        <i data-lucide="${isInc ? 'arrow-up-right' : 'shopping-bag'}" class="w-4 h-4"></i>
+                h += `
+                <div class="bg-white p-4 rounded-2xl mb-2 flex items-center justify-between shadow-sm">
+                    <div>
+                        <div class="font-black text-[11px] uppercase text-slate-800">${shop}</div>
+                        <div class="text-[9px] font-bold text-slate-400 uppercase">${itemRU || acc}</div>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="text-[11px] font-black uppercase text-slate-800 truncate">${shop}</h4>
-                        <p class="text-[8px] font-bold text-slate-400 uppercase">${itemRU || acc}</p>
+                    <div class="font-black text-sm ${isInc ? 'text-emerald-500' : 'text-rose-500'}">
+                        ${isInc ? '+' : '-'}${amt.toFixed(2)} ${curr === 'EUR' ? '€' : '₴'}
                     </div>
-                    <div class="text-right">
-                        <p class="text-[12px] font-black ${isInc ? 'text-emerald-500' : 'text-rose-500'}">
-                            ${isInc ? '+' : '-'}${amt.toFixed(2)} ${curr === 'EUR' ? '€' : '₴'}
-                        </p>
-                    </div>
-                </div>` + hHTML;
+                </div>`;
             }
 
-            // Отрисовка кошельков
-            const accs = [
-                {n:'Sparkasse', v:bal.Sparkasse, c:'€', cl:'bg-indigo-600'},
-                {n:'Приват', v:bal.Приват, c:'₴', cl:'bg-violet-600'},
-                {n:'Нал EUR', v:bal["Наличные EUR"], c:'€', cl:'bg-emerald-600'},
-                {n:'Нал UAH', v:bal["Наличные UAH"], c:'₴', cl:'bg-slate-800'}
-            ];
+            document.getElementById('wallets').innerHTML = `
+                <div class="acc-card bg-indigo-600"><p class="text-[9px] font-black uppercase opacity-60">Sparkasse</p><p class="text-xl font-black">${b.Sparkasse.toFixed(2)}€</p></div>
+                <div class="acc-card bg-violet-600"><p class="text-[9px] font-black uppercase opacity-60">Приват</p><p class="text-xl font-black">${b.Приват.toFixed(2)}₴</p></div>
+                <div class="acc-card bg-emerald-600"><p class="text-[9px] font-black uppercase opacity-60">Нал EUR</p><p class="text-xl font-black">${b["Наличные EUR"].toFixed(2)}€</p></div>
+                <div class="acc-card bg-slate-800"><p class="text-[9px] font-black uppercase opacity-60">Нал UAH</p><p class="text-xl font-black">${b["Наличные UAH"].toFixed(2)}₴</p></div>
+            `;
             
-            document.getElementById('accountsWrapper').innerHTML = accs.map(a => `
-                <div class="${a.cl} acc-card text-white">
-                    <p class="text-[8px] font-black uppercase opacity-60">${a.n}</p>
-                    <p class="text-lg font-black tracking-tighter">${a.v.toFixed(2)}${a.c}</p>
-                </div>`).join('');
-
-            const total = bal.Sparkasse + bal["Наличные EUR"] + ((bal.Приват + bal["Наличные UAH"]) / 45);
-            document.getElementById('grandTotal').innerText = total.toFixed(2) + " €";
-            document.getElementById('history').innerHTML = hHTML;
+            const total = b.Sparkasse + b["Наличные EUR"] + ((b.Приват + b["Наличные UAH"]) / 45);
+            document.getElementById('total').innerText = total.toFixed(2) + " €";
+            document.getElementById('hist').innerHTML = h;
             lucide.createIcons();
         }
 
-        window.onload = loadData;
+        // Запуск загрузки данных
+        const s = document.createElement('script');
+        s.src = GOOGLE_URL + "?callback=renderData";
+        document.body.appendChild(s);
     </script>
 </body>
 </html>
