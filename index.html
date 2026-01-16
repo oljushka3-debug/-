@@ -8,15 +8,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body { font-family: sans-serif; background-color: #f8fafc; }
-        .acc-card { border-radius: 20px; padding: 15px; color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; }
+        .acc-card { border-radius: 20px; padding: 15px; color: white; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-md mx-auto">
-        <div class="flex justify-between items-center mb-6">
+        <div class="mb-6 flex justify-between items-center">
             <div>
-                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Общий капитал</p>
-                <h1 id="total" class="text-3xl font-black text-slate-900 tracking-tighter">Загрузка...</h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Общий капитал</p>
+                <h1 id="total" class="text-3xl font-black text-slate-900 tracking-tighter">0.00 €</h1>
             </div>
             <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
@@ -25,12 +25,11 @@
         
         <div id="wallets" class="grid grid-cols-2 gap-3 mb-8"></div>
         
-        <h3 class="font-bold text-[11px] uppercase text-slate-400 tracking-widest mb-4">История транзакций</h3>
+        <h3 class="font-bold text-[11px] uppercase text-slate-400 mb-4 tracking-widest">История транзакций</h3>
         <div id="hist"></div>
     </div>
 
     <script>
-        // Ваша рабочая ссылка уже здесь:
         const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwYW2Flj7OOz7ngFj3uxSIbKvZpaP53CrU37j6XruCu4aeQq428g1sVaNZHT9wVv3tD/exec"; 
 
         function renderData(rows) {
@@ -38,19 +37,23 @@
             let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
             let h = "";
             
-            // Обработка данных с конца
+            // Читаем таблицу с конца (пропуская заголовок i=0)
             for (let i = rows.length - 1; i >= 1; i--) {
                 const r = rows[i];
-                if (!r[6]) continue;
                 
+                // ВАЖНО: Сумма находится в колонке G (индекс 6)
+                // Если там пусто или это заголовок — пропускаем
+                const rawAmt = r[6];
+                if (rawAmt === undefined || rawAmt === "") continue;
+
                 const shop = r[1] || "Запись";
                 const itemRU = r[3] || "";
-                const amt = parseFloat(r[6]) || 0;
+                const amt = parseFloat(rawAmt) || 0;
                 const curr = r[7] || "EUR";
                 const cat = r[8] || "";
                 const acc = r[9] || "Sparkasse";
 
-                // Логика дохода/перевода для баланса
+                // Проверяем категорию на наличие ключевых слов дохода
                 const isInc = cat.includes("💎") || cat.includes("Доход") || cat.includes("в ");
                 
                 if (b.hasOwnProperty(acc)) {
@@ -59,9 +62,14 @@
 
                 h += `
                 <div class="bg-white p-4 rounded-2xl mb-2 flex items-center justify-between shadow-sm">
-                    <div>
-                        <div class="font-black text-[11px] uppercase text-slate-800">${shop}</div>
-                        <div class="text-[9px] font-bold text-slate-400 uppercase">${itemRU || acc}</div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 ${isInc ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} rounded-lg flex items-center justify-center mr-3">
+                            <i data-lucide="${isInc ? 'trending-up' : 'shopping-cart'}" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="font-black text-[11px] uppercase text-slate-800">${shop}</div>
+                            <div class="text-[9px] font-bold text-slate-400 uppercase">${itemRU || acc}</div>
+                        </div>
                     </div>
                     <div class="font-black text-sm ${isInc ? 'text-emerald-500' : 'text-rose-500'}">
                         ${isInc ? '+' : '-'}${amt.toFixed(2)} ${curr === 'EUR' ? '€' : '₴'}
@@ -69,22 +77,24 @@
                 </div>`;
             }
 
+            // Обновляем кошельки
             document.getElementById('wallets').innerHTML = `
-                <div class="acc-card bg-indigo-600"><p class="text-[9px] font-black uppercase opacity-60">Sparkasse</p><p class="text-xl font-black">${b.Sparkasse.toFixed(2)}€</p></div>
-                <div class="acc-card bg-violet-600"><p class="text-[9px] font-black uppercase opacity-60">Приват</p><p class="text-xl font-black">${b.Приват.toFixed(2)}₴</p></div>
-                <div class="acc-card bg-emerald-600"><p class="text-[9px] font-black uppercase opacity-60">Нал EUR</p><p class="text-xl font-black">${b["Наличные EUR"].toFixed(2)}€</p></div>
-                <div class="acc-card bg-slate-800"><p class="text-[9px] font-black uppercase opacity-60">Нал UAH</p><p class="text-xl font-black">${b["Наличные UAH"].toFixed(2)}₴</p></div>
+                <div class="acc-card bg-indigo-600"><p class="text-[9px] font-bold uppercase opacity-60">Sparkasse</p><p class="text-xl font-black">${b.Sparkasse.toFixed(2)}€</p></div>
+                <div class="acc-card bg-violet-600"><p class="text-[9px] font-bold uppercase opacity-60">Приват</p><p class="text-xl font-black">${b.Приват.toFixed(2)}₴</p></div>
+                <div class="acc-card bg-emerald-600"><p class="text-[9px] font-bold uppercase opacity-60">Нал EUR</p><p class="text-xl font-black">${b["Наличные EUR"].toFixed(2)}€</p></div>
+                <div class="acc-card bg-slate-800"><p class="text-[9px] font-bold uppercase opacity-60">Нал UAH</p><p class="text-xl font-black">${b["Наличные UAH"].toFixed(2)}₴</p></div>
             `;
             
+            // Общий баланс (Приват и Нал UAH делим на курс 45)
             const total = b.Sparkasse + b["Наличные EUR"] + ((b.Приват + b["Наличные UAH"]) / 45);
             document.getElementById('total').innerText = total.toFixed(2) + " €";
             document.getElementById('hist').innerHTML = h;
             lucide.createIcons();
         }
 
-        // Запуск загрузки данных
+        // Загрузка через JSONP
         const s = document.createElement('script');
-        s.src = GOOGLE_URL + "?callback=renderData";
+        s.src = GOOGLE_URL + "?callback=renderData&t=" + new Date().getTime();
         document.body.appendChild(s);
     </script>
 </body>
