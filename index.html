@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Ultimate</title>
+    <title>SmartWallet Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding-bottom: 40px; }
-        .acc-card { border-radius: 24px; padding: 18px; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
-        .trans-card { background: white; border-radius: 20px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding-bottom: 40px; }
+        .acc-card { border-radius: 28px; padding: 18px; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); position: relative; overflow: hidden; transition: 0.3s; }
+        .acc-card:active { transform: scale(0.95); }
+        .trans-card { background: white; border-radius: 20px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #f1f5f9; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 100; align-items: flex-end; }
         .modal.active { display: flex; }
         .modal-content { background: white; width: 100%; border-radius: 32px 32px 0 0; padding: 28px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        input, select { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid #f1f5f9; margin-top: 6px; font-size: 16px; font-weight: 600; background: #f8fafc; }
+        input, select { width: 100%; padding: 14px; border-radius: 16px; border: 2px solid #f1f5f9; margin-top: 6px; font-size: 16px; font-weight: 600; background: #f8fafc; outline: none; }
+        input:focus { border-color: #e2e8f0; }
         label { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #94a3b8; margin-left: 4px; letter-spacing: 0.5px; }
         .btn-send { width: 100%; padding: 18px; border-radius: 20px; background: #0f172a; color: white; font-weight: 900; margin-top: 24px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
@@ -24,9 +27,9 @@
         <div class="flex justify-between items-center mb-8">
             <div>
                 <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Общий капитал</p>
-                <h1 id="total" class="text-4xl font-[900] text-slate-900 tracking-tighter italic">0.00 €</h1>
+                <h1 id="total" class="text-4xl font-[900] text-slate-900 tracking-tighter italic italic">0.00 €</h1>
             </div>
-            <button onclick="location.reload()" class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 active:scale-95 transition-transform">
+            <button onclick="location.reload()" class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 active:scale-90 transition-all">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
             </button>
         </div>
@@ -34,48 +37,36 @@
         <div id="wallets" class="grid grid-cols-2 gap-4 mb-8"></div>
 
         <div class="grid grid-cols-3 gap-3 mb-10 text-center">
-            <button onclick="openM('expense')" class="bg-white p-4 rounded-2xl shadow-sm active:scale-95 transition-all border-b-4 border-rose-100">
+            <button onclick="openM('expense')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-rose-100 active:translate-y-1 transition-all">
                 <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center mx-auto mb-2"><i data-lucide="minus"></i></div>
-                <p class="text-[9px] font-black uppercase">Расход</p>
+                <p class="text-[9px] font-black uppercase tracking-tighter text-rose-600">Расход</p>
             </button>
-            <button onclick="openM('income')" class="bg-white p-4 rounded-2xl shadow-sm active:scale-95 transition-all border-b-4 border-emerald-100">
+            <button onclick="openM('income')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-emerald-100 active:translate-y-1 transition-all">
                 <div class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-2"><i data-lucide="plus"></i></div>
-                <p class="text-[9px] font-black uppercase">Доход</p>
+                <p class="text-[9px] font-black uppercase tracking-tighter text-emerald-600">Доход</p>
             </button>
-            <button onclick="openM('transfer')" class="bg-white p-4 rounded-2xl shadow-sm active:scale-95 transition-all border-b-4 border-blue-100">
+            <button onclick="openM('transfer')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-100 active:translate-y-1 transition-all">
                 <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2"><i data-lucide="repeat"></i></div>
-                <p class="text-[9px] font-black uppercase">Перевод</p>
+                <p class="text-[9px] font-black uppercase tracking-tighter text-blue-600">Перевод</p>
             </button>
         </div>
 
-        <div class="flex justify-between items-center mb-5">
-            <h3 class="font-black text-[11px] uppercase text-slate-400 tracking-widest">История транзакций</h3>
-        </div>
-        <div id="hist"></div>
+        <h3 class="font-black text-[11px] uppercase text-slate-400 tracking-widest mb-4 px-1">История транзакций</h3>
+        <div id="hist" class="space-y-1"></div>
     </div>
 
     <div id="modal" class="modal" onclick="if(event.target==this) closeM()">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="mTitle" class="text-2xl font-[900] uppercase italic tracking-tight">Запись</h2>
-                <button onclick="closeM()" class="text-slate-300"><i data-lucide="circle-x"></i></button>
+                <button onclick="closeM()"><i data-lucide="circle-x" class="text-slate-300"></i></button>
             </div>
             <form id="txForm" class="space-y-4">
                 <input type="hidden" id="mode">
-                <div>
-                    <label>Сумма</label>
-                    <input type="number" id="amt" step="0.01" placeholder="0.00" required>
-                </div>
-                <div>
-                    <label>Магазин / Источник</label>
-                    <input type="text" id="merch" placeholder="Где?" required>
-                </div>
-                <div id="itemGroup">
-                    <label>Наименование (немецкий)</label>
-                    <input type="text" id="itemName" placeholder="Напр: Milch">
-                </div>
-                <div id="catGroup">
-                    <label>Категория</label>
+                <div><label>Сумма</label><input type="number" id="amt" step="0.01" required></div>
+                <div><label>Где (Магазин / Источник)</label><input type="text" id="merch" required></div>
+                <div id="itemGroup"><label>Что (на немецком)</label><input type="text" id="itemName"></div>
+                <div id="catGroup"><label>Категория</label>
                     <select id="category">
                         <option value="📦 Прочее">📦 Прочее</option>
                         <option value="🍎 Продукты">🍎 Продукты</option>
@@ -83,11 +74,9 @@
                         <option value="🚗 Транспорт">🚗 Транспорт</option>
                         <option value="💊 Здоровье">💊 Здоровье</option>
                         <option value="👗 Одежда">👗 Одежда</option>
-                        <option value="💎 Досуг">💎 Досуг</option>
                     </select>
                 </div>
-                <div>
-                    <label>Счет оплаты</label>
+                <div><label>Счет</label>
                     <select id="accF">
                         <option value="Sparkasse">Sparkasse (EUR)</option>
                         <option value="Приват">Приват (UAH)</option>
@@ -95,8 +84,7 @@
                         <option value="Наличные UAH">Наличные UAH</option>
                     </select>
                 </div>
-                <div id="toGroup" class="hidden">
-                    <label>На какой счет</label>
+                <div id="toGroup" class="hidden"><label>Куда</label>
                     <select id="accT">
                         <option value="Наличные EUR">Наличные EUR</option>
                         <option value="Наличные UAH">Наличные UAH</option>
@@ -104,7 +92,7 @@
                         <option value="Приват">Приват</option>
                     </select>
                 </div>
-                <button type="submit" id="sBtn" class="btn-send shadow-lg shadow-slate-200">Сохранить</button>
+                <button type="submit" id="sBtn" class="btn-send shadow-xl">Сохранить</button>
             </form>
         </div>
     </div>
@@ -113,13 +101,12 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwpEemEN5vcM396y6jD5mG-ghJK0LlHxTm4JhE2_GHvPiASGAWRTSDFRsXBbATDOd2K/exec";
 
         function openM(m){
-            const mod = document.getElementById('modal');
             document.getElementById('mode').value = m;
             document.getElementById('mTitle').innerText = m==='expense'?'Расход':(m==='income'?'Доход':'Перевод');
             document.getElementById('toGroup').classList.toggle('hidden', m!=='transfer');
             document.getElementById('itemGroup').classList.toggle('hidden', m!=='expense');
             document.getElementById('catGroup').classList.toggle('hidden', m!=='expense');
-            mod.classList.add('active');
+            document.getElementById('modal').classList.add('active');
         }
         function closeM(){ document.getElementById('modal').classList.remove('active'); }
 
@@ -130,28 +117,39 @@
 
             for (let i = rows.length - 1; i >= 1; i--) {
                 const r = rows[i]; if (!r[6]) continue;
-                const amt = parseFloat(r[6]); const isInc = r[8].includes("💎") || r[8].includes("Доход");
+                const amt = parseFloat(r[6]); const curr = r[7] || "EUR"; 
+                const isInc = r[8].includes("💎") || r[8].includes("Доход");
                 if (b.hasOwnProperty(r[9])) b[r[9]] += isInc ? amt : -amt;
+
+                // Магия конвертации в истории
+                let convText = "";
+                if (curr === "UAH") {
+                    convText = `<div class="text-[8px] opacity-40 font-bold">≈ ${(amt/rate).toFixed(2)} €</div>`;
+                }
+
                 h += `
-                <div class="trans-card">
-                    <div class="w-10 h-10 ${isInc?'bg-emerald-50 text-emerald-500':'bg-rose-50 text-rose-500'} rounded-xl flex items-center justify-center mr-3 shrink-0"><i data-lucide="${isInc?'trending-up':'shopping-bag'}" class="w-4 h-4"></i></div>
-                    <div class="flex-1"><div class="font-black text-[11px] uppercase text-slate-800 tracking-tight">${r[1]}</div><div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">${r[3]||r[9]}</div></div>
-                    <div class="text-right font-black text-[13px] ${isInc?'text-emerald-500':'text-slate-900'}">${isInc?'+':'-'}${amt.toFixed(2)}</div>
+                <div class="trans-card shadow-sm">
+                    <div class="w-10 h-10 ${isInc?'bg-emerald-50 text-emerald-500':'bg-rose-50 text-rose-500'} rounded-2xl flex items-center justify-center mr-3 shrink-0"><i data-lucide="${isInc?'trending-up':'shopping-bag'}" class="w-4 h-4"></i></div>
+                    <div class="flex-1"><div class="font-black text-[11px] uppercase tracking-tight text-slate-800">${r[1]}</div><div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${r[3]||r[9]}</div></div>
+                    <div class="text-right">
+                        <div class="font-black text-[13px] ${isInc?'text-emerald-500':'text-slate-900'}">${isInc?'+':'-'}${amt.toFixed(2)} ${curr === 'EUR' ? '€' : '₴'}</div>
+                        ${convText}
+                    </div>
                 </div>`;
             }
 
             document.getElementById('wallets').innerHTML = `
-                <div class="acc-card bg-indigo-600"><p class="text-[9px] font-black uppercase opacity-60 mb-1 tracking-widest">Sparkasse</p><p class="text-xl font-[900]">${b.Sparkasse.toFixed(2)}€</p></div>
-                <div class="acc-card bg-violet-600">
-                    <p class="text-[9px] font-black uppercase opacity-60 mb-1 tracking-widest">Приват</p>
+                <div class="acc-card bg-indigo-600 shadow-indigo-100"><p class="text-[9px] font-black uppercase opacity-60 mb-1">Sparkasse</p><p class="text-xl font-[900]">${b.Sparkasse.toFixed(2)}€</p></div>
+                <div class="acc-card bg-violet-600 shadow-violet-100">
+                    <p class="text-[9px] font-black uppercase opacity-60 mb-1">Приват</p>
                     <p class="text-xl font-[900]">${b.Приват.toFixed(2)}₴</p>
-                    <p class="text-[9px] font-bold opacity-60 mt-1">Курс: ${rate.toFixed(2)} | ≈ ${(b.Приват/rate).toFixed(2)}€</p>
+                    <p class="text-[9px] font-bold opacity-70 mt-1">Курс: ${rate.toFixed(2)} | ≈ ${(b.Приват/rate).toFixed(2)}€</p>
                 </div>
-                <div class="acc-card bg-emerald-600"><p class="text-[9px] font-black uppercase opacity-60 mb-1 tracking-widest">Нал EUR</p><p class="text-xl font-[900]">${b["Наличные EUR"].toFixed(2)}€</p></div>
-                <div class="acc-card bg-slate-800">
-                    <p class="text-[9px] font-black uppercase opacity-60 mb-1 tracking-widest">Нал UAH</p>
+                <div class="acc-card bg-emerald-600 shadow-emerald-100"><p class="text-[9px] font-black uppercase opacity-60 mb-1">Нал EUR</p><p class="text-xl font-[900]">${b["Наличные EUR"].toFixed(2)}€</p></div>
+                <div class="acc-card bg-slate-800 shadow-slate-100">
+                    <p class="text-[9px] font-black uppercase opacity-60 mb-1">Нал UAH</p>
                     <p class="text-xl font-[900]">${b["Наличные UAH"].toFixed(2)}₴</p>
-                    <p class="text-[9px] font-bold opacity-60 mt-1">≈ ${(b["Наличные UAH"]/rate).toFixed(2)}€</p>
+                    <p class="text-[9px] font-bold opacity-70 mt-1">≈ ${(b["Наличные UAH"]/rate).toFixed(2)}€</p>
                 </div>
             `;
             const tot = b.Sparkasse + b["Наличные EUR"] + ((b.Приват + b["Наличные UAH"])/rate);
@@ -162,7 +160,7 @@
 
         document.getElementById('txForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('sBtn'); btn.innerText = "Запись..."; btn.disabled = true;
+            const btn = document.getElementById('sBtn'); btn.innerText = "Сохранение..."; btn.disabled = true;
             const data = {
                 mode: document.getElementById('mode').value,
                 amount: document.getElementById('amt').value,
