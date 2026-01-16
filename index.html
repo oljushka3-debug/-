@@ -2,161 +2,262 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartWallet v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: sans-serif; background: #f8fafc; padding-bottom: 40px; }
-        .acc-card { border-radius: 24px; padding: 18px; color: white; transition: 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .trans-card { background: white; border-radius: 20px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #f1f5f9; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; align-items: flex-end; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; width: 100%; border-radius: 32px 32px 0 0; padding: 28px; }
-        input, select { width: 100%; padding: 12px; border-radius: 14px; border: 2px solid #f1f5f9; margin-top: 4px; font-weight: 600; font-size: 16px; }
-        .deleted { opacity: 0.3; filter: grayscale(1); }
-        .deleted .amount-text { text-decoration: line-through; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
-<body>
-    <div class="max-w-md mx-auto p-6">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Общий баланс</p>
-                <h1 id="total" class="text-4xl font-[900] text-slate-900 tracking-tighter italic">0.00 €</h1>
-            </div>
-            <div class="text-right">
-                <p class="text-[9px] font-bold text-slate-400 mb-1 tracking-tighter">РУЧНОЙ КУРС</p>
-                <input type="number" id="manualRate" oninput="recalcAll()" placeholder="Авто" class="w-20 p-1 text-center text-xs border-slate-200">
+<body class="bg-gray-100 font-sans pb-20">
+
+    <div class="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg sticky top-0 z-40">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-xl font-bold tracking-tight">SmartWallet</h1>
+            <div class="flex items-center space-x-2 text-sm">
+                <span>Курс:</span>
+                <input type="number" id="manualRate" step="0.01" class="w-16 bg-indigo-500 rounded px-1 text-center outline-none" oninput="saveManualRate()">
             </div>
         </div>
-
-        <div id="wallets" class="grid grid-cols-2 gap-4 mb-8"></div>
-
-        <div class="grid grid-cols-3 gap-3 mb-10 text-center text-[10px] font-black uppercase italic tracking-tighter">
-            <button onclick="openM('expense')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-rose-100 text-rose-500">Расход</button>
-            <button onclick="openM('income')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-emerald-100 text-emerald-500">Доход</button>
-            <button onclick="openM('transfer')" class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-100 text-blue-500">Перевод</button>
+        <div class="text-center">
+            <p class="text-indigo-100 text-sm opacity-80 uppercase tracking-widest mb-1">Общий капитал</p>
+            <h2 id="totalBalance" class="text-4xl font-black">€ 0.00</h2>
         </div>
-
-        <div id="hist" class="space-y-1"></div>
     </div>
 
-    <div id="modal" class="modal" onclick="if(event.target==this) closeM()">
-        <div class="modal-content">
-            <h2 id="mTitle" class="text-xl font-black uppercase italic mb-4 tracking-tight">Запись</h2>
-            <form id="txForm" class="space-y-3">
-                <input type="hidden" id="mode">
-                <input type="number" id="amt" step="0.01" placeholder="Сумма" required>
-                <input type="text" id="merch" placeholder="Магазин / Описание" required>
-                <input type="text" id="itemName" placeholder="Товар (на немецком)">
-                <select id="accF">
-                    <option value="Sparkasse">Sparkasse (EUR)</option>
-                    <option value="Приват">Приват (UAH)</option>
-                    <option value="Наличные EUR">Наличные EUR</option>
-                    <option value="Наличные UAH">Наличные UAH</option>
-                </select>
-                <div id="toGroup" class="hidden">
-                    <select id="accT">
+    <div class="grid grid-cols-2 gap-4 p-4" id="accountsGrid">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
+            <p class="text-xs text-gray-500 uppercase font-bold">Sparkasse</p>
+            <p id="acc-sparkasse" class="text-lg font-bold text-gray-800">€ 0.00</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
+            <p class="text-xs text-gray-500 uppercase font-bold">Приват</p>
+            <p id="acc-privat" class="text-lg font-bold text-gray-800">₴ 0.00</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-500">
+            <p class="text-xs text-gray-500 uppercase font-bold">Нал EUR</p>
+            <p id="acc-cash-eur" class="text-lg font-bold text-gray-800">€ 0.00</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-orange-500">
+            <p class="text-xs text-gray-500 uppercase font-bold">Нал UAH</p>
+            <p id="acc-cash-uah" class="text-lg font-bold text-gray-800">₴ 0.00</p>
+        </div>
+    </div>
+
+    <div class="flex px-4 gap-2 mb-6">
+        <button onclick="openModal('expense')" class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold shadow-md active:scale-95 transition">Расход</button>
+        <button onclick="openModal('income')" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-md active:scale-95 transition">Доход</button>
+        <button onclick="openModal('transfer')" class="flex-1 bg-gray-600 text-white py-3 rounded-xl font-bold shadow-md active:scale-95 transition">Перевод</button>
+    </div>
+
+    <div class="px-4">
+        <div class="flex bg-gray-200 rounded-xl p-1 mb-4">
+            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600 active-tab">История</button>
+            <button onclick="switchTab('deleted')" id="tab-deleted" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600">Корзина</button>
+        </div>
+        <div id="content-history" class="tab-content active space-y-3"></div>
+        <div id="content-deleted" class="tab-content space-y-3 opacity-60"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="bg-white w-full max-w-sm m-4 p-6 rounded-3xl shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 text-2xl">&times;</button>
+            <h3 id="modalTitle" class="text-xl font-bold mb-4 text-gray-800">Операция</h3>
+            <form id="txForm" onsubmit="handleSubmit(event)" class="space-y-4">
+                <input type="hidden" id="txType">
+                <input type="hidden" id="editIndex">
+
+                <div id="amountBlock">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Сумма</label>
+                    <input type="number" id="amount" step="0.01" required class="w-full border-2 border-gray-100 rounded-xl p-3 text-lg outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <div id="accountBlock">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Счет</label>
+                    <select id="account" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 transition">
+                        <option value="Sparkasse">Sparkasse (EUR)</option>
+                        <option value="Приват">Приват (UAH)</option>
                         <option value="Наличные EUR">Наличные EUR</option>
                         <option value="Наличные UAH">Наличные UAH</option>
-                        <option value="Sparkasse">Sparkasse</option>
-                        <option value="Приват">Приват</option>
                     </select>
                 </div>
-                <button type="submit" id="sBtn" class="w-full p-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest">Сохранить</button>
+
+                <div id="categoryBlock">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Категория / Куда</label>
+                    <select id="category" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 transition">
+                        <option value="🍎 Продукты: Еда">🍎 Продукты: Еда</option>
+                        <option value="🍎 Продукты: Алко/Табак">🍎 Продукты: Алко/Табак</option>
+                        <option value="🏠 Дом: Гигиена">🏠 Дом: Гигиена</option>
+                        <option value="🏠 Дом: Химия">🏠 Дом: Химия</option>
+                        <option value="🏠 Дом: Разное">🏠 Дом: Разное</option>
+                        <option value="💊 Здоровье: Аптека">💊 Здоровье: Аптека</option>
+                        <option value="💊 Здоровье: Врачи">💊 Здоровье: Врачи</option>
+                        <option value="💊 Здоровье: Страховка">💊 Здоровье: Страховка</option>
+                        <option value="🚗 Транспорт: Бензин">🚗 Транспорт: Бензин</option>
+                        <option value="🚗 Транспорт: Билеты">🚗 Транспорт: Билеты</option>
+                        <option value="🚗 Транспорт: Сервис">🚗 Транспорт: Сервис</option>
+                        <option value="☕️ Кафе: Обед">☕️ Кафе: Обед</option>
+                        <option value="☕️ Кафе: Кофе/Фастфуд">☕️ Кафе: Кофе/Фастфуд</option>
+                        <option value="📱 Связь: Моб/Инет">📱 Связь: Моб/Инет</option>
+                        <option value="📱 Связь: Подписки">📱 Связь: Подписки</option>
+                        <option value="💄 Уход: Косметика">💄 Уход: Косметика</option>
+                        <option value="💄 Уход: Парикмахер/Маникюр">💄 Уход: Парикмахер/Маникюр</option>
+                        <option value="🎓 Обучение: Курсы/Книги">🎓 Обучение: Курсы/Книги</option>
+                        <option value="🎓 Обучение: Канцтовары">🎓 Обучение: Канцтовары</option>
+                        <option value="🎁 Подарки">🎁 Подарки</option>
+                        <option value="🏦 Сборы: ARD/Банк">🏦 Сборы: ARD/Банк</option>
+                        <option value="👗 Одежда">👗 Одежда</option>
+                        <option value="💎 Доход">💎 Доход</option>
+                        <option value="📦 Прочее">📦 Прочее</option>
+                    </select>
+                </div>
+
+                <div id="merchantBlock">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Магазин / Товар</label>
+                    <input type="text" id="merchant" placeholder="Lidl..." class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition">Сохранить</button>
             </form>
         </div>
     </div>
 
     <script>
-        // ССЫЛКА НА ТВОЙ СКРИПТ (замени на свою, если она изменится)
-        const URL_API = "https://script.google.com/macros/s/AKfycbwpEemEN5vcM396y6jD5mG-ghJK0LlHxTm4JhE2_GHvPiASGAWRTSDFRsXBbATDOd2K/exec";
-        let rawData = [];
-        let bankRate = 50.76;
+        const API_URL = "ТВОЯ_ССЫЛКА_ТУТ"; // ЗАМЕНИ НА СВОЮ
+        let currentRate = 50.76;
+        let mainData = [];
 
-        function openM(m, editData = null){
+        function openModal(type, editIdx = null) {
             document.getElementById('modal').classList.add('active');
-            document.getElementById('mode').value = m;
-            document.getElementById('toGroup').classList.toggle('hidden', m!=='transfer');
-            if(editData) {
-                document.getElementById('amt').value = editData.amt;
-                document.getElementById('merch').value = editData.merch;
+            document.getElementById('txType').value = type;
+            document.getElementById('editIndex').value = editIdx || '';
+            document.getElementById('merchantBlock').style.display = type === 'transfer' ? 'none' : 'block';
+            document.getElementById('categoryBlock').style.display = type === 'transfer' ? 'block' : 'block';
+            
+            if (type === 'transfer') {
+                document.getElementById('modalTitle').innerText = 'Перевод';
+                document.getElementById('category').innerHTML = `
+                    <option value="Sparkasse">в Sparkasse</option>
+                    <option value="Приват">в Приват</option>
+                    <option value="Наличные EUR">в Наличные EUR</option>
+                    <option value="Наличные UAH">в Наличные UAH</option>
+                `;
+            } else {
+                document.getElementById('modalTitle').innerText = type === 'expense' ? 'Новый расход' : 'Новый доход';
             }
         }
-        function closeM(){ document.getElementById('modal').classList.remove('active'); }
 
-        async function delRow(idx) {
-            if(!confirm("Обнулить эту запись (Удалить)?")) return;
-            await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({action: 'delete', rowIndex: idx}) });
-            location.reload();
+        function closeModal() { document.getElementById('modal').classList.remove('active'); document.getElementById('txForm').reset(); }
+
+        async function loadData() {
+            const res = await fetch(`${API_URL}?callback=renderData`);
+            const script = document.createElement('script');
+            script.src = `${API_URL}?callback=handleData`;
+            document.body.appendChild(script);
         }
 
-        function recalcAll() { renderData({rows: rawData, rate: bankRate}); }
-
-        function renderData(res) {
-            rawData = res.rows; bankRate = res.rate;
-            const userRate = parseFloat(document.getElementById('manualRate').value);
-            const rate = userRate > 0 ? userRate : bankRate;
-            let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
-            let h = "";
-
-            for (let i = rawData.length - 1; i >= 1; i--) {
-                const r = rawData[i]; 
-                const amt = parseFloat(r[6]) || 0;
-                const curr = r[7] || "EUR";
-                const isInc = r[8].includes("💎") || r[8].includes("Доход");
-                const isDel = r[2] && r[2].toString().includes("[УДАЛЕНО]"); // Проверка в колонке C
-                const rowIndex = r[10];
-
-                if (!isDel && b.hasOwnProperty(r[9])) b[r[9]] += isInc ? amt : -amt;
-
-                h += `
-                <div class="trans-card ${isDel?'deleted':''}">
-                    <div class="flex-1">
-                        <div class="font-black text-[11px] uppercase tracking-tighter text-slate-800">${r[1]}</div>
-                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${r[3]||r[9]}</div>
-                    </div>
-                    <div class="text-right mr-4 amount-text">
-                        <div class="font-black text-[12px] ${isInc?'text-emerald-500':'text-slate-900'}">${amt.toFixed(2)} ${curr=='EUR'?'€':'₴'}</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openM('expense', {amt:${amt}, merch:'${r[1]}'}); delRow(${rowIndex})" class="text-slate-200 hover:text-slate-400"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="delRow(${rowIndex})" class="text-rose-100 hover:text-rose-300"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>
-                </div>`;
-            }
-
-            document.getElementById('wallets').innerHTML = `
-                <div class="acc-card bg-indigo-600 shadow-indigo-100"><p class="text-[9px] font-black uppercase opacity-60">Sparkasse</p><p class="text-xl font-black">${b.Sparkasse.toFixed(2)}€</p></div>
-                <div class="acc-card bg-violet-600 shadow-violet-100"><p class="text-[9px] font-black uppercase opacity-60">Приват</p><p class="text-xl font-black">${b.Приват.toFixed(2)}₴</p><p class="text-[9px] opacity-60 mt-1 font-bold italic">≈ ${(b.Приват/rate).toFixed(2)}€</p></div>
-                <div class="acc-card bg-emerald-600 shadow-emerald-100"><p class="text-[9px] font-black uppercase opacity-60">Нал EUR</p><p class="text-xl font-black">${b["Наличные EUR"].toFixed(2)}€</p></div>
-                <div class="acc-card bg-slate-800 shadow-slate-100"><p class="text-[9px] font-black uppercase opacity-60">Нал UAH</p><p class="text-xl font-black">${b["Наличные UAH"].toFixed(2)}₴</p><p class="text-[9px] opacity-60 mt-1 font-bold italic">≈ ${(b["Наличные UAH"]/rate).toFixed(2)}€</p></div>
-            `;
-            const tot = b.Sparkasse + b["Наличные EUR"] + ((b.Приват + b["Наличные UAH"])/rate);
-            document.getElementById('total').innerText = tot.toFixed(2) + " €";
-            document.getElementById('hist').innerHTML = h;
-            lucide.createIcons();
+        function handleData(data) {
+            mainData = data.rows;
+            if (!localStorage.getItem('manualRate')) currentRate = data.rate;
+            document.getElementById('manualRate').value = currentRate;
+            updateBalance();
+            renderHistory();
         }
 
-        document.getElementById('txForm').onsubmit = async (e) => {
+        function updateBalance() {
+            let balances = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
+            mainData.forEach(r => {
+                const amount = parseFloat(r[6]);
+                const acc = r[9];
+                if (balances.hasOwnProperty(acc)) {
+                    if (r[8] === "💎 Доход") balances[acc] += amount;
+                    else balances[acc] -= amount;
+                }
+            });
+            document.getElementById('acc-sparkasse').innerText = `€ ${balances["Sparkasse"].toFixed(2)}`;
+            document.getElementById('acc-privat').innerText = `₴ ${balances["Приват"].toFixed(2)}`;
+            document.getElementById('acc-cash-eur').innerText = `€ ${balances["Наличные EUR"].toFixed(2)}`;
+            document.getElementById('acc-cash-uah').innerText = `₴ ${balances["Наличные UAH"].toFixed(2)}`;
+
+            const totalEur = balances["Sparkasse"] + balances["Наличные EUR"] + (balances["Приват"] + balances["Наличные UAH"]) / currentRate;
+            document.getElementById('totalBalance').innerText = `€ ${totalEur.toFixed(2)}`;
+        }
+
+        function renderHistory() {
+            const hist = document.getElementById('content-history');
+            const del = document.getElementById('content-deleted');
+            hist.innerHTML = ''; del.innerHTML = '';
+
+            mainData.slice().reverse().forEach(r => {
+                const isDel = String(r[2]).includes("[УДАЛЕНО]");
+                const card = `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-gray-400">${r[0]}</p>
+                            <p class="font-bold text-gray-800">${r[1] || r[8]}</p>
+                            <p class="text-xs text-gray-500">${r[2]} | ${r[9]}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold ${r[8] === '💎 Доход' ? 'text-green-500' : 'text-red-500'}">${r[8] === '💎 Доход' ? '+' : '-'}${r[6]} ${r[7]}</p>
+                            ${!isDel ? `<button onclick="deleteRow(${r[10]})" class="text-gray-300 text-xs mt-1">🗑 Удалить</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                if (isDel) del.innerHTML += card; else hist.innerHTML += card;
+            });
+        }
+
+        async function handleSubmit(e) {
             e.preventDefault();
-            const btn = document.getElementById('sBtn'); btn.innerText = "Запись..."; btn.disabled = true;
-            const data = {
-                mode: document.getElementById('mode').value,
-                amount: document.getElementById('amt').value,
-                merchant: document.getElementById('merch').value,
-                item: document.getElementById('itemName').value,
-                account: document.getElementById('accF').value,
-                accountTo: document.getElementById('accT').value
+            const type = document.getElementById('txType').value;
+            const payload = {
+                amount: document.getElementById('amount').value,
+                account: document.getElementById('account').value,
+                category: document.getElementById('category').value,
+                merchant: document.getElementById('merchant').value || 'Сайт',
+                item: document.getElementById('merchant').value || '',
+                action: 'add'
             };
-            await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            location.reload();
-        };
 
-        const s = document.createElement('script');
-        s.src = URL_API + "?callback=renderData&t=" + Date.now();
-        document.body.appendChild(s);
+            if (type === 'transfer') {
+                // Логика двойной записи для перевода
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...payload, category: '📦 Прочее', merchant: 'Перевод (Расход)'}) });
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...payload, account: payload.category, category: '💎 Доход', merchant: 'Перевод (Доход)'}) });
+            } else {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            }
+            location.reload();
+        }
+
+        async function deleteRow(idx) {
+            if (confirm('Обнулить эту запись?')) {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIndex: idx }) });
+                location.reload();
+            }
+        }
+
+        function saveManualRate() {
+            currentRate = document.getElementById('manualRate').value;
+            localStorage.setItem('manualRate', currentRate);
+            updateBalance();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.flex button').forEach(b => b.classList.remove('bg-white', 'shadow-sm'));
+            document.getElementById('content-' + tab).classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('bg-white', 'shadow-sm');
+        }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('manualRate');
+            if (saved) currentRate = parseFloat(saved);
+            loadData();
+            switchTab('history');
+        };
     </script>
 </body>
 </html>
