@@ -3,20 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v3.4</title>
+    <title>SmartWallet v3.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; }
         .modal.active { display: flex; align-items: center; justify-content: center; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .fade-out { opacity: 0; transform: scale(0.9); transition: all 0.4s ease; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinning { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans pb-20">
 
     <div class="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg sticky top-0 z-40">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-bold tracking-tight">SmartWallet</h1>
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold tracking-tight">SmartWallet</h1>
+                <button onclick="loadData()" id="refreshBtn" class="bg-indigo-500 p-2 rounded-full active:scale-90 transition">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
             <div class="flex items-center space-x-2 text-sm">
                 <span>Курс:</span>
                 <input type="number" id="manualRate" step="0.01" class="w-16 bg-indigo-500 rounded px-1 text-center outline-none" oninput="saveManualRate()">
@@ -28,7 +38,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 p-4" id="accountsGrid">
+    <div class="grid grid-cols-2 gap-4 p-4">
         <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500"><p class="text-xs text-gray-500 uppercase font-bold">Sparkasse</p><p id="acc-sparkasse" class="text-lg font-bold text-gray-800">€ 0.00</p></div>
         <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500"><p class="text-xs text-gray-500 uppercase font-bold">Приват</p><p id="acc-privat" class="text-lg font-bold text-gray-800">₴ 0.00</p></div>
         <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-500"><p class="text-xs text-gray-500 uppercase font-bold">Нал EUR</p><p id="acc-cash-eur" class="text-lg font-bold text-gray-800">€ 0.00</p></div>
@@ -43,8 +53,8 @@
 
     <div class="px-4">
         <div class="flex bg-gray-200 rounded-xl p-1 mb-4">
-            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600 active">История</button>
-            <button onclick="switchTab('deleted')" id="tab-deleted" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600">Корзина</button>
+            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-sm font-bold rounded-lg text-indigo-600 border-b-2 border-indigo-600">История</button>
+            <button onclick="switchTab('deleted')" id="tab-deleted" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500">Корзина</button>
         </div>
         <div id="content-history" class="tab-content active space-y-3"></div>
         <div id="content-deleted" class="tab-content space-y-3 opacity-60"></div>
@@ -58,6 +68,11 @@
                 <input type="hidden" id="txType">
                 <input type="hidden" id="editRowIndex" value="">
                 
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Дата операции</label>
+                    <input type="date" id="txDate" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <input type="number" id="amount" step="0.01" required placeholder="Сумма" class="border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
                     <input type="number" id="qty" value="1" placeholder="Кол-во" class="border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
@@ -95,7 +110,10 @@
             const modal = document.getElementById('modal');
             modal.classList.add('active');
             document.getElementById('txType').value = type;
-            if (!isEdit) document.getElementById('editRowIndex').value = "";
+            if (!isEdit) {
+                document.getElementById('editRowIndex').value = "";
+                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+            }
             
             const mInput = document.getElementById('merchant');
             const iInput = document.getElementById('item');
@@ -125,15 +143,13 @@
             }
         }
 
-        function closeModal() { 
-            document.getElementById('modal').classList.remove('active'); 
-            document.getElementById('txForm').reset(); 
-            document.getElementById('editRowIndex').value = "";
-        }
+        function closeModal() { document.getElementById('modal').classList.remove('active'); document.getElementById('txForm').reset(); }
 
         async function loadData() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('spinning');
             const script = document.createElement('script');
-            script.src = `${API_URL}?callback=handleData`;
+            script.src = `${API_URL}?callback=handleData&t=${new Date().getTime()}`;
             document.body.appendChild(script);
         }
 
@@ -143,13 +159,14 @@
             document.getElementById('manualRate').value = currentRate;
             updateBalance();
             renderHistory();
+            document.getElementById('refreshIcon').classList.remove('spinning');
         }
 
         function updateBalance() {
             let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
             mainData.forEach(r => {
                 let v = parseFloat(r[6]) || 0;
-                if (b.hasOwnProperty(r[9])) {
+                if (!String(r[2]).includes("[УДАЛЕНО]") && b.hasOwnProperty(r[9])) {
                     if (r[8] === "💎 Доход") b[r[9]] += v; else b[r[9]] -= v;
                 }
             });
@@ -169,9 +186,9 @@
                 const isDel = String(r[2]).includes("[УДАЛЕНО]");
                 const isInc = r[8] === '💎 Доход';
                 const cur = (r[9].includes("Приват") || r[9].includes("UAH")) ? "₴" : "€";
-                const date = String(r[0]).substring(0, 10);
+                let date = String(r[0]).substring(0, 10);
                 
-                const card = `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2 border border-gray-50">
+                const card = `<div id="row-${r[10]}" class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2 border border-gray-50 transition-all duration-300">
                     <div>
                         <p class="text-[10px] text-gray-400 uppercase font-black">${date}</p>
                         <p class="font-bold text-gray-800">${r[1]}</p>
@@ -181,7 +198,7 @@
                         <p class="font-bold ${isInc ? 'text-green-500' : 'text-red-500'}">${isInc ? '+' : '-'}${(parseFloat(r[6])||0).toFixed(2)} ${cur}</p>
                         ${!isDel ? `
                             <div class="flex gap-3 mt-2 justify-end">
-                                <button onclick="startEdit(${r[10]}, '${String(r[1]).replace(/'/g, "\\'")}', '${String(r[2]).replace(/'/g, "\\'")}', '${r[6]}', '${r[4]}', '${r[8]}', '${r[9]}')" class="text-indigo-500 text-[10px] font-black uppercase">✏️ Правка</button>
+                                <button onclick="startEdit(${r[10]}, '${String(r[1]).replace(/'/g, "\\'")}', '${String(r[2]).replace(/'/g, "\\'")}', '${r[6]}', '${r[4]}', '${r[8]}', '${r[9]}', '${date}')" class="text-indigo-500 text-[10px] font-black uppercase">✏️ Правка</button>
                                 <button onclick="deleteRow(${r[10]})" class="text-gray-400 text-[10px] font-black uppercase">🗑️ Удалить</button>
                             </div>` : ''}
                     </div>
@@ -194,8 +211,8 @@
             e.preventDefault();
             const editIdx = document.getElementById('editRowIndex').value;
             const type = document.getElementById('txType').value;
-            
             let p = {
+                date: document.getElementById('txDate').value,
                 amount: document.getElementById('amount').value,
                 qty: document.getElementById('qty').value,
                 merchant: document.getElementById('merchant').value || 'Без названия',
@@ -205,12 +222,9 @@
                 action: editIdx ? 'edit' : 'add',
                 rowIndex: editIdx
             };
-
             if (type === 'income') { p.account = document.getElementById('category').value; p.category = "💎 Доход"; }
-            
             document.getElementById('submitBtn').innerText = "⏳ Ждите...";
             document.getElementById('submitBtn').disabled = true;
-
             if (type === 'transfer' && !editIdx) {
                 const from = document.getElementById('account').value;
                 const to = document.getElementById('category').value;
@@ -219,36 +233,31 @@
             } else {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
             }
-            location.reload();
+            closeModal();
+            loadData();
+            document.getElementById('submitBtn').disabled = false;
         }
 
-        function startEdit(idx, m, i, amt, q, cat, acc) {
-            let type = 'expense';
-            if (cat === '💎 Доход') type = 'income';
-            if (m.includes('Перевод')) type = 'transfer'; // Если в названии "Перевод", открываем окно перевода
-            
+        function startEdit(idx, m, i, amt, q, cat, acc, date) {
+            let type = (cat === '💎 Доход') ? 'income' : (m.includes('Перевод') ? 'transfer' : 'expense');
             document.getElementById('editRowIndex').value = idx;
             openModal(type, true);
+            document.getElementById('txDate').value = date;
             document.getElementById('amount').value = amt;
             document.getElementById('qty').value = q;
             document.getElementById('merchant').value = m;
             document.getElementById('item').value = i;
-            
             if (type === 'income') document.getElementById('category').value = acc;
-            else if (type === 'transfer') {
-                 document.getElementById('account').value = acc;
-                 // Для перевода нам сложно угадать второй счет, оставляем текущий
-                 document.getElementById('category').value = acc;
-            }
             else document.getElementById('account').value = acc;
-            
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         async function deleteRow(idx) {
-            if (confirm('Отправить запись в корзину?')) {
+            if (confirm('Удалить запись?')) {
+                const row = document.getElementById('row-' + idx);
+                if (row) row.classList.add('fade-out');
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIndex: idx }) });
-                location.reload();
+                loadData();
             }
         }
 
@@ -256,8 +265,8 @@
         function switchTab(t) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('content-' + t).classList.add('active');
-            document.querySelectorAll('[id^="tab-"]').forEach(btn => btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600'));
-            document.getElementById('tab-' + t).classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+            document.getElementById('tab-history').className = 'flex-1 py-2 text-sm font-bold rounded-lg ' + (t==='history'?'text-indigo-600 border-b-2 border-indigo-600':'text-gray-500');
+            document.getElementById('tab-deleted').className = 'flex-1 py-2 text-sm font-bold rounded-lg ' + (t==='deleted'?'text-indigo-600 border-b-2 border-indigo-600':'text-gray-500');
         }
         window.onload = loadData;
     </script>
