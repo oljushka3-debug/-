@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v4.9</title>
+    <title>SmartWallet v5.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; }
@@ -13,25 +13,25 @@
 <body class="bg-gray-100 pb-20">
     <div class="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg sticky top-0 z-40">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-bold">SmartWallet</h1>
-            <div class="text-sm bg-indigo-500 px-2 py-1 rounded-lg">
-                Курс €: <input type="number" id="manualRate" value="50.76" step="0.01" class="w-14 bg-transparent outline-none font-bold text-center" oninput="updateRate()"> ₴
+            <h1 class="text-xl font-bold italic">SmartWallet</h1>
+            <div class="text-sm bg-indigo-500 px-3 py-1 rounded-full border border-indigo-400">
+                Курс: <input type="number" id="manualRate" value="50.76" step="0.01" class="w-14 bg-transparent outline-none font-bold text-center" oninput="updateRate()"> ₴
             </div>
         </div>
         <div class="text-center">
-            <p class="text-indigo-100 text-xs uppercase mb-1">Общий баланс в евро</p>
+            <p class="text-indigo-100 text-[10px] uppercase mb-1">Капитал в евро</p>
             <h2 id="totalBalance" class="text-4xl font-black">€ 0.00</h2>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 p-4">
-        <div class="bg-white p-3 rounded-2xl shadow-sm border-l-4 border-blue-500">
+    <div class="grid grid-cols-2 gap-3 p-4 text-center">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
             <p class="text-[10px] text-gray-400 font-bold uppercase">Sparkasse</p>
-            <p id="acc-Sparkasse" class="text-lg font-bold">€ 0.00</p>
+            <p id="acc-Sparkasse" class="text-lg font-bold italic text-gray-800">€ 0.00</p>
         </div>
-        <div class="bg-white p-3 rounded-2xl shadow-sm border-l-4 border-green-600">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-600">
             <p class="text-[10px] text-gray-400 font-bold uppercase">Приват</p>
-            <p id="acc-Приват" class="text-lg font-bold">₴ 0.00</p>
+            <p id="acc-Приват" class="text-lg font-bold italic text-gray-800">₴ 0.00</p>
         </div>
     </div>
 
@@ -45,29 +45,19 @@
     <div id="modal" class="modal">
         <div class="bg-white w-full max-w-sm m-4 p-6 rounded-3xl relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-gray-300">&times;</button>
-            <h3 id="modalTitle" class="text-xl font-black mb-6 text-gray-800 uppercase italic">Запись</h3>
+            <h3 id="modalTitle" class="text-xl font-black mb-6 text-gray-800 uppercase italic text-center">Запись</h3>
             <form onsubmit="handleSubmit(event)" class="space-y-4">
                 <input type="hidden" id="txType">
-                <input type="date" id="txDate" required class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold">
-
-                <div class="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded-2xl border-2 border-indigo-50">
-                    <div>
-                        <label class="text-[9px] font-black text-gray-400 uppercase">Кол-во</label>
-                        <input type="number" id="qty" value="1" class="w-full bg-transparent text-lg font-bold outline-none" oninput="recalc()">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black text-gray-400 uppercase italic text-blue-500">Цена 1€</label>
-                        <input type="number" id="amountEur" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none" oninput="calcUah()">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black text-gray-400 uppercase italic text-green-600">Цена 1₴</label>
-                        <input type="number" id="amountUah" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none" oninput="calcEur()">
-                    </div>
+                <input type="date" id="txDate" required class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold text-gray-700 outline-none">
+                <div class="grid grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl border-2 border-indigo-50 text-center">
+                    <div><label class="text-[9px] font-black text-gray-400 uppercase">Кол-во</label><input type="number" id="qty" value="1" step="1" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcUah()"></div>
+                    <div><label class="text-[9px] font-black text-blue-500 uppercase italic">Цена 1€</label><input type="number" id="amountEur" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcUah()"></div>
+                    <div><label class="text-[9px] font-black text-green-600 uppercase italic">Цена 1₴</label><input type="number" id="amountUah" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcEur()"></div>
                 </div>
-
-                <input type="text" id="merchant" placeholder="Магазин (Lidl...)" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
-                <input type="text" id="item" placeholder="Товар (Milch...)" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
-
+                <div class="space-y-2">
+                    <input type="text" id="merchant" placeholder="Магазин" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
+                    <input type="text" id="item" placeholder="Товар" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
+                </div>
                 <div class="grid grid-cols-2 gap-2">
                     <select id="account" class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold bg-white outline-none"></select>
                     <select id="category" class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold bg-white outline-none"></select>
@@ -78,13 +68,10 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxsmufV-f7F4PO8fcYb8J25GbqoEGt5XahsJuHlYuTeDwE6MSDVUCTCFoVYADBWD3-a/exec"; 
+        const API_URL = "ВАША_ССЫЛКА_ИЗ_ШАГА_1"; 
         let currentRate = 50.76;
 
-        function updateRate() { 
-            currentRate = parseFloat(document.getElementById('manualRate').value) || 50.76; 
-            recalc(); 
-        }
+        function updateRate() { currentRate = parseFloat(document.getElementById('manualRate').value) || 50.76; calcUah(); }
         function calcUah() { 
             const e = document.getElementById('amountEur').value; 
             if(e) document.getElementById('amountUah').value = (e * currentRate).toFixed(2); 
@@ -93,7 +80,6 @@
             const u = document.getElementById('amountUah').value; 
             if(u) document.getElementById('amountEur').value = (u / currentRate).toFixed(2); 
         }
-        function recalc() { calcUah(); }
 
         function openModal(type) {
             document.getElementById('modal').classList.add('active');
@@ -104,7 +90,7 @@
             if (type === 'expense') {
                 document.getElementById('modalTitle').innerText = "Расход";
                 ["Sparkasse", "Приват", "Наличные EUR", "Наличные UAH"].forEach(a => aS.add(new Option(a, a)));
-                ["🍎 Продукты", "🏠 Дом", "💊 Здоровье", "🚗 Транспорт", "📦 Прочее"].forEach(c => cS.add(new Option(c, c)));
+                ["🍎 Продукты", "🏠 Дом", "💊 Здоровье", "🚗 Транспорт", "📦 Прочее", "🍷 Алкоголь"].forEach(c => cS.add(new Option(c, c)));
             } else {
                 document.getElementById('modalTitle').innerText = "Доход";
                 aS.add(new Option("💎 Доход", "💎 Доход"));
@@ -114,20 +100,22 @@
 
         async function handleSubmit(e) {
             e.preventDefault();
+            const q = parseFloat(document.getElementById('qty').value) || 1;
+            const pEur = parseFloat(document.getElementById('amountEur').value) || 0;
             const acc = document.getElementById('account').value;
+            const totalEur = (pEur * q).toFixed(2);
+            const totalUah = (pEur * q * currentRate).toFixed(2);
+
             const payload = {
-                action: 'add',
-                date: document.getElementById('txDate').value,
+                action: 'add', date: document.getElementById('txDate').value,
                 merchant: document.getElementById('merchant').value || '—',
                 item: document.getElementById('item').value || '—',
-                qty: document.getElementById('qty').value || 1,
-                eur: document.getElementById('amountEur').value || 0,
-                uah: document.getElementById('amountUah').value || 0,
-                account: acc,
-                category: document.getElementById('category').value,
+                qty: q, eur: pEur, totalEur: totalEur, totalUah: totalUah,
+                account: acc, category: document.getElementById('category').value,
                 currency: (acc.includes("Приват") || acc.includes("UAH")) ? "UAH" : "EUR"
             };
-            document.getElementById('submitBtn').innerText = "⏳ ЗАПИСЬ...";
+            
+            document.getElementById('submitBtn').innerText = "⏳ СОХРАНЕНИЕ...";
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             location.reload();
         }
@@ -143,21 +131,23 @@
             let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
             data.rows.slice().reverse().forEach(r => {
                 const eurT = parseFloat(r[6]) || 0, uahT = parseFloat(r[7]) || 0, acc = r[9], cat = r[10];
-                if (b.hasOwnProperty(acc)) {
+                const isDel = String(r[2]).includes("[УДАЛЕНО]");
+                if (!isDel && b.hasOwnProperty(acc)) {
                     const val = (acc.includes("Приват") || acc.includes("UAH")) ? uahT : eurT;
                     if (cat === "💎 Доход") b[acc] += val; else b[acc] -= val;
                 }
-                const cur = (acc.includes("Приват") || acc.includes("UAH")) ? "₴" : "€";
-                hist.innerHTML += `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
-                    <div><p class="text-[10px] text-gray-400 font-bold">${String(r[0]).substring(0,10)}</p><p class="font-bold">${r[1]}</p><p class="text-xs text-gray-500">${r[2]} | ${acc}</p></div>
-                    <div class="text-right font-bold ${cat==='💎 Доход'?'text-green-600':'text-red-500'}">${(cur === "₴" ? uahT : eurT).toFixed(2)} ${cur}</div>
-                </div>`;
+                if (!isDel) {
+                    const cur = (acc.includes("Приват") || acc.includes("UAH")) ? "₴" : "€";
+                    hist.innerHTML += `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2 text-sm font-bold text-gray-700">
+                        <div><p class="text-[10px] text-gray-400">${String(r[0]).substring(0,10)}</p><p>${r[1]}</p><p class="text-[10px] font-normal text-gray-400">${r[2]} | ${acc}</p></div>
+                        <div class="${cat==='💎 Доход'?'text-green-600':'text-red-500'}">${(cur === "₴" ? uahT : eurT).toFixed(2)} ${cur}</div>
+                    </div>`;
+                }
             });
             for(let k in b) if(document.getElementById('acc-'+k)) document.getElementById('acc-'+k).innerText = (k.includes("UAH")?"₴ ":"€ ")+b[k].toFixed(2);
             const total = b["Sparkasse"] + b["Наличные EUR"] + (b["Приват"] + b["Наличные UAH"]) / currentRate;
             document.getElementById('totalBalance').innerText = "€ " + total.toFixed(2);
         }
-
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
         window.onload = loadData;
     </script>
