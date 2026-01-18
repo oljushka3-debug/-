@@ -3,82 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v5.4</title>
+    <title>SmartWallet v6.0 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
     </style>
 </head>
-<body class="bg-gray-100 pb-20">
-    <div class="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg sticky top-0 z-40">
+<body class="bg-gray-100 pb-20 font-sans">
+    <div class="bg-slate-800 text-white p-6 rounded-b-3xl shadow-xl sticky top-0 z-40">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-bold italic">SmartWallet</h1>
-            <div class="text-sm bg-indigo-500 px-3 py-1 rounded-full border border-indigo-400">
-                Курс: <input type="number" id="manualRate" value="50.76" step="0.01" class="w-14 bg-transparent outline-none font-bold text-center" oninput="updateRate()"> ₴
+            <h1 class="text-xl font-black italic tracking-tighter text-yellow-400">FINANCE PRO</h1>
+            <div class="text-xs bg-slate-700 px-3 py-1 rounded-full border border-slate-600">
+                Курс €: <input type="number" id="manualRate" value="50.76" step="0.01" class="w-12 bg-transparent outline-none font-bold text-yellow-400" oninput="updateRate()"> ₴
             </div>
         </div>
         <div class="text-center">
-            <p class="text-indigo-100 text-[10px] uppercase mb-1">Капитал в евро</p>
-            <h2 id="totalBalance" class="text-4xl font-black">€ 0.00</h2>
+            <p class="text-slate-400 text-[10px] uppercase tracking-widest mb-1">Общий баланс (€)</p>
+            <h2 id="totalBalance" class="text-4xl font-black tracking-tight">€ 0.00</h2>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 p-4 text-center">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
-            <p class="text-[10px] text-gray-400 font-bold uppercase">Sparkasse</p>
-            <p id="acc-Sparkasse" class="text-lg font-bold italic text-gray-800">€ 0.00</p>
+    <div class="grid grid-cols-2 gap-3 p-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-blue-500 text-center">
+            <p class="text-[9px] text-gray-400 font-bold uppercase">Sparkasse</p>
+            <p id="acc-Sparkasse" class="text-lg font-black text-slate-700">€ 0.00</p>
         </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-600">
-            <p class="text-[10px] text-gray-400 font-bold uppercase">Приват</p>
-            <p id="acc-Приват" class="text-lg font-bold italic text-gray-800">₴ 0.00</p>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-b-4 border-green-600 text-center">
+            <p class="text-[9px] text-gray-400 font-bold uppercase">ПриватБанк</p>
+            <p id="acc-Приват" class="text-lg font-black text-slate-700">₴ 0.00</p>
         </div>
     </div>
 
     <div class="flex px-4 gap-2 mb-6">
-        <button onclick="openModal('expense')" class="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black shadow-lg">РАСХОД</button>
-        <button onclick="openModal('income')" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg">ДОХОД</button>
+        <button onclick="openModal('expense')" class="flex-1 bg-rose-600 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition">РАСХОД</button>
+        <button onclick="openModal('income')" class="flex-1 bg-emerald-700 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition">ДОХОД</button>
     </div>
 
     <div id="content-history" class="px-4 space-y-3"></div>
 
     <div id="modal" class="modal">
-        <div class="bg-white w-full max-w-sm m-4 p-6 rounded-3xl relative shadow-2xl">
+        <div class="bg-white w-full max-w-sm m-4 p-6 rounded-3xl relative shadow-2xl overflow-y-auto max-h-[90vh]">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-gray-300">&times;</button>
-            <h3 id="modalTitle" class="text-xl font-black mb-6 text-gray-800 uppercase italic text-center">Запись</h3>
+            <h3 id="modalTitle" class="text-xl font-black mb-6 text-slate-800 uppercase italic text-center underline decoration-yellow-400">Новая запись</h3>
+            
             <form onsubmit="handleSubmit(event)" class="space-y-4">
                 <input type="hidden" id="txType">
-                <input type="date" id="txDate" required class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold text-gray-700 outline-none">
-                <div class="grid grid-cols-3 gap-2 bg-gray-50 p-4 rounded-2xl border-2 border-indigo-50 text-center">
-                    <div><label class="text-[9px] font-black text-gray-400 uppercase">Кол-во</label><input type="number" id="qty" value="1" step="1" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcUah()"></div>
-                    <div><label class="text-[9px] font-black text-blue-500 uppercase italic">Цена 1€</label><input type="number" id="amountEur" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcUah()"></div>
-                    <div><label class="text-[9px] font-black text-green-600 uppercase italic">Цена 1₴</label><input type="number" id="amountUah" step="0.01" class="w-full bg-transparent text-lg font-bold outline-none text-center" oninput="calcEur()"></div>
+                <input type="date" id="txDate" required class="w-full border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none">
+
+                <div class="grid grid-cols-3 gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+                    <div>
+                        <label class="text-[9px] font-black text-slate-400 uppercase">Кол-во</label>
+                        <input type="number" id="qty" value="1" step="1" class="w-full bg-transparent text-lg font-black outline-none text-center" oninput="recalc()">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-black text-blue-500 uppercase italic">Цена за 1€</label>
+                        <input type="number" id="amountEur" step="0.01" placeholder="0.00" class="w-full bg-transparent text-lg font-black outline-none text-center" oninput="recalc()">
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg">
+                        <label class="text-[9px] font-black text-amber-600 uppercase italic">Итого ₴</label>
+                        <div id="displayUah" class="w-full text-sm font-black text-center pt-1 text-slate-700">0.00</div>
+                    </div>
                 </div>
+
                 <div class="space-y-2">
-                    <input type="text" id="merchant" placeholder="Магазин" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
-                    <input type="text" id="item" placeholder="Товар" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
+                    <input type="text" id="merchant" placeholder="Описание (Lidl, АЗС...)" class="w-full border-2 border-slate-100 rounded-xl p-3 outline-none focus:border-yellow-400">
+                    <input type="text" id="itemDE" placeholder="Товар DE (Milch)" class="w-full border-2 border-slate-100 rounded-xl p-3 outline-none">
+                    <input type="text" id="itemRU" placeholder="Товар РУ (Молоко)" class="w-full border-2 border-slate-100 rounded-xl p-3 outline-none">
                 </div>
+
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="account" class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold bg-white outline-none"></select>
-                    <select id="category" class="w-full border-2 border-gray-100 rounded-xl p-3 font-bold bg-white outline-none"></select>
+                    <select id="account" class="w-full border-2 border-slate-100 rounded-xl p-3 font-bold bg-white outline-none" onchange="recalc()"></select>
+                    <select id="category" class="w-full border-2 border-slate-100 rounded-xl p-3 font-bold bg-white outline-none"></select>
                 </div>
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xl shadow-lg">СОХРАНИТЬ</button>
+
+                <button type="submit" id="submitBtn" class="w-full bg-slate-800 text-yellow-400 py-4 rounded-2xl font-black text-xl shadow-lg uppercase tracking-widest">Записать</button>
             </form>
         </div>
     </div>
 
     <script>
-        const API_URL = "ВАША_ССЫЛКА_ИЗ_ШАГА_1"; 
+        const API_URL = "ТВОЯ_НОВАЯ_ССЫЛКА_ИЗ_ШАГА_1"; 
         let currentRate = 50.76;
 
-        function updateRate() { currentRate = parseFloat(document.getElementById('manualRate').value) || 50.76; calcUah(); }
-        function calcUah() { 
-            const e = document.getElementById('amountEur').value; 
-            if(e) document.getElementById('amountUah').value = (e * currentRate).toFixed(2); 
+        function updateRate() { 
+            currentRate = parseFloat(document.getElementById('manualRate').value) || 50.76; 
+            recalc(); 
         }
-        function calcEur() { 
-            const u = document.getElementById('amountUah').value; 
-            if(u) document.getElementById('amountEur').value = (u / currentRate).toFixed(2); 
+
+        function recalc() {
+            const q = parseFloat(document.getElementById('qty').value) || 0;
+            const p = parseFloat(document.getElementById('amountEur').value) || 0;
+            const acc = document.getElementById('account').value;
+            const totalUah = (q * p * currentRate).toFixed(2);
+            document.getElementById('displayUah').innerText = (acc.includes("Приват") || acc.includes("UAH")) ? totalUah : "—";
         }
 
         function openModal(type) {
@@ -88,14 +106,15 @@
             const aS = document.getElementById('account'), cS = document.getElementById('category');
             aS.innerHTML = ""; cS.innerHTML = "";
             if (type === 'expense') {
-                document.getElementById('modalTitle').innerText = "Расход";
+                document.getElementById('modalTitle').innerText = "Новый расход";
                 ["Sparkasse", "Приват", "Наличные EUR", "Наличные UAH"].forEach(a => aS.add(new Option(a, a)));
-                ["🍎 Продукты", "🏠 Дом", "💊 Здоровье", "🚗 Транспорт", "📦 Прочее", "🍷 Алкоголь"].forEach(c => cS.add(new Option(c, c)));
+                ["🍎 Продукты", "🏠 Дом", "💊 Здоровье", "🚗 Транспорт", "🍷 Алкоголь", "📦 Прочее"].forEach(c => cS.add(new Option(c, c)));
             } else {
-                document.getElementById('modalTitle').innerText = "Доход";
+                document.getElementById('modalTitle').innerText = "Новый доход";
                 aS.add(new Option("💎 Доход", "💎 Доход"));
                 ["Sparkasse", "Приват", "Наличные EUR", "Наличные UAH"].forEach(a => cS.add(new Option(a, a)));
             }
+            recalc();
         }
 
         async function handleSubmit(e) {
@@ -103,19 +122,30 @@
             const q = parseFloat(document.getElementById('qty').value) || 1;
             const pEur = parseFloat(document.getElementById('amountEur').value) || 0;
             const acc = document.getElementById('account').value;
-            const totalEur = (pEur * q).toFixed(2);
-            const totalUah = (pEur * q * currentRate).toFixed(2);
+            const type = document.getElementById('txType').value;
+            
+            const isUahAcc = (acc.includes("Приват") || acc.includes("UAH"));
+            const sign = (type === 'expense') ? -1 : 1;
 
             const payload = {
-                action: 'add', date: document.getElementById('txDate').value,
+                action: 'add',
+                date: document.getElementById('txDate').value,
+                category: document.getElementById('category').value,
                 merchant: document.getElementById('merchant').value || '—',
-                item: document.getElementById('item').value || '—',
-                qty: q, eur: pEur, totalEur: totalEur, totalUah: totalUah,
-                account: acc, category: document.getElementById('category').value,
-                currency: (acc.includes("Приват") || acc.includes("UAH")) ? "UAH" : "EUR"
+                itemDE: document.getElementById('itemDE').value || '—',
+                itemRU: document.getElementById('itemRU').value || '—',
+                account: acc,
+                qty: q,
+                priceUnit: pEur,
+                totalTran: (q * pEur).toFixed(2),
+                curTran: "EUR",
+                totalCard: isUahAcc ? (sign * q * pEur * currentRate).toFixed(2) : "",
+                curCard: isUahAcc ? "UAH" : "",
+                rate: currentRate
             };
             
-            document.getElementById('submitBtn').innerText = "⏳ СОХРАНЕНИЕ...";
+            document.getElementById('submitBtn').innerText = "⌛ ЖДИТЕ...";
+            document.getElementById('submitBtn').disabled = true;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             location.reload();
         }
@@ -129,22 +159,29 @@
         function handleData(data) {
             const hist = document.getElementById('content-history'); hist.innerHTML = '';
             let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
+            
             data.rows.slice().reverse().forEach(r => {
-                const eurT = parseFloat(r[6]) || 0, uahT = parseFloat(r[7]) || 0, acc = r[9], cat = r[10];
-                const isDel = String(r[2]).includes("[УДАЛЕНО]");
+                const totalTr = parseFloat(r[8]) || 0, totalCr = parseFloat(r[10]) || 0;
+                const acc = r[5], cat = r[1], isDel = String(r[3]).includes("[УДАЛЕНО]");
+
                 if (!isDel && b.hasOwnProperty(acc)) {
-                    const val = (acc.includes("Приват") || acc.includes("UAH")) ? uahT : eurT;
+                    const val = (acc.includes("Приват") || acc.includes("UAH")) ? Math.abs(totalCr) : totalTr;
                     if (cat === "💎 Доход") b[acc] += val; else b[acc] -= val;
                 }
                 if (!isDel) {
                     const cur = (acc.includes("Приват") || acc.includes("UAH")) ? "₴" : "€";
-                    hist.innerHTML += `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2 text-sm font-bold text-gray-700">
-                        <div><p class="text-[10px] text-gray-400">${String(r[0]).substring(0,10)}</p><p>${r[1]}</p><p class="text-[10px] font-normal text-gray-400">${r[2]} | ${acc}</p></div>
-                        <div class="${cat==='💎 Доход'?'text-green-600':'text-red-500'}">${(cur === "₴" ? uahT : eurT).toFixed(2)} ${cur}</div>
+                    const displaySum = (cur === "₴") ? Math.abs(totalCr) : totalTr;
+                    hist.innerHTML += `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2">
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold">${String(r[0]).substring(0,10)} | ${cat}</p>
+                            <p class="font-bold text-slate-800">${r[2]}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">${r[3]} (${r[4]}) | ${acc}</p>
+                        </div>
+                        <div class="text-right font-black ${cat==='💎 Доход'?'text-emerald-600':'text-rose-500'}">${displaySum.toFixed(2)} ${cur}</div>
                     </div>`;
                 }
             });
-            for(let k in b) if(document.getElementById('acc-'+k)) document.getElementById('acc-'+k).innerText = (k.includes("UAH")?"₴ ":"€ ")+b[k].toFixed(2);
+            for(let k in b) if(document.getElementById('acc-'+k)) document.getElementById('acc-'+k).innerText = (k.includes("UAH")||k.includes("Приват")?"₴ ":"€ ")+b[k].toFixed(2);
             const total = b["Sparkasse"] + b["Наличные EUR"] + (b["Приват"] + b["Наличные UAH"]) / currentRate;
             document.getElementById('totalBalance').innerText = "€ " + total.toFixed(2);
         }
