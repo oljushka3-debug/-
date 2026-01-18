@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Ultimate v14.1</title>
+    <title>SmartWallet Ultimate v14.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -45,7 +45,7 @@
                             <input type="number" id="qty" value="1" oninput="calcInfo()" class="w-full bg-transparent text-xl font-bold outline-none">
                         </div>
                         <div class="bg-slate-800 p-3 rounded-2xl border-2 border-slate-700 text-center">
-                            <label id="priceLabel" class="text-[8px] text-blue-400 block uppercase mb-1 font-black italic">Сумма</label>
+                            <label id="priceLabel" class="text-[8px] text-blue-400 block uppercase mb-1 font-black italic">Цена ед. (€)</label>
                             <input type="number" id="price" step="0.01" oninput="calcInfo()" class="w-full bg-transparent text-xl font-bold outline-none text-center">
                         </div>
                     </div>
@@ -140,15 +140,14 @@
 
         function calcInfo() {
             const acc = document.getElementById('acc').value, rate = parseFloat(document.getElementById('baseRate').value);
-            document.getElementById('priceLabel').innerText = isUah(acc) ? "Сумма ₴" : "Сумма €";
-            const total = (parseFloat(document.getElementById('qty').value) || 1) * (parseFloat(document.getElementById('price').value) || 0);
+            const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('price').value) || 0;
             const box = document.getElementById('infoBox'); box.classList.remove('hidden');
-            box.innerText = isUah(acc) ? "Консервация: € " + (total / rate).toFixed(2) : "В гривне: ₴ " + (total * rate).toFixed(2);
+            box.innerText = isUah(acc) ? "Консервация: € " + (q * p).toFixed(2) + " | Списание: ₴ " + (q * p * rate).toFixed(2) : "Всего: € " + (q * p).toFixed(2);
         }
 
         async function save(e) {
             e.preventDefault();
-            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳...";
+            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳ ЗАПИСЬ...";
             const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value);
             const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
             let payload = { action: type, date: date, rate: rate, merchant: document.getElementById('merchant').value };
@@ -161,24 +160,26 @@
             } else {
                 const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('price').value) || 0, acc = document.getElementById('acc').value, cat = document.getElementById('cat').value;
                 const isInc = (type === 'income' || cat.includes('Доход'));
-                const total = q * p;
+                const totalEur = q * p;
 
                 payload.action = 'add'; payload.category = cat; payload.account = acc;
-                payload.itemDE = (isInc) ? "—" : document.getElementById('itemDE').value;
-                payload.itemRU = (isInc) ? "—" : document.getElementById('itemRU').value;
+                payload.itemDE = (isInc) ? "—" : (document.getElementById('itemDE').value || "—");
+                payload.itemRU = (isInc) ? "—" : (document.getElementById('itemRU').value || "—");
                 
-                // Главное исправление для Дохода: очищаем цену в колонке H
+                // 1. Очистка колонки H (Цена за ед.) при Доходе
                 payload.qty = (isInc) ? "" : q;
                 payload.priceUnit = (isInc) ? "" : p;
                 payload.curTran = "EUR";
                 
+                // 2. Распределение сумм для Привата (Колонка I - евро, Колонка K - гривна)
                 if (isUah(acc)) {
-                    payload.totalCard = isInc ? Math.abs(total) : -Math.abs(total);
+                    payload.totalTran = isInc ? Math.abs(totalEur) : -Math.abs(totalEur); // Колонка I
+                    payload.totalCard = isInc ? Math.abs(totalEur * rate) : -Math.abs(totalEur * rate); // Колонка K
                     payload.curCard = "UAH";
-                    payload.totalTran = isInc ? Math.abs(total / rate) : -Math.abs(total / rate);
                 } else {
-                    payload.totalTran = isInc ? Math.abs(total) : -Math.abs(total);
-                    payload.totalCard = ""; payload.curCard = "EUR";
+                    payload.totalTran = isInc ? Math.abs(totalEur) : -Math.abs(totalEur); // Колонка I
+                    payload.totalCard = ""; // Если карта в евро, K пустая
+                    payload.curCard = "EUR";
                 }
             }
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
