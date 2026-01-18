@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v3.0</title>
+    <title>SmartWallet v3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; }
@@ -43,7 +43,7 @@
 
     <div class="px-4">
         <div class="flex bg-gray-200 rounded-xl p-1 mb-4">
-            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600 active-tab">История</button>
+            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600 active">История</button>
             <button onclick="switchTab('deleted')" id="tab-deleted" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-600">Корзина</button>
         </div>
         <div id="content-history" class="tab-content active space-y-3"></div>
@@ -57,23 +57,18 @@
             <form id="txForm" onsubmit="handleSubmit(event)" class="space-y-4">
                 <input type="hidden" id="txType">
                 
-                <div class="grid grid-cols-2 gap-2" id="amountRow">
+                <div class="grid grid-cols-2 gap-2">
                     <input type="number" id="amount" step="0.01" required placeholder="Сумма" class="border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
                     <input type="number" id="qty" value="1" placeholder="Кол-во" class="border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
                 </div>
 
-                <input type="text" id="merchant" placeholder="Магазин" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
-                <input type="text" id="item" placeholder="Товар" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
+                <input type="text" id="merchant" placeholder="Магазин/Источник" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
+                <input type="text" id="item" placeholder="Товар/Описание" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500">
 
-                <div id="accLabel" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Откуда</div>
-                <select id="account" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none">
-                    <option value="Sparkasse">Sparkasse (EUR)</option>
-                    <option value="Приват">Приват (UAH)</option>
-                    <option value="Наличные EUR">Наличные EUR</option>
-                    <option value="Наличные UAH">Наличные UAH</option>
-                </select>
+                <div id="accLabel" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Счет</div>
+                <select id="account" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none"></select>
 
-                <div id="catLabel" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Куда</div>
+                <div id="catLabel" class="text-[10px] font-bold text-gray-400 uppercase ml-1">Категория</div>
                 <select id="category" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none"></select>
 
                 <button type="submit" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg">Сохранить</button>
@@ -96,54 +91,41 @@
         ];
 
         function openModal(type) {
-            document.getElementById('modal').classList.add('active');
+            const modal = document.getElementById('modal');
+            modal.classList.add('active');
             document.getElementById('txType').value = type;
             
             const mInput = document.getElementById('merchant');
             const iInput = document.getElementById('item');
             const qInput = document.getElementById('qty');
+            const aSelect = document.getElementById('account');
             const cSelect = document.getElementById('category');
-            const cLabel = document.getElementById('catLabel');
             const aLabel = document.getElementById('accLabel');
+            const cLabel = document.getElementById('catLabel');
 
-            mInput.style.display = "block";
-            iInput.style.display = "block";
-            qInput.style.display = "block";
-            cSelect.innerHTML = "";
+            aSelect.innerHTML = ""; cSelect.innerHTML = "";
+            mInput.style.display = "block"; iInput.style.display = "block"; qInput.style.display = "block";
 
             if (type === 'expense') {
                 document.getElementById('modalTitle').innerText = 'Новый расход';
-                mInput.placeholder = "Магазин";
-                iInput.placeholder = "Товар (DE)";
-                aLabel.innerText = "Откуда (Счет)";
-                cLabel.innerText = "Куда (Категория)";
+                mInput.placeholder = "Магазин"; iInput.placeholder = "Товар";
+                aLabel.innerText = "Списать со счета"; cLabel.innerText = "Категория";
+                ACCOUNTS.forEach(a => aSelect.add(new Option(a, a)));
                 EXPENSE_CATS.forEach(c => cSelect.add(new Option(c, c)));
             } 
             else if (type === 'income') {
                 document.getElementById('modalTitle').innerText = 'Новый доход';
-                mInput.placeholder = "Источник";
-                iInput.placeholder = "Назначение";
+                mInput.placeholder = "Источник дохода"; iInput.placeholder = "Описание";
                 qInput.style.display = "none";
-                aLabel.innerText = "Откуда (Источник)";
-                cLabel.innerText = "Куда (На счет)";
-                cSelect.add(new Option("💎 Доход", "💎 Доход"));
-                // Для дохода меняем местами логику отображения, чтобы было понятнее
-                aLabel.innerText = "Тип дохода";
-                cLabel.innerText = "Зачислить на счет";
-                cSelect.innerHTML = "";
+                aLabel.innerText = "Тип операции"; cLabel.innerText = "Зачислить на счет";
+                aSelect.add(new Option("💎 Доход", "💎 Доход"));
                 ACCOUNTS.forEach(a => cSelect.add(new Option(a, a)));
-                document.getElementById('account').innerHTML = '<option value="💎 Доход">💎 Доход</option>';
             } 
             else if (type === 'transfer') {
                 document.getElementById('modalTitle').innerText = 'Перевод';
-                mInput.style.display = "none";
-                iInput.style.display = "none";
-                qInput.style.display = "none";
-                aLabel.innerText = "Откуда (С какого счета)";
-                cLabel.innerText = "Куда (На какой счет)";
-                ACCOUNTS.forEach(a => cSelect.add(new Option(a, a)));
-                // Восстанавливаем счета в первом селекте
-                document.getElementById('account').innerHTML = ACCOUNTS.map(a => `<option value="${a}">${a}</option>`).join('');
+                mInput.style.display = "none"; iInput.style.display = "none"; qInput.style.display = "none";
+                aLabel.innerText = "ОТКУДА"; cLabel.innerText = "КУДА";
+                ACCOUNTS.forEach(a => { aSelect.add(new Option(a, a)); cSelect.add(new Option(a, a)); });
             }
         }
 
@@ -164,20 +146,19 @@
         }
 
         function updateBalance() {
-            let balances = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
+            let b = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
             mainData.forEach(r => {
-                let val = parseFloat(r[6]); if (isNaN(val)) val = 0;
-                const acc = r[9];
-                if (balances.hasOwnProperty(acc)) {
-                    if (r[8] === "💎 Доход") balances[acc] += val; else balances[acc] -= val;
+                let v = parseFloat(r[6]) || 0;
+                if (b.hasOwnProperty(r[9])) {
+                    if (r[8] === "💎 Доход") b[r[9]] += v; else b[r[9]] -= v;
                 }
             });
-            document.getElementById('acc-sparkasse').innerText = `€ ${balances["Sparkasse"].toFixed(2)}`;
-            document.getElementById('acc-privat').innerText = `₴ ${balances["Приват"].toFixed(2)}`;
-            document.getElementById('acc-cash-eur').innerText = `€ ${balances["Наличные EUR"].toFixed(2)}`;
-            document.getElementById('acc-cash-uah').innerText = `₴ ${balances["Наличные UAH"].toFixed(2)}`;
-            const totalEur = balances["Sparkasse"] + balances["Наличные EUR"] + (balances["Приват"] + balances["Наличные UAH"]) / currentRate;
-            document.getElementById('totalBalance').innerText = `€ ${totalEur.toFixed(2)}`;
+            document.getElementById('acc-sparkasse').innerText = `€ ${b["Sparkasse"].toFixed(2)}`;
+            document.getElementById('acc-privat').innerText = `₴ ${b["Приват"].toFixed(2)}`;
+            document.getElementById('acc-cash-eur').innerText = `€ ${b["Наличные EUR"].toFixed(2)}`;
+            document.getElementById('acc-cash-uah').innerText = `₴ ${b["Наличные UAH"].toFixed(2)}`;
+            const total = b["Sparkasse"] + b["Наличные EUR"] + (b["Приват"] + b["Наличные UAH"]) / currentRate;
+            document.getElementById('totalBalance').innerText = `€ ${total.toFixed(2)}`;
         }
 
         function renderHistory() {
@@ -186,12 +167,14 @@
             hist.innerHTML = ''; del.innerHTML = '';
             mainData.slice().reverse().forEach(r => {
                 const isDel = String(r[2]).includes("[УДАЛЕНО]");
-                let d = String(r[0]); d = d.includes("T") ? d.split("T")[0] : d.substring(0, 10);
-                let amt = parseFloat(r[6]); if (isNaN(amt)) amt = 0;
+                const isInc = r[8] === '💎 Доход';
+                const cur = (r[9].includes("Приват") || r[9].includes("UAH")) ? "₴" : "€";
+                const date = String(r[0]).substring(0, 10);
+                
                 const card = `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-2 border border-gray-50">
-                    <div><p class="text-[10px] text-gray-400 uppercase font-black">${d}</p><p class="font-bold text-gray-800">${r[1]} <span class="text-gray-400 font-normal text-xs">${r[4]>1?'x'+r[4]:''}</span></p><p class="text-[11px] text-gray-500">${r[2]} | ${r[9]}</p></div>
-                    <div class="text-right"><p class="font-bold ${r[8] === '💎 Доход' ? 'text-green-500' : 'text-red-500'}">${r[8] === '💎 Доход' ? '+' : '-'}${amt.toFixed(2)} ${r[7]}</p>
-                    ${!isDel ? `<button onclick="editRow(${r[10]}, '${String(r[1]).replace(/'/g, "\\'")}', '${String(r[2]).replace(/'/g, "\\'")}', '${amt}', '${r[4]}', '${r[8]}')" class="text-indigo-500 text-[10px] mt-2 font-black border-b border-indigo-100">✏️ ПРАВКА</button>` : ''}</div></div>`;
+                    <div><p class="text-[10px] text-gray-400 uppercase font-black">${date}</p><p class="font-bold text-gray-800">${r[1]}</p><p class="text-[11px] text-gray-500">${r[2]} | ${r[9]}</p></div>
+                    <div class="text-right"><p class="font-bold ${isInc ? 'text-green-500' : 'text-red-500'}">${isInc ? '+' : '-'}${(parseFloat(r[6])||0).toFixed(2)} ${cur}</p>
+                    ${!isDel ? `<button onclick="editRow(${r[10]}, '${String(r[1]).replace(/'/g, "\\'")}', '${String(r[2]).replace(/'/g, "\\'")}', '${r[6]}', '${r[4]}', '${r[8]}', '${r[9]}')" class="text-indigo-500 text-[10px] mt-2 font-black border-b border-indigo-100">✏️ ПРАВКА</button>` : ''}</div></div>`;
                 if (isDel) del.innerHTML += card; else hist.innerHTML += card;
             });
         }
@@ -199,42 +182,46 @@
         async function handleSubmit(e) {
             e.preventDefault();
             const type = document.getElementById('txType').value;
-            const payload = {
+            let p = {
                 amount: document.getElementById('amount').value,
                 qty: document.getElementById('qty').value,
-                merchant: document.getElementById('merchant').value || (type === 'transfer' ? 'Перевод' : 'Сайт'),
+                merchant: document.getElementById('merchant').value || 'Без названия',
                 item: document.getElementById('item').value || '—',
                 account: document.getElementById('account').value,
                 category: document.getElementById('category').value,
                 action: 'add'
             };
 
+            if (type === 'income') { p.account = document.getElementById('category').value; p.category = "💎 Доход"; }
             if (type === 'transfer') {
-                const targetAcc = document.getElementById('category').value;
-                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...payload, category: '📦 Прочее', merchant: 'Перевод (Расход)'}) });
-                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...payload, account: targetAcc, category: '💎 Доход', merchant: 'Перевод (Доход)'}) });
+                const from = document.getElementById('account').value;
+                const to = document.getElementById('category').value;
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...p, account: from, category: '📦 Прочее', merchant: 'Перевод', item: 'На: ' + to}) });
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({...p, account: to, category: '💎 Доход', merchant: 'Перевод', item: 'От: ' + from}) });
             } else {
-                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
             }
             location.reload();
         }
 
-        async function editRow(idx, m, i, p, q, cat) {
-            if (confirm('Обнулить старую запись и исправить?')) {
-                let cleanPrice = parseFloat(p);
-                if (isNaN(cleanPrice) || cleanPrice > 1000000) cleanPrice = 0;
-                document.getElementById('amount').value = cleanPrice;
-                document.getElementById('qty').value = q;
-                document.getElementById('merchant').value = m;
-                document.getElementById('item').value = i;
-                window.scrollTo({top: 0, behavior: 'smooth'});
+        async function editRow(idx, m, i, amt, q, cat, acc) {
+            if (confirm('Удалить эту запись и открыть форму для исправлений?')) {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIndex: idx }) });
                 openModal(cat === '💎 Доход' ? 'income' : 'expense');
+                document.getElementById('amount').value = amt;
+                document.getElementById('merchant').value = m;
+                document.getElementById('item').value = i;
+                if (cat === '💎 Доход') document.getElementById('category').value = acc;
+                else document.getElementById('account').value = acc;
+                window.scrollTo({top: 0, behavior: 'smooth'});
             }
         }
 
         function saveManualRate() { currentRate = document.getElementById('manualRate').value; localStorage.setItem('manualRate', currentRate); updateBalance(); }
-        function switchTab(tab) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById('content-' + tab).classList.add('active'); }
+        function switchTab(t) { 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('content-' + t).classList.add('active');
+        }
         window.onload = loadData;
     </script>
 </body>
