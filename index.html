@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v15.3.1</title>
+    <title>SmartWallet v15.3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,15 +16,15 @@
         </div>
         <h1 id="mainBalance" class="text-center text-4xl font-black italic mb-4 tracking-tighter">€ 0.00</h1>
         <div class="grid grid-cols-2 gap-2 text-[9px] font-bold uppercase italic text-center">
-            <div class="bg-slate-800/40 p-2 rounded-xl border border-blue-500/10 text-blue-400">Sparkasse: <span id="acc-Sparkasse" class="block text-white text-xs mt-1 font-black">€ 0.00</span></div>
-            <div class="bg-slate-800/40 p-2 rounded-xl border border-green-500/10 text-green-500">Приват: <span id="acc-Приват" class="block text-white text-xs mt-1 font-black">₴ 0.00</span></div>
-            <div class="bg-slate-800/40 p-2 rounded-xl border border-yellow-500/10 text-yellow-500">Нал €: <span id="acc-Наличные EUR" class="block text-white text-xs mt-1 font-black">€ 0.00</span></div>
-            <div class="bg-slate-800/40 p-2 rounded-xl border border-orange-500/10 text-orange-500">Нал ₴: <span id="acc-Наличные UAH" class="block text-white text-xs mt-1 font-black">₴ 0.00</span></div>
+            <div class="bg-slate-800/40 p-2 rounded-xl border border-blue-500/10 text-blue-400">Sparkasse: <span id="acc-Sparkasse" class="block text-white text-xs mt-1 font-black italic">€ 0.00</span></div>
+            <div class="bg-slate-800/40 p-2 rounded-xl border border-green-500/10 text-green-500">Приват: <span id="acc-Приват" class="block text-white text-xs mt-1 font-black italic">₴ 0.00</span></div>
+            <div class="bg-slate-800/40 p-2 rounded-xl border border-yellow-500/10 text-yellow-500">Нал €: <span id="acc-Наличные EUR" class="block text-white text-xs mt-1 font-black italic">€ 0.00</span></div>
+            <div class="bg-slate-800/40 p-2 rounded-xl border border-orange-500/10 text-orange-500">Нал ₴: <span id="acc-Наличные UAH" class="block text-white text-xs mt-1 font-black italic">₴ 0.00</span></div>
         </div>
     </div>
 
     <div id="limitsBlock" class="bg-slate-900/80 p-5 rounded-[30px] border border-slate-800 mb-6 space-y-4 shadow-inner">
-        <h3 class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 italic text-center">Контроль бюджета</h3>
+        <h3 class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 italic text-center">Бюджет</h3>
         <div id="limit-items" class="space-y-4"></div>
     </div>
 
@@ -51,22 +51,22 @@
                 </div>
 
                 <div id="transferFields" class="hidden space-y-4">
-                    <div class="grid grid-cols-2 gap-2 text-[10px] uppercase font-bold text-white">
+                    <div class="grid grid-cols-2 gap-2 text-[10px] uppercase font-bold">
                         <select id="tFrom" onchange="syncT()" class="bg-slate-800 p-3 rounded-xl border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option></select>
                         <select id="tTo" onchange="syncT()" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-yellow-500"><option value="Наличные EUR">В Нал €</option><option value="Приват">В Приват</option><option value="Sparkasse">В Sparkasse</option><option value="Наличные UAH">В Нал ₴</option></select>
                     </div>
-                    <div class="bg-slate-800 p-5 rounded-3xl border border-yellow-500/20 text-center shadow-inner">
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-yellow-500/20 text-center">
                         <input type="number" id="tAmountFrom" step="0.01" oninput="syncT('from')" class="w-full bg-transparent text-3xl font-black outline-none mb-3" placeholder="0.00">
                         <div class="border-t border-slate-700 my-2 opacity-30"></div>
                         <input type="number" id="tAmountTo" step="0.01" oninput="syncT('to')" class="w-full bg-transparent text-3xl font-black outline-none text-yellow-500" placeholder="0.00">
                     </div>
                 </div>
 
-                <input type="text" id="merchant" placeholder="Комментарий" class="w-full bg-slate-800 p-4 rounded-2xl outline-none font-bold border border-slate-700">
+                <input type="text" id="merchant" placeholder="Описание" class="w-full bg-slate-800 p-4 rounded-2xl outline-none font-bold border border-slate-700">
                 
                 <div id="accCatGroup" class="grid grid-cols-2 gap-2">
-                    <select id="acc" class="bg-slate-800 p-4 rounded-2xl font-bold text-xs outline-none border border-slate-700 text-white"><option value="Sparkasse">Sparkasse</option><option value="Приват">Приват</option><option value="Наличные EUR">Нал €</option><option value="Наличные UAH">Нал ₴</option></select>
-                    <select id="cat" class="bg-slate-800 p-4 rounded-2xl font-bold text-xs outline-none border border-slate-700 text-white">
+                    <select id="acc" class="bg-slate-800 p-4 rounded-2xl font-bold text-xs outline-none border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Приват">Приват</option><option value="Наличные EUR">Нал €</option><option value="Наличные UAH">Нал ₴</option></select>
+                    <select id="cat" class="bg-slate-800 p-4 rounded-2xl font-bold text-xs outline-none border border-slate-700">
                         <option value="🔄 Перевод">🔄 Перевод</option>
                         <option>🍎 Продукты / Быт</option>
                         <option>🚬 Табак / Отдых</option>
@@ -78,9 +78,9 @@
                     </select>
                 </div>
                 
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeModal()" class="flex-1 bg-slate-800 text-slate-400 py-4 rounded-2xl font-bold uppercase text-[10px]">Отмена</button>
-                    <button id="saveBtn" class="flex-[2] bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase text-lg border-b-4 border-yellow-700 active:scale-95 transition-all">OK</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 bg-slate-800 text-slate-500 py-4 rounded-2xl font-bold uppercase text-[10px]">Отмена</button>
+                    <button id="saveBtn" class="flex-[2] bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase text-lg border-b-4 border-yellow-700">OK</button>
                 </div>
             </form>
         </div>
@@ -90,12 +90,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyb5-fqqvS3gtZkxOAvroNDga-YcP9hTSnpmhwyu2VBNSY7Sfh6heVTqkYBGfM2Uve4/exec";
         
         const MY_LIMITS = {
-            "🍎 Продукты / Быт": 350,
-            "🏠 Жилье / Счета": 50,
-            "🚬 Табак / Отдых": 100,
-            "💊 Здоровье": 80,
-            "🚗 Транспорт": 70,
-            "🛍 Остальное": 50
+            "🍎 Продукты / Быт": 350, "🏠 Жилье / Счета": 50, "🚬 Табак / Отдых": 100, "💊 Здоровье": 80, "🚗 Транспорт": 70, "🛍 Остальное": 50
         };
 
         let walletData = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
@@ -105,26 +100,17 @@
 
         function drawLimits() {
             const container = document.getElementById('limit-items'); container.innerHTML = "";
-            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-            document.getElementById('currentMonth').innerText = monthNames[new Date().getMonth()].toUpperCase();
-
             for (let cat in MY_LIMITS) {
-                const spent = Math.abs(spentThisMonth[cat] || 0);
-                const limit = MY_LIMITS[cat];
-                const percent = Math.min((spent / limit) * 100, 100);
-                let color = "bg-emerald-500";
-                if (percent > 75) color = "bg-yellow-500";
-                if (percent > 95) color = "bg-rose-500";
-                container.innerHTML += `<div><div class="flex justify-between text-[10px] font-bold mb-1 italic"><span>${cat}</span><span class="${spent > limit ? 'text-rose-500' : 'text-slate-400'}">${spent.toFixed(0)} / ${limit} €</span></div><div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div class="${color} h-full transition-all duration-1000" style="width: ${percent}%"></div></div></div>`;
+                const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100);
+                let color = "bg-emerald-500"; if (percent > 75) color = "bg-yellow-500"; if (percent > 95) color = "bg-rose-500";
+                container.innerHTML += `<div><div class="flex justify-between text-[10px] font-bold mb-1 italic"><span>${cat}</span><span class="${spent > limit ? 'text-rose-500' : 'text-slate-400'}">${spent.toFixed(0)} / ${limit} €</span></div><div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden"><div class="${color} h-full transition-all duration-1000" style="width: ${percent}%"></div></div></div>`;
             }
         }
 
         function draw(data) {
             const hist = document.getElementById('history'); hist.innerHTML = "";
             walletData = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
-            spentThisMonth = {};
-            const now = new Date();
-
+            spentThisMonth = {}; const now = new Date();
             data.rows.forEach(r => {
                 const acc = r[5], eur = parseFloat(r[8] || 0), date = new Date(r[0]), cat = r[1];
                 if (walletData.hasOwnProperty(acc)) walletData[acc] += (isUah(acc) ? parseFloat(r[10]||0) : eur);
@@ -133,11 +119,9 @@
                     spentThisMonth[lCat] = (spentThisMonth[lCat] || 0) + eur;
                 }
             });
-
             data.rows.slice().reverse().slice(0, 15).forEach(r => {
-                if (r[1] === "[УДАЛЕНО]") return;
                 const acc = r[5], isU = isUah(acc), val = Math.abs(isU ? r[10] : r[8]), isInc = (isU ? r[10] : r[8]) > 0;
-                hist.innerHTML += `<div class="bg-slate-900/40 p-3 rounded-2xl flex justify-between items-center border border-slate-800 mb-2"><div><p class="text-[8px] text-slate-600 font-bold uppercase italic">${r[0].split('T')[0].substring(5)} | ${acc}</p><p class="text-white text-[11px] font-bold">${r[2]}</p></div><div class="text-right"><div class="font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}</div><button onclick="deleteRow(${r[r.length-1]})" class="text-slate-800 text-[10px] mt-1"><i class="fas fa-trash-alt"></i></button></div></div>`;
+                hist.innerHTML += `<div class="bg-slate-900/40 p-3 rounded-2xl flex justify-between items-center border border-slate-800 mb-2"><div><p class="text-[8px] text-slate-600 font-bold uppercase italic">${r[0].split('T')[0].substring(5)} | ${acc}</p><p class="text-white text-[11px] font-bold">${r[2]}</p></div><div class="text-right"><div class="font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}</div></div></div>`;
             });
             drawBalance(); drawLimits();
         }
@@ -160,16 +144,18 @@
             let payload = { action: type, date: date, rate: rate, merchant: document.getElementById('merchant').value };
             
             if(type === 'transfer') {
-                payload.fromAcc = document.getElementById('tFrom').value; payload.toAcc = document.getElementById('tTo').value;
+                payload.fromAcc = document.getElementById('tFrom').value;
+                payload.toAcc = document.getElementById('tTo').value;
                 payload.amountFrom = parseFloat(document.getElementById('tAmountFrom').value) || 0;
                 payload.amountTo = parseFloat(document.getElementById('tAmountTo').value) || 0;
                 payload.category = "🔄 Перевод";
-                payload.totalCard = ""; // В режиме Перевод колонка Н ПУСТАЯ
+                payload.totalCard = ""; // ЖЕСТКАЯ ОЧИСТКА КОЛОНКИ H
+                payload.curCard = "";   // ОЧИСТКА ВАЛЮТЫ КАРТЫ
             } else {
                 const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('price').value) || 0, acc = document.getElementById('acc').value, cat = document.getElementById('cat').value;
                 const isInc = (type === 'income' || cat.includes('Доход'));
-                const amount = q * p;
                 payload.action = 'add'; payload.category = cat; payload.account = acc; payload.qty = isInc ? "" : q; payload.priceUnit = isInc ? "" : p; payload.curTran = "EUR";
+                const amount = q * p;
                 if (isInc) {
                     if (isUah(acc)) { payload.totalCard = Math.abs(amount); payload.totalTran = Math.abs(amount/rate); payload.curCard = "UAH"; }
                     else { payload.totalTran = Math.abs(amount); payload.totalCard = ""; payload.curCard = "EUR"; }
@@ -183,8 +169,6 @@
             location.reload();
         }
 
-        async function deleteRow(idx) { if(confirm("Удалить?")) { await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'delete', rowIdx:idx})}); location.reload(); }}
-        
         function syncT(origin) {
             const from = document.getElementById('tFrom').value, to = document.getElementById('tTo').value, r = parseFloat(document.getElementById('baseRate').value);
             let f = parseFloat(document.getElementById('tAmountFrom').value) || 0, t = parseFloat(document.getElementById('tAmountTo').value) || 0;
@@ -206,7 +190,6 @@
             document.getElementById('accCatGroup').classList.toggle('hidden', isT);
             if(isT) document.getElementById('cat').value = "🔄 Перевод";
             if(isInc) document.getElementById('cat').value = "💎 Доход";
-            if(type === 'expense') document.getElementById('cat').value = "🍎 Продукты / Быт";
         }
         
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
