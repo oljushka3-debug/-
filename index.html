@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Elite v17.2</title>
+    <title>SmartWallet Elite v18 (Edit Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -45,11 +45,19 @@
 
 <div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-slate-900 w-full max-w-sm rounded-[35px] p-5 border border-slate-800 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <h2 id="modalTitle" class="text-lg font-black text-yellow-500 mb-4 italic uppercase text-center underline decoration-slate-800 underline-offset-8 uppercase">РАСХОД</h2>
+        
+        <div class="flex gap-1 mb-4 bg-slate-800 p-1 rounded-xl">
+            <button onclick="switchType('expense')" id="btnExp" class="flex-1 py-2 rounded-lg text-[8px] font-bold uppercase transition-all">Расход</button>
+            <button onclick="switchType('transfer')" id="btnTrf" class="flex-1 py-2 rounded-lg text-[8px] font-bold uppercase transition-all">Перевод</button>
+            <button onclick="switchType('income')" id="btnInc" class="flex-1 py-2 rounded-lg text-[8px] font-bold uppercase transition-all">Доход</button>
+        </div>
+
         <form onsubmit="save(event)" class="space-y-3">
             <input type="hidden" id="txType">
+            <input type="hidden" id="editRowId">
+
             <input type="date" id="date" class="w-full bg-slate-800 p-3 rounded-xl font-bold border border-slate-700 text-white text-xs outline-none">
-            <input list="shops" id="merchant" placeholder="Магазин / Описание" class="w-full bg-slate-800 p-3 rounded-xl outline-none font-bold border border-slate-700 text-white text-xs">
+            <input list="shops" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-800 p-3 rounded-xl outline-none font-bold border border-slate-700 text-white text-xs">
             <datalist id="shops">
                 <option value="Lidl"><option value="Aldi"><option value="Rewe"><option value="Penny"><option value="Kaufland"><option value="DM"><option value="Rossmann"><option value="Netto"><option value="Amazon"><option value="Shell">
             </datalist>
@@ -59,30 +67,38 @@
                     <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 rounded-xl border border-slate-700 outline-none">
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 rounded-xl border border-slate-700 outline-none text-blue-300">
                 </div>
-                <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700">
+                <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700 text-white text-xs">
                     <div>
                         <label class="text-[7px] text-slate-500 uppercase block ml-1">Кол-во</label>
-                        <input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent text-sm font-black outline-none text-white">
+                        <input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black outline-none">
                     </div>
                     <div class="text-right border-l border-slate-700 pl-2">
-                        <label class="text-[7px] text-yellow-500 uppercase block mr-1">Цена за ед. €</label>
-                        <input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent text-sm font-black outline-none text-right text-white">
+                        <label class="text-[7px] text-yellow-500 uppercase block mr-1">Цена €</label>
+                        <input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent font-black outline-none text-right">
                     </div>
                 </div>
             </div>
 
-            <div id="incomeFields" class="hidden"><input type="number" id="simplePrice" step="0.01" placeholder="0.00" class="w-full bg-slate-800 p-3 rounded-xl text-center text-xl font-black text-emerald-400 outline-none border border-slate-700"></div>
+            <div id="incomeFields" class="hidden">
+                <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-800 p-3 rounded-xl text-center text-xl font-black text-emerald-400 outline-none border border-slate-700">
+            </div>
 
             <div id="transferFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="tFrom" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-[10px] font-bold text-white outline-none"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
-                    <select id="tTo" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-[10px] font-bold text-yellow-500 outline-none"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Наличные UAH">В Нал ₴</option></select>
+                    <select id="tFrom" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-[10px] font-bold text-white outline-none">
+                        <option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option>
+                    </select>
+                    <select id="tTo" class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-[10px] font-bold text-yellow-500 outline-none">
+                        <option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Наличные UAH">В Нал ₴</option>
+                    </select>
                 </div>
-                <input type="number" id="tAmountFrom" step="0.01" class="w-full bg-slate-800 p-3 rounded-xl text-center text-lg font-black text-white outline-none border border-slate-700" placeholder="0.00">
+                <input type="number" id="tAmountFrom" step="0.01" class="w-full bg-slate-800 p-3 rounded-xl text-center text-lg font-black text-white outline-none border border-slate-700" placeholder="Сумма перевода">
             </div>
 
             <div id="accCatGroup" class="grid grid-cols-2 gap-2">
-                <select id="acc" class="bg-slate-800 p-3 rounded-xl font-bold text-[10px] border border-slate-700 text-white outline-none"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Наличные UAH">Нал ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
+                <select id="acc" class="bg-slate-800 p-3 rounded-xl font-bold text-[10px] border border-slate-700 text-white outline-none">
+                    <option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Наличные UAH">Нал ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option>
+                </select>
                 <select id="cat" class="bg-slate-800 p-3 rounded-xl font-bold text-[10px] border border-slate-700 text-white outline-none">
                     <option>🍎 Продукты / Быт</option><option>🚬 Табак / Отдых</option><option>🏠 Жилье / Счета</option><option>💊 Здоровье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option>
                 </select>
@@ -97,8 +113,7 @@
 </div>
 
 <script>
-// ВСТАВЬ СВОЮ ССЫЛКУ НИЖЕ
-const API_URL = "https://script.google.com/macros/s/AKfycbyFQynvtyscEGCAE1kZTP8lL83xWyEEOWlVPCRGaPXHQOGmdljsIKzMMf3-mQJM8glT/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzibRtjOt1XXEOm0pjNIgqasiOCFzxi81FuhzOIRYffhQvbTAKO5aQRV6e8UuxwA5kO/exec";
 
 const MY_LIMITS = { "🍎 Продукты / Быт": 350, "🏠 Жилье / Счета": 50, "🚬 Табак / Отдых": 120, "💊 Здоровье": 80, "🚗 Транспорт": 70, "🛍 Остальное": 30 };
 let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
@@ -109,18 +124,12 @@ function isUah(acc) { return ["Приват", "Наличные UAH", "КОНВ�
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 50.76;
-    const container = document.getElementById('walletContainer');
-    container.innerHTML = "";
+    const container = document.getElementById('walletContainer'); container.innerHTML = "";
     let totalEur = 0;
     for(let k in walletData) {
         const val = walletData[k], isU = isUah(k), eurEq = isU ? val / r : val;
         totalEur += eurEq;
-        container.innerHTML += `
-            <div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30">
-                <div class="text-[7px] text-slate-500 uppercase font-black">${k}</div>
-                <div class="text-[10px] font-black italic text-white">${isU?'₴':'€'} ${val.toFixed(2)}</div>
-                ${isU ? `<div class="text-[7px] text-slate-600 font-bold italic">€ ${eurEq.toFixed(2)}</div>` : ''}
-            </div>`;
+        container.innerHTML += `<div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30"><div class="text-[7px] text-slate-500 uppercase font-black">${k}</div><div class="text-[10px] font-black italic text-white">${isU?'₴':'€'} ${val.toFixed(2)}</div>${isU ? `<div class="text-[7px] text-slate-600 font-bold italic">€ ${eurEq.toFixed(2)}</div>` : ''}</div>`;
     }
     document.getElementById('mainBalance').innerText = '€ ' + totalEur.toFixed(2);
     drawLimits();
@@ -128,24 +137,11 @@ function drawBalance() {
 
 function drawLimits() {
     const container = document.getElementById('limit-items'); container.innerHTML = "";
-    const today = new Date(), daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const daysLeft = daysInMonth - today.getDate() + 1;
-
+    const today = new Date(), daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate(), daysLeft = daysInMonth - today.getDate() + 1;
     for (let cat in MY_LIMITS) {
-        const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100);
-        const remaining = Math.max(limit - spent, 0), perDay = (remaining / daysLeft).toFixed(1);
-        let color = "bg-emerald-500";
-        if (percent > 75) color = "bg-yellow-500"; if (percent >= 100) color = "bg-rose-500";
-        container.innerHTML += `
-            <div>
-                <div class="flex justify-between text-[8px] font-bold mb-1 italic uppercase tracking-tighter">
-                    <span class="text-slate-300">${cat}</span>
-                    <span class="text-slate-500">${spent.toFixed(0)} / ${limit} € <span class="text-blue-400 ml-1">(${perDay}€/дн)</span></span>
-                </div>
-                <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden border border-slate-700/30">
-                    <div class="${color} h-full transition-all duration-1000" style="width: ${percent}%"></div>
-                </div>
-            </div>`;
+        const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100), remaining = Math.max(limit - spent, 0), perDay = (remaining / daysLeft).toFixed(1);
+        let color = percent > 75 ? (percent >= 100 ? "bg-rose-500" : "bg-yellow-500") : "bg-emerald-500";
+        container.innerHTML += `<div><div class="flex justify-between text-[8px] font-bold mb-1 italic uppercase"><span>${cat}</span><span class="text-slate-500">${spent.toFixed(0)} / ${limit} € <span class="text-blue-400 ml-1">(${perDay}€/дн)</span></span></div><div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden border border-slate-700/30"><div class="${color} h-full transition-all duration-1000" style="width: ${percent}%"></div></div></div>`;
     }
 }
 
@@ -168,26 +164,55 @@ function draw(data) {
 function filterHistory() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const hist = document.getElementById('history'); hist.innerHTML = "";
-    allData.slice().reverse().filter(r => (r[1] + r[2] + r[4] + r[5]).toLowerCase().includes(query)).slice(0, 25).forEach(r => {
+    allData.slice().reverse().filter(r => (r[1] + r[2] + r[4] + r[5]).toLowerCase().includes(query)).slice(0, 30).forEach(r => {
         const acc = r[5], isU = isUah(acc), val = Math.abs(isU ? r[10] : r[8]), isInc = (isU ? r[10] : r[8]) > 0;
         const rowId = r[r.length-1];
         hist.innerHTML += `
-            <div class="bg-slate-900/40 p-2.5 rounded-xl flex justify-between items-center border border-slate-800 shadow-sm transition-all active:bg-slate-800 mb-2">
+            <div class="bg-slate-900/40 p-2.5 rounded-xl flex justify-between items-center border border-slate-800 shadow-sm mb-2">
                 <div class="flex items-center gap-2 overflow-hidden">
-                    <button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                        <button onclick='editRow(${JSON.stringify(r)})' class="text-slate-700 hover:text-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                    </div>
                     <div class="truncate">
-                        <div class="flex items-center gap-1 text-[7px] text-slate-600 font-bold uppercase italic tracking-tighter">
-                            <span>${String(r[0]).split('T')[0].substring(5)}</span> <span class="text-slate-800">•</span> <span>${acc}</span>
-                        </div>
+                        <div class="text-[7px] text-slate-600 font-bold uppercase italic">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div>
                         <p class="text-white text-[10px] font-bold truncate leading-tight">${r[2] || '...'}</p>
-                        ${r[4] ? `<p class="text-[8px] text-blue-400 font-medium italic truncate leading-none mt-0.5">${r[4]} (${r[6]} шт)</p>` : ''}
+                        ${r[4] ? `<p class="text-[8px] text-blue-400 italic truncate">${r[4]} (${r[6]} шт)</p>` : ''}
                     </div>
                 </div>
-                <div class="text-right ml-2 min-w-fit">
-                    <div class="font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic tracking-tighter">${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}</div>
+                <div class="text-right ml-2 min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">
+                    ${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}
                 </div>
             </div>`;
     });
+}
+
+function editRow(r) {
+    const isTrf = r[1] === "🔄 Перевод";
+    const isInc = r[1] === "💎 Доход";
+    const type = isTrf ? "transfer" : (isInc ? "income" : "expense");
+    
+    openModal(type);
+    document.getElementById('editRowId').value = r[r.length-1];
+    document.getElementById('date').value = String(r[0]).split('T')[0];
+    document.getElementById('merchant').value = r[2];
+    document.getElementById('saveBtn').innerText = "ОБНОВИТЬ";
+    document.getElementById('saveBtn').className = "flex-[2] bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs";
+
+    if(type === 'expense') {
+        document.getElementById('cat').value = r[1];
+        document.getElementById('acc').value = r[5];
+        document.getElementById('nameDE').value = r[3];
+        document.getElementById('nameRU').value = r[4];
+        document.getElementById('qty').value = r[6];
+        document.getElementById('priceUnit').value = r[7];
+    } else if(type === 'income') {
+        document.getElementById('acc').value = r[5];
+        document.getElementById('simplePrice').value = Math.abs(isUah(r[5]) ? r[10] : r[8]);
+    } else if(type === 'transfer') {
+        document.getElementById('tFrom').value = r[5];
+        document.getElementById('tAmountFrom').value = Math.abs(isUah(r[5]) ? r[10] : r[8]);
+    }
 }
 
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
@@ -195,8 +220,10 @@ async function deleteRow(id) { if(!confirm('Удалить?')) return; await fet
 async function save(e) {
     e.preventDefault();
     const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳";
-    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-    let payload = { action: 'add', date: date, rate: rate, merchant: document.getElementById('merchant').value };
+    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), editId = document.getElementById('editRowId').value;
+    let payload = { action: 'add', date: document.getElementById('date').value, rate: rate, merchant: document.getElementById('merchant').value };
+    if(editId) payload.deleteFirst = editId;
+
     if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('priceUnit').value) || 0;
         payload.category = document.getElementById('cat').value; payload.account = document.getElementById('acc').value;
@@ -218,25 +245,30 @@ async function save(e) {
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); location.reload();
 }
 
-function openModal(type) {
-    document.getElementById('txType').value = type; document.getElementById('modal').classList.remove('hidden');
+function switchType(type) {
+    document.getElementById('txType').value = type;
     document.getElementById('expenseFields').classList.toggle('hidden', type !== 'expense');
     document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type === 'transfer');
-    document.getElementById('modalTitle').innerText = type.toUpperCase();
+    
+    // Подсветка кнопок
+    const btns = {expense: 'btnExp', transfer: 'btnTrf', income: 'btnInc'};
+    const colors = {expense: 'bg-rose-600', transfer: 'bg-slate-600', income: 'bg-emerald-600'};
+    for(let k in btns) {
+        document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] font-bold uppercase transition-all " + (k === type ? colors[k] + " text-white" : "bg-transparent text-slate-500");
+    }
 }
 
-function closeModal() { 
-    document.getElementById('modal').classList.add('hidden'); 
+function openModal(type) {
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('editRowId').value = "";
+    document.getElementById('saveBtn').innerText = "Записать";
+    document.getElementById('saveBtn').className = "flex-[2] bg-yellow-500 text-black py-3 rounded-xl font-black uppercase text-xs";
+    switchType(type);
 }
-
-window.onload = () => { 
-    const t = new Date().getTime(); 
-    const s = document.createElement('script'); 
-    s.src = API_URL + "?callback=draw&_t=" + t; 
-    document.body.appendChild(s); 
-};
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+window.onload = () => { const t = new Date().getTime(); const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + t; document.body.appendChild(s); };
 </script>
 </body>
 </html>
