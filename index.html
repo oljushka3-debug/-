@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Elite v19.3 (Auto-UAH Conversion)</title>
+    <title>SmartWallet Elite v19.4 (Pro History)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -91,6 +91,7 @@ const MY_LIMITS = { "🍎 Продукты / Быт": 350, "🏠 Жилье / С
 let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
+let historyWithBalances = [];
 
 function isUah(acc) { return ["Приват", "Наличные UAH", "КОНВЕРТ", "СВИНКА"].includes(acc); }
 
@@ -122,10 +123,12 @@ function draw(data) {
     allData = data.rows;
     walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
-    
+    historyWithBalances = [];
+
     allData.forEach(r => {
         const acc = r[5], cat = r[1], date = new Date(r[0]);
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
+
         if (cat === "🔄 Перевод" || cat === "💎 Доход") {
             const targetAcc = r[2].replace("➡️ ", "");
             const amtU = Math.abs(uahVal), amtE = Math.abs(eurVal);
@@ -134,6 +137,10 @@ function draw(data) {
         } else {
             if (walletData.hasOwnProperty(acc)) walletData[acc] += (isUah(acc) ? uahVal : eurVal);
         }
+
+        // Сохраняем состояние баланса для этой строки
+        historyWithBalances.push({ ...r, currentBalance: walletData[acc] });
+
         if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && eurVal < 0 && !cat.includes("Перевод") && !cat.includes("Доход")) {
             const lCat = MY_LIMITS.hasOwnProperty(cat) ? cat : "🛍 Остальное";
             spentThisMonth[lCat] = (spentThisMonth[lCat] || 0) + eurVal;
@@ -145,10 +152,48 @@ function draw(data) {
 function filterHistory() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const hist = document.getElementById('history'); hist.innerHTML = "";
-    allData.slice().reverse().filter(r => (r[1] + r[2] + r[4] + r[5]).toLowerCase().includes(query)).slice(0, 35).forEach(r => {
-        const acc = r[5], isU = isUah(acc), val = Math.abs(isU ? r[10] : r[8]), isInc = (isU ? r[10] : r[8]) > 0 || r[1].includes("Доход");
-        const rowId = r[r.length-1];
-        hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl flex justify-between items-center border border-slate-800 mb-2"><div class="flex items-center gap-2 overflow-hidden text-left"><div class="flex flex-col gap-2"><button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button><button onclick='editRow(${JSON.stringify(r)})' class="text-slate-700 hover:text-blue-500"><i class="fa-solid fa-pen text-[10px]"></i></button></div><div class="truncate"><div class="text-[7px] text-slate-600 font-bold uppercase italic">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div><p class="text-white text-[10px] font-bold truncate leading-tight">${r[2] || '...'}</p>${r[4] ? `<p class="text-[8px] text-blue-400 italic truncate">${r[4]} (${r[6]} шт)</p>` : ''}</div></div><div class="text-right ml-2 min-w-fit font-black text-[11px] ${isInc ? 'text-emerald-500' : 'text-rose-500'} italic">${isInc ? '+' : '-'}${val.toFixed(2)} ${isU ? '₴' : '€'}</div></div>`;
+    
+    // Берем данные с балансами и разворачиваем
+    historyWithBalances.slice().reverse().filter(r => (r[1] + r[2] + r[4] + r[5]).toLowerCase().includes(query)).slice(0, 35).forEach(r => {
+        const acc = r[5], isU = isUah(acc), cat = r[1];
+        const valMain = Math.abs(isU ? r[10] : r[8]);
+        const isInc = (isU ? r[10] : r[8]) > 0 || cat.includes("Доход");
+        const rowId = r[r.length-2]; // Сдвиг из-за добавленного поля balance
+        
+        // Значок категории
+        let catIcon = cat.split(' ')[0]; 
+        if(cat === "🔄 Перевод") catIcon = "🔄";
+        if(cat === "💎 Доход") catIcon = "💰";
+
+        // Двойная сумма (для Привата в евро)
+        const hasDouble = isU && Math.abs(parseFloat(r[8] || 0)) > 0;
+        const subVal = hasDouble ? `(${Math.abs(r[8]).toFixed(2)} €)` : "";
+
+        hist.innerHTML += `
+        <div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="flex flex-col gap-2">
+                    <button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
+                    <button onclick='editRow(${JSON.stringify(r)})' class="text-slate-700 hover:text-blue-500"><i class="fa-solid fa-pen text-[9px]"></i></button>
+                </div>
+                <div class="truncate">
+                    <div class="text-[7px] text-slate-600 font-bold uppercase italic">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px]">${catIcon}</span>
+                        <p class="text-white text-[10px] font-bold truncate leading-tight">${r[2] || '...'}</p>
+                    </div>
+                    ${r[4] ? `<p class="text-[8px] text-blue-400 italic truncate ml-4">${r[4]}</p>` : ''}
+                </div>
+            </div>
+            <div class="text-right min-w-fit">
+                <div class="font-black text-[11px] ${isInc ? 'text-emerald-500' : 'text-rose-500'} italic">
+                    ${isInc ? '+' : '-'}${valMain.toFixed(2)} ${isU ? '₴' : '€'}
+                </div>
+                <div class="text-[7px] text-slate-500 font-bold italic mt-0.5">
+                    ${subVal} <span class="text-slate-700 ml-1">● ${r.currentBalance.toFixed(0)}${isU?'₴':'€'}</span>
+                </div>
+            </div>
+        </div>`;
     });
 }
 
@@ -156,7 +201,7 @@ function editRow(r) {
     const isTrf = r[1] === "🔄 Перевод", isInc = r[1] === "💎 Доход";
     const type = isTrf ? "transfer" : (isInc ? "income" : "expense");
     openModal(type);
-    document.getElementById('editRowId').value = r[r.length-1];
+    document.getElementById('editRowId').value = r[r.length-2];
     document.getElementById('date').value = String(r[0]).split('T')[0];
     if(type === 'expense') { document.getElementById('merchant').value = r[2]; document.getElementById('cat').value = r[1]; document.getElementById('acc').value = r[5]; document.getElementById('nameDE').value = r[3]; document.getElementById('nameRU').value = r[4]; document.getElementById('qty').value = r[6]; document.getElementById('priceUnit').value = r[7]; }
     else if(type === 'income') { document.getElementById('merchant').value = r[5]; document.getElementById('accInc').value = r[2].replace("➡️ ", ""); document.getElementById('simplePrice').value = Math.abs(isUah(r[5]) ? r[10] : r[8]); }
@@ -175,12 +220,7 @@ async function save(e) {
     if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('priceUnit').value) || 0;
         payload.merchant = document.getElementById('merchant').value; payload.category = document.getElementById('cat').value; payload.account = document.getElementById('acc').value; payload.nameDE = document.getElementById('nameDE').value; payload.nameRU = document.getElementById('nameRU').value; payload.qty = q; payload.priceUnit = p; payload.totalTran = -(q * p);
-        
-        // ШТРИХ: Если карта гривневая, а цена в евро - конвертируем и пишем в Колонку К
-        if (isUah(payload.account)) { 
-            payload.totalCard = -(q * p * rate); 
-            payload.curCard = "UAH"; 
-        }
+        if (isUah(payload.account)) { payload.totalCard = -(q * p * rate); payload.curCard = "UAH"; }
     } else if(type === 'income') {
         const p = parseFloat(document.getElementById('simplePrice').value) || 0;
         const source = document.getElementById('merchant').value;
