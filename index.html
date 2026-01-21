@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Elite v18.1</title>
+    <title>SmartWallet Elite v18.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -123,19 +123,15 @@ function draw(data) {
     allData = data.rows;
     walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
-    
     allData.forEach(r => {
         const acc = r[5], cat = r[1], eur = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0), date = new Date(r[0]);
-        
         if (cat === "🔄 Перевод") {
-            // ЛОГИКА ПЕРЕВОДА: Минус из одного, плюс в другой
-            const targetAcc = r[2].replace("➡️ ", ""); // Берем цель из описания
+            const targetAcc = r[2].replace("➡️ ", "");
             if (walletData.hasOwnProperty(acc)) walletData[acc] += (isUah(acc) ? uahVal : eur);
             if (walletData.hasOwnProperty(targetAcc)) walletData[targetAcc] -= (isUah(targetAcc) ? uahVal : eur);
         } else {
             if (walletData.hasOwnProperty(acc)) walletData[acc] += (isUah(acc) ? uahVal : eur);
         }
-
         if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && eur < 0 && !cat.includes("Перевод")) {
             const lCat = MY_LIMITS.hasOwnProperty(cat) ? cat : "🛍 Остальное";
             spentThisMonth[lCat] = (spentThisMonth[lCat] || 0) + eur;
@@ -155,8 +151,8 @@ function filterHistory() {
 }
 
 function editRow(r) {
-    const isTrf = r[1] === "🔄 Перевод";
-    const type = isTrf ? "transfer" : (r[1] === "💎 Доход" ? "income" : "expense");
+    const isTrf = r[1] === "🔄 Перевод", isInc = r[1] === "💎 Доход";
+    const type = isTrf ? "transfer" : (isInc ? "income" : "expense");
     openModal(type);
     document.getElementById('editRowId').value = r[r.length-1];
     document.getElementById('date').value = String(r[0]).split('T')[0];
@@ -175,7 +171,6 @@ async function save(e) {
     const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), editId = document.getElementById('editRowId').value;
     let payload = { action: 'add', date: document.getElementById('date').value, rate: rate };
     if(editId) payload.deleteFirst = editId;
-
     if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('priceUnit').value) || 0;
         payload.merchant = document.getElementById('merchant').value; payload.category = document.getElementById('cat').value; payload.account = document.getElementById('acc').value; payload.nameDE = document.getElementById('nameDE').value; payload.nameRU = document.getElementById('nameRU').value; payload.qty = q; payload.priceUnit = p; payload.totalTran = -(q * p);
@@ -196,11 +191,25 @@ async function save(e) {
 }
 
 function switchType(type) {
+    const oldType = document.getElementById('txType').value;
+    let currentSum = 0;
+    
+    // Пытаемся сохранить сумму при переключении
+    if(oldType === 'expense') currentSum = (parseFloat(document.getElementById('qty').value)||0) * (parseFloat(document.getElementById('priceUnit').value)||0);
+    else if(oldType === 'income') currentSum = parseFloat(document.getElementById('simplePrice').value)||0;
+    else if(oldType === 'transfer') currentSum = parseFloat(document.getElementById('tAmountFrom').value)||0;
+
     document.getElementById('txType').value = type;
     document.getElementById('expenseFields').classList.toggle('hidden', type !== 'expense');
     document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type === 'transfer');
+    
+    // Подставляем сумму в новое поле
+    if(type === 'expense') { document.getElementById('priceUnit').value = currentSum; document.getElementById('qty').value = 1; }
+    else if(type === 'income') document.getElementById('simplePrice').value = currentSum;
+    else if(type === 'transfer') document.getElementById('tAmountFrom').value = currentSum;
+
     const btns = {expense: 'btnExp', transfer: 'btnTrf', income: 'btnInc'}, colors = {expense: 'bg-rose-600', transfer: 'bg-slate-600', income: 'bg-emerald-600'};
     for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] font-bold uppercase transition-all " + (k === type ? colors[k] + " text-white" : "bg-transparent text-slate-500"); }
 }
@@ -210,6 +219,7 @@ function openModal(type) {
     document.getElementById('editRowId').value = "";
     document.getElementById('saveBtn').innerText = "Записать";
     document.getElementById('saveBtn').className = "flex-[2] bg-yellow-500 text-black py-3 rounded-xl font-black uppercase text-xs";
+    document.getElementById('txType').value = ""; // Сброс для корректного захвата суммы
     switchType(type);
 }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
