@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v23.0 (Table Logic Fix)</title>
+    <title>SmartWallet v25.0 (Double Entry)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -18,7 +18,7 @@
     <i class="fa-solid fa-rotate text-blue-400 text-xs"></i>
 </button>
 
-<div class="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-[25px] border border-slate-700/50 mb-3 shadow-2xl text-center">
+<div class="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-[25px] border border-slate-700/50 mb-3 shadow-2xl">
     <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-50 uppercase tracking-tighter">
         <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-10 bg-transparent text-yellow-500 outline-none font-black text-center"></span>
         <span>ЯНВАРЬ 2026</span>
@@ -37,14 +37,14 @@
 
 <div id="history" class="space-y-2 text-left"></div>
 
-<div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-4 z-50">
+<div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center p-4 z-50 text-center">
     <div class="bg-slate-900 w-full max-w-sm rounded-[35px] p-5 border border-slate-800 shadow-2xl overflow-y-auto max-h-[90vh]">
         <div class="flex gap-1 mb-4 bg-slate-800 p-1 rounded-xl font-bold">
             <button onclick="switchType('expense')" id="btnExp" class="flex-1 py-2 rounded-lg text-[8px] uppercase transition-all">Расход</button>
             <button onclick="switchType('transfer')" id="btnTrf" class="flex-1 py-2 rounded-lg text-[8px] uppercase transition-all text-slate-500">Перевод</button>
             <button onclick="switchType('income')" id="btnInc" class="flex-1 py-2 rounded-lg text-[8px] uppercase transition-all text-slate-500">Доход</button>
         </div>
-        <form onsubmit="save(event)" class="space-y-3 text-center">
+        <form onsubmit="save(event)" class="space-y-3">
             <input type="hidden" id="txType"><input type="hidden" id="editRowId">
             <input type="date" id="date" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700 outline-none">
             <input id="merchant" placeholder="Описание / Источник" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700 outline-none text-center">
@@ -66,14 +66,14 @@
             </div>
 
             <div id="transferFields" class="hidden space-y-3">
-                <div class="grid grid-cols-2 gap-2 text-center">
+                <div class="grid grid-cols-2 gap-2">
                     <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700 outline-none"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
                     <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700 outline-none"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Наличные UAH">В Нал ₴</option></select>
                 </div>
                 <input type="number" id="tAmountFrom" step="0.01" class="w-full bg-slate-800 p-3 text-lg font-black text-white border border-slate-700 outline-none text-center" placeholder="Сумма">
             </div>
 
-            <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
+            <div id="accCatGroup" class="grid grid-cols-2 gap-2">
                 <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700 outline-none"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Наличные UAH">Нал ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700 outline-none"><option>🍎 Продукты / Быт</option><option>🚬 Табак / Отдых</option><option>🏠 Жилье / Счета</option><option>💊 Здоровье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option></select>
             </div>
@@ -101,6 +101,17 @@ function drawBalance() {
         container.innerHTML += `<div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30 text-center"><div class="text-[7px] text-slate-500 uppercase font-black text-center">${k}</div><div class="text-[10px] font-black text-white text-center">${isU?'₴':'€'} ${val.toFixed(2)}</div>${isU ? `<div class="text-[7px] text-slate-600 italic text-center">€ ${eurEq.toFixed(2)}</div>` : ''}</div>`;
     }
     document.getElementById('mainBalance').innerText = '€ ' + totalEur.toFixed(2);
+    drawLimits();
+}
+
+function drawLimits() {
+    const container = document.getElementById('limit-items'); container.innerHTML = "";
+    const today = new Date(), daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate(), daysLeft = daysInMonth - today.getDate() + 1;
+    for (let cat in MY_LIMITS) {
+        const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100);
+        let color = percent > 75 ? (percent >= 100 ? "bg-rose-500" : "bg-yellow-500") : "bg-emerald-500";
+        container.innerHTML += `<div><div class="flex justify-between text-[8px] font-bold mb-1 uppercase italic tracking-tighter"><span>${cat}</span><span class="text-slate-500">${spent.toFixed(0)} / ${limit} €</span></div><div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden border border-slate-700/30"><div class="${color} h-full transition-all" style="width: ${percent}%"></div></div></div>`;
+    }
 }
 
 function draw(data) {
@@ -110,21 +121,12 @@ function draw(data) {
     spentThisMonth = {}; const now = new Date();
     
     allData.forEach(r => {
-        const cat = r[1], desc = r[2], accF = r[5], date = new Date(r[0]);
+        const cat = r[1], accF = r[5], date = new Date(r[0]);
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
 
-        // Расчет баланса: Кошелек в F (источник)
+        // ПРЯМОЕ СУММИРОВАНИЕ: Кошелек из F просто получает свое значение из таблицы
         if (walletData.hasOwnProperty(accF)) {
             walletData[accF] += (isUah(accF) ? uahVal : eurVal);
-        }
-
-        // Расчет баланса: Кошелек в Цели (из описания ➡️)
-        if (desc && desc.includes("➡️")) {
-            const target = desc.replace("➡️ ", "").trim();
-            if (walletData.hasOwnProperty(target)) {
-                // Прибавляем сумму кошельку-цели (берем по модулю, чтобы знак в таблице не мешал расчёту на экране)
-                walletData[target] += (isUah(target) ? Math.abs(uahVal) : Math.abs(eurVal));
-            }
         }
 
         if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && eurVal < 0 && !cat.includes("Перевод") && !cat.includes("Доход")) {
@@ -139,14 +141,16 @@ function filterHistory() {
     const hist = document.getElementById('history'); hist.innerHTML = "";
     allData.slice().reverse().slice(0, 30).forEach(r => {
         const acc = r[5], isU = isUah(acc), valMain = Math.abs(isU ? r[10] : r[8]), cat = r[1];
-        const isInc = (isU ? r[10] : r[8]) > 0 || cat.includes("Доход") || (r[2] && r[2].includes("➡️") && isUah(r[2].replace("➡️ ", "")));
+        const isInc = (isU ? r[10] : r[8]) > 0;
         const rowId = r[r.length-1];
+        let catIcon = cat.split(' ')[0];
+        if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
         hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left">
             <div class="flex items-center gap-2 truncate text-left">
                 <button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
                 <div class="truncate text-left">
                     <div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div>
-                    <div class="text-[10px] font-bold text-white truncate text-left">${r[2]}</div>
+                    <div class="text-[10px] font-bold text-white truncate text-left">${catIcon} ${r[2]}</div>
                 </div>
             </div>
             <div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">
@@ -156,50 +160,49 @@ function filterHistory() {
     });
 }
 
-function openModal(type) { document.getElementById('modal').classList.remove('hidden'); document.getElementById('editRowId').value = ""; switchType(type); }
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
 async function save(e) {
     e.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳";
     const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value);
-    let payload = { action: 'add', date: document.getElementById('date').value, rate: rate };
+    const date = document.getElementById('date').value;
 
-    if(type === 'expense') {
-        const q = parseFloat(document.getElementById('qty').value)||1, p = parseFloat(document.getElementById('priceUnit').value)||0;
-        payload.merchant=document.getElementById('merchant').value; payload.category=document.getElementById('cat').value; payload.account=document.getElementById('acc').value; payload.nameDE=document.getElementById('nameDE').value; payload.nameRU=document.getElementById('nameRU').value; payload.qty=q; payload.priceUnit=p; payload.totalTran=-(q*p);
-        if(isUah(payload.account)){ payload.totalCard=-(q*p*rate); payload.curCard="UAH"; }
-    } else if(type === 'income') {
-        const p = parseFloat(document.getElementById('simplePrice').value)||0;
-        const target = document.getElementById('accInc').value;
-        payload.merchant="➡️ "+target; payload.category="💎 Доход"; payload.account=document.getElementById('merchant').value;
-        // Запись в таблицу как ПОЛОЖИТЕЛЬНОЕ число
-        if(isUah(target)){ payload.totalCard=Math.abs(p); payload.curCard="UAH"; payload.totalTran=Math.abs(p/rate); } else payload.totalTran=Math.abs(p);
-    } else if(type === 'transfer') {
+    if(type === 'transfer') {
         const f = document.getElementById('tFrom').value, t = document.getElementById('tTo').value, amF = parseFloat(document.getElementById('tAmountFrom').value)||0;
-        payload.merchant="➡️ "+t; payload.category="🔄 Перевод"; payload.account=f;
-        // ИСПРАВЛЕНИЕ: Для Свинки/Конверта -> Приват пишем +100 в гривневую колонку (K), если это пополнение Привата
-        if(isUah(f) && isUah(t)) {
-            payload.totalTran = 0; 
-            payload.totalCard = Math.abs(amF); // Знак ПЛЮС для пополнения
-            payload.curCard = "UAH";
-        }
-        else if(isUah(f)){ payload.totalCard = -Math.abs(amF); payload.curCard="UAH"; payload.totalTran=-(amF/rate); }
-        else if(isUah(t)){ payload.totalTran = -Math.abs(amF); payload.totalCard=Math.abs(amF*rate); payload.curCard="UAH"; } 
-        else payload.totalTran = -Math.abs(amF);
+        
+        // СТРОКА 1: Уменьшаем кошелек-источник
+        let p1 = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t };
+        if(isUah(f)) { p1.totalCard = -Math.abs(amF); p1.curCard = "UAH"; p1.totalTran = -(amF/rate); } 
+        else { p1.totalTran = -Math.abs(amF); }
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(p1) });
+
+        // СТРОКА 2: Увеличиваем кошелек-цель
+        let p2 = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f };
+        if(isUah(t)) { p2.totalCard = Math.abs(amF); p2.curCard = "UAH"; p2.totalTran = amF/rate; } 
+        else { p2.totalTran = Math.abs(amF); }
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(p2) });
+
+    } else if(type === 'expense') {
+        const q = parseFloat(document.getElementById('qty').value)||1, p = parseFloat(document.getElementById('priceUnit').value)||0;
+        let payload = { action: 'add', date: date, rate: rate, merchant: document.getElementById('merchant').value, category: document.getElementById('cat').value, account: document.getElementById('acc').value, nameDE: document.getElementById('nameDE').value, nameRU: document.getElementById('nameRU').value, qty: q, priceUnit: p, totalTran: -(q*p) };
+        if(isUah(payload.account)){ payload.totalCard=-(q*p*rate); payload.curCard="UAH"; }
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+    } else if(type === 'income') {
+        const p = parseFloat(document.getElementById('simplePrice').value)||0, target = document.getElementById('accInc').value;
+        let payload = { action: 'add', date: date, rate: rate, merchant: "💎 " + document.getElementById('merchant').value, category: "💎 Доход", account: target };
+        if(isUah(target)){ payload.totalCard=Math.abs(p); payload.curCard="UAH"; payload.totalTran=p/rate; } else payload.totalTran=Math.abs(p);
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
     }
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); location.reload();
+    location.reload();
 }
 
+function openModal(type) { document.getElementById('modal').classList.remove('hidden'); switchType(type); }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 function switchType(type) {
     document.getElementById('txType').value = type;
     document.getElementById('expenseFields').classList.toggle('hidden', type !== 'expense');
     document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
-    const btns = {expense:'btnExp', transfer:'btnTrf', income:'btnInc'}, colors = {expense:'bg-rose-600 text-white', transfer:'bg-slate-600 text-white', income:'bg-emerald-600 text-white'};
-    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500 text-center"); }
 }
-
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
 </script>
