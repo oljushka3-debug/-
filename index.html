@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v28.6 (Final Audit)</title>
+    <title>SmartWallet v29.0 (Strict Logic)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -54,9 +54,9 @@
                     <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 border border-slate-700">
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300">
                 </div>
-                <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 border border-slate-700 text-white text-xs text-center">
-                    <div><label class="text-[7px] text-slate-500 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black text-center text-white"></div>
-                    <div class="border-l border-slate-700 pl-2"><label class="text-[7px] text-yellow-500 uppercase block">Цена €</label><input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent font-black text-center text-white"></div>
+                <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 border border-slate-700 text-white text-xs">
+                    <div><label class="text-[7px] text-slate-500 uppercase block text-center">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black text-center text-white"></div>
+                    <div class="border-l border-slate-700 pl-2 text-center"><label class="text-[7px] text-yellow-500 uppercase block">Цена €</label><input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent font-black text-center text-white"></div>
                 </div>
             </div>
 
@@ -120,19 +120,24 @@ function draw(data) {
     spentThisMonth = {}; const now = new Date();
     
     allData.forEach(r => {
-        const cat = r[1], desc = r[2], accF = r[5], dateRaw = r[0];
+        const accF = r[5], dateRaw = r[0], cat = r[1], desc = r[2];
         const date = (dateRaw && !isNaN(Date.parse(dateRaw))) ? new Date(dateRaw) : null;
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
 
+        // ПРАВИЛО 1: Суммируем только ту колонку, которая соответствует валюте кошелька в колонке F
         if (walletData.hasOwnProperty(accF)) {
             walletData[accF] += (isUah(accF) ? uahVal : eurVal);
         }
+
+        // ПРАВИЛО 2: Если это перевод одной строкой (Обмен), отдаем вторую часть целевому кошельку
         if (desc && desc.includes("➡️")) {
             const target = desc.replace("➡️ ", "").trim();
             if (walletData.hasOwnProperty(target)) {
-                walletData[target] += (isUah(target) ? Math.abs(uahVal) : Math.abs(eurVal));
+                // Если кошелек-цель в гривне - берем uahVal, если в евро - eurVal (с инверсией знака)
+                walletData[target] -= (isUah(target) ? uahVal : eurVal);
             }
         }
+
         if (date && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && eurVal < 0 && !cat.includes("Перевод") && !cat.includes("Доход")) {
             const lCat = MY_LIMITS.hasOwnProperty(cat) ? cat : "🛍 Остальное";
             spentThisMonth[lCat] = (spentThisMonth[lCat] || 0) + eurVal;
@@ -151,11 +156,11 @@ function filterHistory() {
         let catIcon = cat.split(' ')[0];
         if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
         hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left shadow-sm">
-            <div class="flex items-center gap-2 truncate text-left">
+            <div class="flex items-center gap-2 truncate text-left text-white">
                 <button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
-                <div class="truncate text-left">
+                <div class="truncate text-left text-white">
                     <div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div>
-                    <div class="text-[10px] font-bold text-white truncate leading-tight text-white">${catIcon} ${r[2]}</div>
+                    <div class="text-[10px] font-bold text-white truncate leading-tight">${catIcon} ${r[2]}</div>
                 </div>
             </div>
             <div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">
@@ -171,10 +176,18 @@ async function save(e) {
 
     if(type === 'transfer') {
         const f = document.getElementById('tFrom').value, t = document.getElementById('tTo').value, amF = parseFloat(document.getElementById('tAmountFrom').value)||0;
+        // Сценарий: Обмен (Гривна ↔ Евро) - ОДНА СТРОКА
         if(isUah(f) !== isUah(t)) {
-            let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: -Math.abs(amF), curCard: "UAH", totalTran: Math.abs(amF / rate) };
+            let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t };
+            if(isUah(f)) { 
+                p.totalCard = -Math.abs(amF); p.totalTran = Math.abs(amF / rate); p.curCard = "UAH";
+            } else {
+                p.totalTran = -Math.abs(amF); p.totalCard = Math.abs(amF * rate); p.curCard = "UAH";
+            }
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
-        } else {
+        } 
+        // Сценарий: Внутри одной валюты - ДВЕ СТРОКИ
+        else {
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-Math.abs(amF):"", totalTran: isUah(f)?"":-Math.abs(amF), curCard: isUah(f)?"UAH":"" }) });
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?Math.abs(amF):"", totalTran: isUah(t)?"":Math.abs(amF), curCard: isUah(t)?"UAH":"" }) });
         }
@@ -201,7 +214,7 @@ function switchType(type) {
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
     const btns = {expense:'btnExp', transfer:'btnTrf', income:'btnInc'}, colors = {expense:'bg-rose-600 text-white', transfer:'bg-slate-600 text-white', income:'bg-emerald-600 text-white'};
-    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500"); }
+    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500 text-center"); }
 }
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
