@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v31.2 (Categories & Limits)</title>
+    <title>SmartWallet v31.3 (Category Hints)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -51,8 +51,8 @@
 
             <div id="expenseFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2 text-white text-xs font-bold italic">
-                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 border border-slate-700">
-                    <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300">
+                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 border border-slate-700 text-center">
+                    <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300 text-center">
                 </div>
                 <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 border border-slate-700 text-white text-xs">
                     <div><label class="text-[7px] text-slate-500 uppercase block text-center">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black text-center text-white"></div>
@@ -85,16 +85,16 @@
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
                 <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700">
-                    <option>🍎 Продукты / Быт</option>
-                    <option>🏠 Жилье / Счета / Мобильная связь</option>
-                    <option>🚬 Табак / Алкоголь / Отдых</option>
-                    <option>💊 Здоровье / 💇‍♀️красота</option>
-                    <option>🚗 Транспорт</option>
-                    <option>🏦 Банк</option>
-                    <option>🙇‍♀️ Учеба</option>
-                    <option>🛍 Остальное</option>
-                    <option>💰 КОПИЛКА</option>
-                    <option>🏖️ Развлечения</option>
+                    <option value="🍎 Продукты / Быт">🍎 Продукты (Еда, супермаркет, химия)</option>
+                    <option value="🏠 Жилье / Счета / Мобильная связь">🏠 Жилье (Счета, связь, подписки)</option>
+                    <option value="🚬 Табак / Алкоголь / Отдых">🚬 Табак/Отдых (Сигареты, алкоголь, кофе)</option>
+                    <option value="💊 Здоровье / 💇‍♀️красота">💊 Здоровье (Аптека, врач, красота)</option>
+                    <option value="🚗 Транспорт">🚗 Транспорт (Билеты, бензин, авто)</option>
+                    <option value="🏦 Банк">🏦 Банк (Конверт, Обслуживание)</option>
+                    <option value="🙇‍♀️ Учеба">🙇‍♀️ Учеба (Канцелярия, Уроки, Книги)</option>
+                    <option value="🛍 Остальное">🛍 Остальное (Одежда, подарки)</option>
+                    <option value="💰 КОПИЛКА">💰 КОПИЛКА (Чистый капитал)</option>
+                    <option value="🏖️ Развлечения">🏖️ Развлечения (Отпуск, отели)</option>
                 </select>
             </div>
             <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-800 py-3 rounded-xl font-bold uppercase text-[9px] text-white">Отмена</button><button id="saveBtn" class="flex-[2] bg-yellow-500 text-black py-3 rounded-xl font-black uppercase text-xs">Записать</button></div>
@@ -183,7 +183,7 @@ function filterHistory() {
         const acc = r[5], isU = isUah(acc), cat = r[1], valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
-        hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left shadow-sm"><div class="flex items-center gap-2 truncate text-left text-white"><button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button><div class="truncate text-left text-white"><div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div><div class="text-[10px] font-bold text-white truncate leading-tight text-white">${catIcon} ${r[2]}</div></div></div><div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':''}${Math.abs(valMain).toFixed(2)}${isU?'₴':'€'}</div></div>`;
+        hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left shadow-sm"><div class="flex items-center gap-2 truncate text-left text-white"><button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button><div class="truncate text-left text-white"><div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div><div class="text-[10px] font-bold text-white truncate leading-tight text-white">${catIcon} ${r[2]}</div></div></div><div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':''}${valMain.toFixed(2)}${isU?'₴':'€'}</div></div>`;
     });
 }
 
@@ -228,8 +228,6 @@ function switchType(type) {
     document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
-    const btns = {expense:'btnExp', transfer:'btnTrf', income:'btnInc'}, colors = {expense:'bg-rose-600 text-white', transfer:'bg-slate-600 text-white', income:'bg-emerald-600 text-white'};
-    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500"); }
 }
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
