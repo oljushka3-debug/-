@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v35.1 (Slim Limits)</title>
+    <title>SmartWallet v35.2 (Micro UI)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         input, select { text-align: center; text-align-last: center; border-radius: 12px; outline: none; background: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         button { transition: all 0.2s ease; }
     </style>
 </head>
@@ -28,7 +30,7 @@
     <div class="grid grid-cols-2 gap-2" id="walletContainer"></div>
 </div>
 
-<div id="limit-items" class="px-2 mb-4 space-y-1.5 text-left"></div>
+<div id="limit-items" class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1"></div>
 
 <div class="flex gap-2 mb-4 font-black">
     <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-rose-700 shadow-md text-white active:translate-y-1 active:border-b-0">Расход</button>
@@ -52,7 +54,7 @@
 
             <div id="expenseFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2 font-bold italic">
-                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-50 p-3 border border-slate-200 text-center rounded-xl">
+                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-50 p-3 border border-slate-200 text-center rounded-xl text-slate-800">
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-50 p-3 border border-slate-200 text-blue-600 text-center rounded-xl">
                 </div>
                 <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 border border-slate-200 rounded-xl text-[9px]">
@@ -78,7 +80,7 @@
                 <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-50 p-3 text-xl font-black text-slate-800 border border-slate-200 rounded-xl text-center">
             </div>
 
-            <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
+            <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center text-slate-800">
                 <select id="acc" class="bg-slate-50 p-3 text-slate-800 text-[10px] font-bold border border-slate-200 rounded-xl"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Валера">Валера</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-50 p-3 text-slate-800 text-[10px] font-bold border border-slate-200 rounded-xl"><option value="🍎 Продукты / Быт">🍎 Продукты / Быт</option><option value="🏠 Жилье / Счета / Мобильная связь">🏠 Жилье / Счета</option><option value="🚬 Табак / Алкоголь / Отдых">🚬 Табак / Отдых</option><option value="💊 Здоровье / 💇‍♀️красота">💊 Здоровье / Красота</option><option value="🚗 Транспорт">🚗 Транспорт</option><option value="🏦 Банк">🏦 Банк</option><option value="🙇‍♀️ Учеба">🙇‍♀️ Учеба</option><option value="🛍 Остальное">🛍 Остальное</option><option value="💰 КОПИЛКА">💰 КОПИЛКА</option><option value="🏖️ Развлечения">🏖️ Развлечения</option></select>
             </div>
@@ -122,17 +124,14 @@ function drawLimits() {
     const container = document.getElementById('limit-items'); container.innerHTML = "";
     for (let cat in MY_LIMITS) {
         const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100);
-        let color = percent > 75 ? (percent >= 100 ? "bg-rose-500" : "bg-amber-500") : "bg-emerald-500";
-        // Ультра-тонкая верстка лимитов
+        let colorText = "text-emerald-600", colorBg = "bg-emerald-50";
+        if (percent > 75) { colorText = "text-amber-600"; colorBg = "bg-amber-50"; }
+        if (percent >= 100) { colorText = "text-rose-600"; colorBg = "bg-rose-50"; }
+        
         container.innerHTML += `
-            <div class="mb-1">
-                <div class="flex justify-between text-[7px] font-bold uppercase tracking-tighter italic text-slate-500">
-                    <span>${cat}</span>
-                    <span>${spent.toFixed(0)} / ${limit}</span>
-                </div>
-                <div class="w-full bg-slate-200 h-[2px] mt-0.5 rounded-full overflow-hidden">
-                    <div class="${color} h-full transition-all" style="width: ${percent}%"></div>
-                </div>
+            <div class="flex-shrink-0 ${colorBg} ${colorText} px-3 py-1 rounded-2xl border border-current/10 flex flex-col items-center min-w-[70px]">
+                <span class="text-[7px] font-black uppercase tracking-tighter">${cat.split(' ')[0]}</span>
+                <span class="text-[9px] font-bold leading-tight">${spent.toFixed(0)}€</span>
             </div>`;
     }
 }
@@ -168,7 +167,7 @@ function filterHistory() {
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-100 mb-2 flex justify-between items-center text-left shadow-sm">
-            <div class="flex items-center gap-3 truncate text-left">
+            <div class="flex items-center gap-3 truncate text-left text-slate-800">
                 <div class="flex flex-col gap-1">
                     <button onclick="deleteRow(${rowId})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                     <button onclick="editEntry(${rowId})" class="text-slate-300 hover:text-blue-500"><i class="fa-solid fa-pencil text-[10px]"></i></button>
