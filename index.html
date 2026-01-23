@@ -69,11 +69,14 @@
 <select id="cat" class="bg-slate-800 p-4 rounded-2xl font-bold text-xs outline-none border border-slate-700 text-white">
 <option value="🔄 Перевод">🔄 Перевод</option>
 <option>🍎 Продукты / Быт</option>
-<option>🚬 Табак / Отдых</option>
-<option>🏠 Жилье / Счета</option>
-<option>💊 Здоровье</option>
+<option>🏠 Жилье / Счета/ Мобильная связь</option>
+<option>🚬 Табак / Алкоголь/ Отдых</option>
+<option>💊 Здоровье / 💇‍♀️красота</option>
 <option>🚗 Транспорт</option>
+<option>🏦 Банк</option>
+<option>🙇‍♀️ Учеба</option>
 <option>🛍 Остальное</option>
+<option>🏖️ Развлечения</option>
 <option value="💎 Доход">💎 Доход</option>
 </select>
 </div>
@@ -87,9 +90,9 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzdyyRUrngxd5JehRUB75XYctJ3mitcUNHZLpxzjmTOtCopxq6gsCILSjKi7qmDDrTL/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzibRtjOt1XXEOm0pjNIgqasiOCFzxi81FuhzOIRYffhQvbTAKO5aQRV6e8UuxwA5kO/exec";
 
-const MY_LIMITS = { "🍎 Продукты / Быт": 350, "🏠 Жилье / Счета": 50, "🚬 Табак / Отдых": 100, "💊 Здоровье": 80, "🚗 Транспорт": 70, "🛍 Остальное": 50 };
+const MY_LIMITS = { "🍎 Продукты / Быт": 350, "🏠 Жилье / Счета/ Мобильная связь": 50, "🚬 Табак / Алкоголь/ Отдых": 70, "💊 Здоровье / 💇‍♀️красота": 80, "🚗 Транспорт": 70, "🏦 Банк": 25, "🙇‍♀️ Учеба": 70, "🛍 Остальное": 15 "🏖️ Развлечения": 10 };
 let walletData = { "Sparkasse": 0, "Приват": 0, "Наличные EUR": 0, "Наличные UAH": 0 };
 let spentThisMonth = {};
 
