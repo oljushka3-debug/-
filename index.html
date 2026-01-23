@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v31.4 (X-Precision)</title>
+    <title>SmartWallet v32.0 (Valera Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -51,8 +51,8 @@
 
             <div id="expenseFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2 text-white text-xs font-bold italic">
-                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 border border-slate-700">
-                    <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300">
+                    <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-800 p-3 border border-slate-700 text-center text-white">
+                    <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300 text-center">
                 </div>
                 <div class="grid grid-cols-3 gap-2 bg-slate-800/50 p-2 border border-slate-700 text-white text-[9px]">
                     <div><label class="text-[7px] text-slate-500 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black text-center text-white"></div>
@@ -63,8 +63,8 @@
 
             <div id="transferFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Кредитка UAH">Из Кредитки ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
-                    <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
+                    <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Валера">Из Валера</option><option value="Наличные EUR">Из Нал €</option><option value="Кредитка UAH">Из Кредитки ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
+                    <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Валера">В Валера</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
@@ -79,12 +79,12 @@
             </div>
 
             <div id="incomeFields" class="hidden space-y-3">
-                <select id="accInc" class="w-full bg-slate-800 p-3 text-emerald-400 font-bold text-xs border border-slate-700"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Наличные EUR">На Нал €</option><option value="Кредитка UAH">На Кредитку ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
+                <select id="accInc" class="w-full bg-slate-800 p-3 text-emerald-400 font-bold text-xs border border-slate-700"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Валера">На Валера</option><option value="Наличные EUR">На Нал €</option><option value="Кредитка UAH">На Кредитку ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
                 <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-800 p-3 text-xl font-black text-white border border-slate-700 text-center">
             </div>
 
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
-                <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
+                <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Валера">Валера</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700">
                     <option value="🍎 Продукты / Быт">🍎 Продукты (Еда, супермаркет, химия)</option>
                     <option value="🏠 Жилье / Счета / Мобильная связь">🏠 Жилье (Счета, связь, подписки)</option>
@@ -106,11 +106,12 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz4-b-RtsW9Gy1-H7E27APtoNL1GwTNRyZAANSe0L52ds31BwF89uydrxrzLgyHaFL9/exec";
 const MY_LIMITS = { "🍎 Продукты / Быт": 345, "🏠 Жилье / Счета / Мобильная связь": 50, "🚬 Табак / Алкоголь / Отдых": 64, "💊 Здоровье / 💇‍♀️красота": 70, "🚗 Транспорт": 70, "🏦 Банк": 25, "🙇‍♀️ Учеба": 70, "🛍 Остальное": 10, "💰 КОПИЛКА": 250, "🏖️ Развлечения": 10 };
-let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
+let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
 
-function isUah(acc) { return ["Приват", "Кредитка UAH", "КОНВЕРТ", "СВИНКА"].includes(acc); }
+// Валера добавлен в список UAH
+function isUah(acc) { return ["Приват", "Валера", "Кредитка UAH", "КОНВЕРТ", "СВИНКА"].includes(acc); }
 
 function syncFX(el, type, isTransfer = false) {
     const rate = parseFloat(document.getElementById('baseRate').value) || 50.76;
@@ -147,7 +148,7 @@ function drawLimits() {
 function draw(data) {
     if (!data || !data.rows) return;
     allData = data.rows;
-    walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
+    walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
     allData.forEach(r => {
         const accF = r[5], desc = r[2], cat = r[1], dateRaw = r[0];
@@ -184,16 +185,16 @@ async function save(e) {
 
     if(type === 'transfer') {
         const f = document.getElementById('tFrom').value, t = document.getElementById('tTo').value;
-        const sumE = parseFloat(document.getElementById('tEur').value) || 0, sumU = parseFloat(document.getElementById('tUah').value) || 0;
+        const valE = parseFloat(document.getElementById('tEur').value) || 0, valU = parseFloat(document.getElementById('tUah').value) || 0;
         if(isUah(f) !== isUah(t)) {
             let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t };
-            if(isUah(f)) { p.totalCard = -sumU; p.totalTran = sumE; p.curCard = "UAH"; } 
-            else { p.totalTran = -sumE; p.totalCard = sumU; p.curCard = "UAH"; }
+            if(isUah(f)) { p.totalCard = -valU; p.totalTran = valE; p.curCard = "UAH"; } 
+            else { p.totalTran = -valE; p.totalCard = valU; p.curCard = "UAH"; }
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
         } else {
-            const val = isUah(f) ? sumU : sumE;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-val:"", totalTran: isUah(f)?0:-val, curCard: isUah(f)?"UAH":"" }) });
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?val:"", totalTran: isUah(t)?0:val, curCard: isUah(t)?"UAH":"" }) });
+            const main = isUah(f) ? valU : valE;
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-main:"", totalTran: isUah(f)?0:-main, curCard: isUah(f)?"UAH":"" }) });
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?main:"", totalTran: isUah(t)?0:main, curCard: isUah(t)?"UAH":"" }) });
         }
     } else if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value)||1, eUnit = parseFloat(document.getElementById('pEur').value)||0, uUnit = parseFloat(document.getElementById('pUah').value)||0;
