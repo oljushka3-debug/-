@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v31.0 (Live FX)</title>
+    <title>SmartWallet v31.1 (Wallets Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -60,30 +60,30 @@
                 </div>
             </div>
 
-            <div id="incomeFields" class="hidden space-y-3">
-                <select id="accInc" class="w-full bg-slate-800 p-3 text-emerald-400 font-bold text-xs border border-slate-700"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Наличные EUR">На Нал €</option><option value="Наличные UAH">На Нал ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
-                <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-800 p-3 text-xl font-black text-white border border-slate-700 text-center">
-            </div>
-
             <div id="transferFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
-                    <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Наличные UAH">В Нал ₴</option></select>
+                    <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Кредитка UAH">Из Кредитки ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
+                    <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
-                        <label class="text-[7px] text-yellow-500 uppercase block">Сумма €</label>
+                        <label class="text-[7px] text-yellow-500 uppercase block text-center">Сумма €</label>
                         <input type="number" id="tEur" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncTransfer(this, 'eur')">
                     </div>
                     <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
-                        <label class="text-[7px] text-blue-400 uppercase block">Сумма ₴</label>
+                        <label class="text-[7px] text-blue-400 uppercase block text-center">Сумма ₴</label>
                         <input type="number" id="tUah" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncTransfer(this, 'uah')">
                     </div>
                 </div>
             </div>
 
+            <div id="incomeFields" class="hidden space-y-3">
+                <select id="accInc" class="w-full bg-slate-800 p-3 text-emerald-400 font-bold text-xs border border-slate-700"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Наличные EUR">На Нал €</option><option value="Кредитка UAH">На Кредитку ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
+                <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-800 p-3 text-xl font-black text-white border border-slate-700 text-center">
+            </div>
+
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
-                <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Наличные UAH">Нал ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
+                <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option>🍎 Продукты / Быт</option><option>🚬 Табак / Отдых</option><option>🏠 Жилье / Счета</option><option>💊 Здоровье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option></select>
             </div>
             <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-800 py-3 rounded-xl font-bold uppercase text-[9px] text-white">Отмена</button><button id="saveBtn" class="flex-[2] bg-yellow-500 text-black py-3 rounded-xl font-black uppercase text-xs">Записать</button></div>
@@ -94,13 +94,13 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz4-b-RtsW9Gy1-H7E27APtoNL1GwTNRyZAANSe0L52ds31BwF89uydrxrzLgyHaFL9/exec";
 const MY_LIMITS = { "🍎 Продукты / Быт": 350, "🏠 Жилье / Счета": 50, "🚬 Табак / Отдых": 120, "💊 Здоровье": 80, "🚗 Транспорт": 70, "🛍 Остальное": 30 };
-let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
+let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
 
-function isUah(acc) { return ["Приват", "Наличные UAH", "КОНВЕРТ", "СВИНКА", "КОПИЛКА"].includes(acc); }
+// Список гривневых кошельков (Копилка теперь евровый, Кредитка вместо Наличных UAH)
+function isUah(acc) { return ["Приват", "Кредитка UAH", "КОНВЕРТ", "СВИНКА"].includes(acc); }
 
-// Функция живой конвертации
 function syncTransfer(el, type) {
     const rate = parseFloat(document.getElementById('baseRate').value) || 50.76;
     if (type === 'eur') {
@@ -135,7 +135,7 @@ function drawLimits() {
 function draw(data) {
     if (!data || !data.rows) return;
     allData = data.rows;
-    walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Наличные UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
+    walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
     allData.forEach(r => {
         const accF = r[5], desc = r[2], cat = r[1], dateRaw = r[0];
@@ -162,7 +162,7 @@ function filterHistory() {
         const acc = r[5], isU = isUah(acc), cat = r[1], valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
-        hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left shadow-sm"><div class="flex items-center gap-2 truncate text-left text-white"><button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button><div class="truncate text-left text-white"><div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div><div class="text-[10px] font-bold text-white truncate leading-tight text-white">${catIcon} ${r[2]}</div></div></div><div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':''}${Math.abs(valMain).toFixed(2)}${isU?'₴':'€'}</div></div>`;
+        hist.innerHTML += `<div class="bg-slate-900/40 p-2.5 rounded-xl border border-slate-800 mb-2 flex justify-between items-center text-left shadow-sm"><div class="flex items-center gap-2 truncate text-left text-white"><button onclick="deleteRow(${rowId})" class="text-slate-700 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[9px]"></i></button><div class="truncate text-left text-white"><div class="text-[7px] text-slate-600 font-bold uppercase italic text-left">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div><div class="text-[10px] font-bold text-white truncate leading-tight text-white">${catIcon} ${r[2]}</div></div></div><div class="text-right min-w-fit font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':''}${valMain.toFixed(2)}${isU?'₴':'€'}</div></div>`;
     });
 }
 
@@ -176,13 +176,11 @@ async function save(e) {
         const valUah = parseFloat(document.getElementById('tUah').value) || 0;
 
         if(isUah(f) !== isUah(t)) {
-            // МЕЖВАЛЮТНЫЙ - ОДНА СТРОКА
             let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t };
             if(isUah(f)) { p.totalCard = -valUah; p.totalTran = valEur; p.curCard = "UAH"; } 
             else { p.totalTran = -valEur; p.totalCard = valUah; p.curCard = "UAH"; }
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
         } else {
-            // ОДНОТИПНЫЙ - ДВЕ СТРОКИ
             const mainVal = isUah(f) ? valUah : valEur;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-mainVal:"", totalTran: isUah(f)?0:-mainVal, curCard: isUah(f)?"UAH":"" }) });
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?mainVal:"", totalTran: isUah(t)?0:mainVal, curCard: isUah(t)?"UAH":"" }) });
@@ -209,8 +207,6 @@ function switchType(type) {
     document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
-    const btns = {expense:'btnExp', transfer:'btnTrf', income:'btnInc'}, colors = {expense:'bg-rose-600 text-white', transfer:'bg-slate-600 text-white', income:'bg-emerald-600 text-white'};
-    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500"); }
 }
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
