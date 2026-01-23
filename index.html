@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v28.3 (Perfect Balance)</title>
+    <title>SmartWallet v28.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,11 +19,11 @@
 </button>
 
 <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-[25px] border border-slate-700/50 mb-3 shadow-2xl">
-    <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-50 uppercase tracking-tighter text-center">
-        <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-10 bg-transparent text-yellow-500 font-black text-center border-none"></span>
-        <span id="headerDate">ЯНВАРЬ 2026</span>
+    <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-50 uppercase tracking-tighter">
+        <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-10 bg-transparent text-yellow-500 font-black border-none"></span>
+        <span>ЯНВАРЬ 2026</span>
     </div>
-    <h1 id="mainBalance" class="text-3xl font-black italic mb-3 tracking-tighter text-white text-center">€ 0.00</h1>
+    <h1 id="mainBalance" class="text-3xl font-black italic mb-3 tracking-tighter text-white">€ 0.00</h1>
     <div class="grid grid-cols-2 gap-2" id="walletContainer"></div>
 </div>
 
@@ -45,7 +45,7 @@
             <button onclick="switchType('income')" id="btnInc" class="flex-1 py-2 rounded-lg text-[8px] uppercase transition-all text-slate-500">Доход</button>
         </div>
         <form onsubmit="save(event)" class="space-y-3">
-            <input type="hidden" id="txType"><input type="hidden" id="editRowId">
+            <input type="hidden" id="txType">
             <input type="date" id="date" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700">
             <input id="merchant" placeholder="Описание / Источник" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700 text-center">
 
@@ -55,18 +55,18 @@
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-800 p-3 border border-slate-700 text-blue-300">
                 </div>
                 <div class="grid grid-cols-2 gap-2 bg-slate-800/50 p-2 border border-slate-700 text-white text-xs">
-                    <div><label class="text-[7px] text-slate-500 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black outline-none text-center text-white"></div>
-                    <div class="border-l border-slate-700 pl-2"><label class="text-[7px] text-yellow-500 uppercase block">Цена €</label><input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent font-black outline-none text-center text-white"></div>
+                    <div><label class="text-[7px] text-slate-500 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent font-black text-center text-white"></div>
+                    <div class="border-l border-slate-700 pl-2"><label class="text-[7px] text-yellow-500 uppercase block">Цена €</label><input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent font-black text-center text-white"></div>
                 </div>
             </div>
 
-            <div id="incomeFields" class="hidden space-y-3 text-center">
+            <div id="incomeFields" class="hidden space-y-3">
                 <select id="accInc" class="w-full bg-slate-800 p-3 text-emerald-400 font-bold text-xs border border-slate-700"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Наличные EUR">На Нал €</option><option value="Наличные UAH">На Нал ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
                 <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-800 p-3 text-xl font-black text-white border border-slate-700 text-center">
             </div>
 
-            <div id="transferFields" class="hidden space-y-3 text-center">
-                <div class="grid grid-cols-2 gap-2 text-center">
+            <div id="transferFields" class="hidden space-y-3">
+                <div class="grid grid-cols-2 gap-2">
                     <select id="tFrom" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Наличные EUR">Из Нал €</option><option value="Наличные UAH">Из Нал ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
                     <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Наличные EUR">В Нал €</option><option value="Наличные UAH">В Нал ₴</option></select>
                 </div>
@@ -98,7 +98,7 @@ function drawBalance() {
     for(let k in walletData) {
         const val = walletData[k], isU = isUah(k), eurEq = isU ? val / r : val;
         totalEur += eurEq;
-        container.innerHTML += `<div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30 text-center"><div class="text-[7px] text-slate-500 uppercase font-black text-center">${k}</div><div class="text-[10px] font-black text-white text-center">${isU?'₴':'€'} ${val.toFixed(2)}</div>${isU ? `<div class="text-[7px] text-slate-600 italic text-center">€ ${eurEq.toFixed(2)}</div>` : ''}</div>`;
+        container.innerHTML += `<div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30 text-center"><div class="text-[7px] text-slate-500 uppercase font-black">${k}</div><div class="text-[10px] font-black text-white">${isU?'₴':'€'} ${val.toFixed(2)}</div>${isU ? `<div class="text-[7px] text-slate-600 italic">€ ${eurEq.toFixed(2)}</div>` : ''}</div>`;
     }
     document.getElementById('mainBalance').innerText = '€ ' + totalEur.toFixed(2);
     drawLimits();
@@ -109,7 +109,7 @@ function drawLimits() {
     for (let cat in MY_LIMITS) {
         const spent = Math.abs(spentThisMonth[cat] || 0), limit = MY_LIMITS[cat], percent = Math.min((spent / limit) * 100, 100);
         let color = percent > 75 ? (percent >= 100 ? "bg-rose-500" : "bg-yellow-500") : "bg-emerald-500";
-        container.innerHTML += `<div><div class="flex justify-between text-[8px] font-bold mb-1 uppercase tracking-tighter italic text-left text-center"><span>${cat}</span><span class="text-slate-500 text-center">${spent.toFixed(0)} / ${limit} €</span></div><div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden border border-slate-700/30 text-center"><div class="${color} h-full transition-all" style="width: ${percent}%"></div></div></div>`;
+        container.innerHTML += `<div><div class="flex justify-between text-[8px] font-bold mb-1 uppercase tracking-tighter italic"><span>${cat}</span><span class="text-slate-500">${spent.toFixed(0)} / ${limit} €</span></div><div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden"><div class="${color} h-full transition-all" style="width: ${percent}%"></div></div></div>`;
     }
 }
 
@@ -120,22 +120,18 @@ function draw(data) {
     spentThisMonth = {}; const now = new Date();
     
     allData.forEach(r => {
-        const accF = r[5], date = new Date(r[0]), cat = r[1], desc = r[2];
+        const cat = r[1], desc = r[2], accF = r[5], date = new Date(r[0]);
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
 
-        // ПРЯМОЕ СУММИРОВАНИЕ: Кошелек из F получает свое значение
         if (walletData.hasOwnProperty(accF)) {
             walletData[accF] += (isUah(accF) ? uahVal : eurVal);
         }
-
-        // Если есть стрелочка, значит это перевод одной строкой (обмен)
         if (desc && desc.includes("➡️")) {
             const target = desc.replace("➡️ ", "").trim();
             if (walletData.hasOwnProperty(target)) {
                 walletData[target] += (isUah(target) ? Math.abs(uahVal) : Math.abs(eurVal));
             }
         }
-
         if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && eurVal < 0 && !cat.includes("Перевод") && !cat.includes("Доход")) {
             const lCat = MY_LIMITS.hasOwnProperty(cat) ? cat : "🛍 Остальное";
             spentThisMonth[lCat] = (spentThisMonth[lCat] || 0) + eurVal;
@@ -173,32 +169,23 @@ async function save(e) {
 
     if(type === 'transfer') {
         const f = document.getElementById('tFrom').value, t = document.getElementById('tTo').value, amF = parseFloat(document.getElementById('tAmountFrom').value)||0;
-        
-        // ЕСЛИ ПЕРЕВОД МЕЖДУ РАЗНЫМИ ВАЛЮТАМИ: Одна строка (обмен)
         if(isUah(f) !== isUah(t)) {
-            let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t };
-            if(isUah(f)) { 
-                p.totalCard = -Math.abs(amF); p.totalTran = Math.abs(amF / rate); p.curCard = "UAH";
-            } else {
-                p.totalTran = -Math.abs(amF); p.totalCard = Math.abs(amF * rate); p.curCard = "UAH";
-            }
+            let p = { action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: -Math.abs(amF), curCard: "UAH", totalTran: Math.abs(amF / rate) };
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
-        }
-        // ЕСЛИ ПЕРЕВОД В ОДНОЙ ВАЛЮТЕ (Гривна->Гривна ИЛИ Евро->Евро): Две строки
-        else {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-Math.abs(amF):"", totalTran: isUah(f)?0:-Math.abs(amF), curCard: isUah(f)?"UAH":"" }) });
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?Math.abs(amF):"", totalTran: isUah(t)?0:Math.abs(amF), curCard: isUah(t)?"UAH":"" }) });
+        } else {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: f, merchant: "➡️ " + t, totalCard: isUah(f)?-Math.abs(amF):"", totalTran: isUah(f)?"":-Math.abs(amF), curCard: isUah(f)?"UAH":"" }) });
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date: date, rate: rate, category: "🔄 Перевод", account: t, merchant: "⬅️ " + f, totalCard: isUah(t)?Math.abs(amF):"", totalTran: isUah(t)?"":Math.abs(amF), curCard: isUah(t)?"UAH":"" }) });
         }
     } else if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value)||1, pU = parseFloat(document.getElementById('priceUnit').value)||0;
-        let payload = { action: 'add', date: date, rate: rate, merchant: document.getElementById('merchant').value, category: document.getElementById('cat').value, account: document.getElementById('acc').value, nameDE: document.getElementById('nameDE').value, nameRU: document.getElementById('nameRU').value, qty: q, priceUnit: pU, totalTran: -(q*pU) };
-        if(isUah(payload.account)){ payload.totalCard = -(q*pU*rate); payload.curCard = "UAH"; }
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        let p = { action: 'add', date: date, rate: rate, merchant: document.getElementById('merchant').value, category: document.getElementById('cat').value, account: document.getElementById('acc').value, nameDE: document.getElementById('nameDE').value, nameRU: document.getElementById('nameRU').value, qty: q, priceUnit: pU, totalTran: isUah(document.getElementById('acc').value) ? "" : -(q*pU) };
+        if(isUah(p.account)){ p.totalCard = -(q*pU*rate); p.curCard = "UAH"; }
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     } else if(type === 'income') {
         const pV = parseFloat(document.getElementById('simplePrice').value)||0, target = document.getElementById('accInc').value;
-        let payload = { action: 'add', date: date, rate: rate, merchant: "💎 " + document.getElementById('merchant').value, category: "💎 Доход", account: target };
-        if(isUah(target)){ payload.totalCard = Math.abs(pV); payload.curCard = "UAH"; payload.totalTran = pV/rate; } else payload.totalTran = Math.abs(pV);
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        let p = { action: 'add', date: date, rate: rate, merchant: "💎 " + document.getElementById('merchant').value, category: "💎 Доход", account: target };
+        if(isUah(target)){ p.totalCard = Math.abs(pV); p.curCard = "UAH"; p.totalTran = ""; } else p.totalTran = Math.abs(pV);
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     }
     location.reload();
 }
@@ -212,10 +199,7 @@ function switchType(type) {
     document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
     document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
     const btns = {expense:'btnExp', transfer:'btnTrf', income:'btnInc'}, colors = {expense:'bg-rose-600 text-white', transfer:'bg-slate-600 text-white', income:'bg-emerald-600 text-white'};
-    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500 text-center"); }
+    for(let k in btns) { document.getElementById(btns[k]).className = "flex-1 py-2 rounded-lg text-[8px] uppercase transition-all " + (k===type ? colors[k] : "bg-transparent text-slate-500"); }
 }
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
-window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
-</script>
-</body>
-</html>
+window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.
