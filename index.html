@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v33.0 (Edit Mode)</title>
+    <title>SmartWallet v34.0 (Filtered Total)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -45,8 +45,7 @@
             <button onclick="switchType('income')" id="btnInc" class="flex-1 py-2 rounded-lg text-[8px] uppercase transition-all text-slate-500">Доход</button>
         </div>
         <form onsubmit="save(event)" class="space-y-3 text-center">
-            <input type="hidden" id="txType">
-            <input type="hidden" id="editRowId">
+            <input type="hidden" id="txType"><input type="hidden" id="editRowId">
             <input type="date" id="date" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700">
             <input id="merchant" placeholder="Описание / Источник" class="w-full bg-slate-800 p-3 text-white text-xs font-bold border border-slate-700 text-center text-white">
 
@@ -68,14 +67,8 @@
                     <select id="tTo" class="bg-slate-800 p-3 text-yellow-500 text-[10px] font-bold border border-slate-700"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Валера">В Валера</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-center">
-                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
-                        <label class="text-[7px] text-yellow-500 uppercase block">Сумма €</label>
-                        <input type="number" id="tEur" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncFX(this, 'eur', true)">
-                    </div>
-                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
-                        <label class="text-[7px] text-blue-400 uppercase block">Сумма ₴</label>
-                        <input type="number" id="tUah" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncFX(this, 'uah', true)">
-                    </div>
+                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700"><label class="text-[7px] text-yellow-500 uppercase block">Сумма €</label><input type="number" id="tEur" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncFX(this, 'eur', true)"></div>
+                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700"><label class="text-[7px] text-blue-400 uppercase block">Сумма ₴</label><input type="number" id="tUah" step="0.01" class="w-full bg-transparent font-black text-white text-center" oninput="syncFX(this, 'uah', true)"></div>
                 </div>
             </div>
 
@@ -86,18 +79,7 @@
 
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center">
                 <select id="acc" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="Sparkasse">Sparkasse</option><option value="Наличные EUR">Нал €</option><option value="КОПИЛКА">КОПИЛКА</option><option value="Приват">Приват</option><option value="Валера">Валера</option><option value="Кредитка UAH">Кредитка ₴</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="СВИНКА">СВИНКА</option></select>
-                <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700">
-                    <option value="🍎 Продукты / Быт">🍎 Продукты (Еда, супермаркет, химия)</option>
-                    <option value="🏠 Жилье / Счета / Мобильная связь">🏠 Жилье (Счета, связь, подписки)</option>
-                    <option value="🚬 Табак / Алкоголь / Отдых">🚬 Табак/Отдых (Сигареты, алкоголь, кофе)</option>
-                    <option value="💊 Здоровье / 💇‍♀️красота">💊 Здоровье (Аптека, врач, красота)</option>
-                    <option value="🚗 Транспорт">🚗 Транспорт (Билеты, бензин, авто)</option>
-                    <option value="🏦 Банк">🏦 Банк (Конверт, Обслуживание)</option>
-                    <option value="🙇‍♀️ Учеба">🙇‍♀️ Учеба (Канцелярия, Уроки, Книги)</option>
-                    <option value="🛍 Остальное">🛍 Остальное (Одежда, подарки)</option>
-                    <option value="💰 КОПИЛКА">💰 КОПИЛКА (Чистый капитал)</option>
-                    <option value="🏖️ Развлечения">🏖️ Развлечения (Отпуск, отели)</option>
-                </select>
+                <select id="cat" class="bg-slate-800 p-3 text-white text-[10px] font-bold border border-slate-700"><option value="🍎 Продукты / Быт">🍎 Продукты (Еда, супермаркет, химия)</option><option value="🏠 Жилье / Счета / Мобильная связь">🏠 Жилье (Счета, связь, подписки)</option><option value="🚬 Табак / Алкоголь / Отдых">🚬 Табак/Отдых (Сигареты, алкоголь, кофе)</option><option value="💊 Здоровье / 💇‍♀️красота">💊 Здоровье (Аптека, врач, красота)</option><option value="🚗 Транспорт">🚗 Транспорт (Билеты, бензин, авто)</option><option value="🏦 Банк">🏦 Банк (Конверт, Обслуживание)</option><option value="🙇‍♀️ Учеба">🙇‍♀️ Учеба (Канцелярия, Уроки, Книги)</option><option value="🛍 Остальное">🛍 Остальное (Одежда, подарки)</option><option value="💰 КОПИЛКА">💰 КОПИЛКА (Чистый капитал)</option><option value="🏖️ Развлечения">🏖️ Развлечения (Отпуск, отели)</option></select>
             </div>
             <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-800 py-3 rounded-xl font-bold uppercase text-[9px] text-white">Отмена</button><button id="saveBtn" class="flex-[2] bg-yellow-500 text-black py-3 rounded-xl font-black uppercase text-xs">Записать</button></div>
         </form>
@@ -107,6 +89,9 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz4-b-RtsW9Gy1-H7E27APtoNL1GwTNRyZAANSe0L52ds31BwF89uydrxrzLgyHaFL9/exec";
 const MY_LIMITS = { "🍎 Продукты / Быт": 345, "🏠 Жилье / Счета / Мобильная связь": 50, "🚬 Табак / Алкоголь / Отдых": 64, "💊 Здоровье / 💇‍♀️красота": 70, "🚗 Транспорт": 70, "🏦 Банк": 25, "🙇‍♀️ Учеба": 70, "🛍 Остальное": 10, "💰 КОПИЛКА": 250, "🏖️ Развлечения": 10 };
+// Список кошельков, которые учитываются в ОБЩЕМ БАЛАНСЕ ЕВРО
+const INCLUDED_IN_TOTAL = ["Sparkasse", "Валера", "Наличные EUR", "Приват"];
+
 let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
@@ -116,11 +101,8 @@ function isUah(acc) { return ["Приват", "Валера", "Кредитка 
 function syncFX(el, type, isTransfer = false) {
     const rate = parseFloat(document.getElementById('baseRate').value) || 50.76;
     const targetId = isTransfer ? (type === 'eur' ? 'tUah' : 'tEur') : (type === 'eur' ? 'pUah' : 'pEur');
-    if (type === 'eur') {
-        document.getElementById(targetId).value = (el.value * rate).toFixed(2);
-    } else {
-        document.getElementById(targetId).value = (el.value / rate).toFixed(2);
-    }
+    if (type === 'eur') { document.getElementById(targetId).value = (el.value * rate).toFixed(2); } 
+    else { document.getElementById(targetId).value = (el.value / rate).toFixed(2); }
 }
 
 function drawBalance() {
@@ -129,7 +111,9 @@ function drawBalance() {
     let totalEur = 0;
     for(let k in walletData) {
         const val = walletData[k], isU = isUah(k), eurEq = isU ? val / r : val;
-        totalEur += eurEq;
+        // КРИТИЧЕСКАЯ ПРАВКА: Суммируем в общий баланс только выбранные кошельки
+        if (INCLUDED_IN_TOTAL.includes(k)) { totalEur += eurEq; }
+        
         container.innerHTML += `<div class="bg-slate-800/40 p-2 rounded-xl border border-slate-700/30 text-center"><div class="text-[7px] text-slate-500 uppercase font-black text-center">${k}</div><div class="text-[10px] font-black text-white text-center">${isU?'₴':'€'} ${val.toFixed(2)}</div>${isU ? `<div class="text-[7px] text-slate-600 italic text-center">€ ${eurEq.toFixed(2)}</div>` : ''}</div>`;
     }
     document.getElementById('mainBalance').innerText = '€ ' + totalEur.toFixed(2);
@@ -192,33 +176,23 @@ function filterHistory() {
 }
 
 function editEntry(id) {
-    const row = allData.find(r => r[r.length-1] === id);
-    if(!row) return;
-    const cat = row[1];
-    let type = 'expense';
-    if(cat.includes('Перевод')) type = 'transfer';
-    else if(cat.includes('Доход')) type = 'income';
-
+    const row = allData.find(r => r[r.length-1] === id); if(!row) return;
+    const cat = row[1]; let type = 'expense';
+    if(cat.includes('Перевод')) type = 'transfer'; else if(cat.includes('Доход')) type = 'income';
     openModal(type);
     document.getElementById('editRowId').value = id;
     document.getElementById('saveBtn').innerText = "Обновить";
     document.getElementById('date').value = String(row[0]).split('T')[0];
     document.getElementById('merchant').value = row[2].replace('💎 ', '').replace('➡️ ', '').replace('⬅️ ', '');
-
     if(type === 'expense') {
-        document.getElementById('acc').value = row[5];
-        document.getElementById('cat').value = cat;
-        document.getElementById('nameDE').value = row[3] || "";
-        document.getElementById('nameRU').value = row[4] || "";
-        document.getElementById('qty').value = row[6] || 1;
-        document.getElementById('pEur').value = Math.abs(parseFloat(row[8] || 0));
+        document.getElementById('acc').value = row[5]; document.getElementById('cat').value = cat;
+        document.getElementById('nameDE').value = row[3] || ""; document.getElementById('nameRU').value = row[4] || "";
+        document.getElementById('qty').value = row[6] || 1; document.getElementById('pEur').value = Math.abs(parseFloat(row[8] || 0));
         syncFX(document.getElementById('pEur'), 'eur');
     } else if(type === 'income') {
-        document.getElementById('accInc').value = row[5];
-        document.getElementById('simplePrice').value = Math.abs(isUah(row[5]) ? row[10] : row[8]);
+        document.getElementById('accInc').value = row[5]; document.getElementById('simplePrice').value = Math.abs(isUah(row[5]) ? row[10] : row[8]);
     } else if(type === 'transfer') {
-        document.getElementById('tFrom').value = row[5];
-        document.getElementById('tEur').value = Math.abs(parseFloat(row[8] || 0));
+        document.getElementById('tFrom').value = row[5]; document.getElementById('tEur').value = Math.abs(parseFloat(row[8] || 0));
         syncFX(document.getElementById('tEur'), 'eur', true);
     }
 }
@@ -228,7 +202,6 @@ async function save(e) {
     const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), date = document.getElementById('date').value;
     const editId = document.getElementById('editRowId').value;
     const action = editId ? 'update' : 'add';
-
     let payload = { action: action, rowId: editId, date: date, rate: rate };
 
     if(type === 'transfer') {
@@ -257,20 +230,9 @@ async function save(e) {
     location.reload();
 }
 
-function openModal(type) { 
-    document.getElementById('modal').classList.remove('hidden'); 
-    document.getElementById('editRowId').value = "";
-    document.getElementById('saveBtn').innerText = "Записать";
-    switchType(type); 
-}
+function openModal(type) { document.getElementById('modal').classList.remove('hidden'); document.getElementById('editRowId').value = ""; document.getElementById('saveBtn').innerText = "Записать"; switchType(type); }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-function switchType(type) {
-    document.getElementById('txType').value = type;
-    document.getElementById('expenseFields').classList.toggle('hidden', type !== 'expense');
-    document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income');
-    document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer');
-    document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense');
-}
+function switchType(type) { document.getElementById('txType').value = type; document.getElementById('expenseFields').classList.toggle('hidden', type !== 'expense'); document.getElementById('incomeFields').classList.toggle('hidden', type !== 'income'); document.getElementById('transferFields').classList.toggle('hidden', type !== 'transfer'); document.getElementById('accCatGroup').classList.toggle('hidden', type !== 'expense'); }
 async function deleteRow(id) { if(!confirm('Удалить?')) return; await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + new Date().getTime(); document.body.appendChild(s); };
 </script>
