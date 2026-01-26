@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v36.0 (Search & Sort)</title>
+    <title>SmartWallet v36.1 (Fix Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -33,14 +33,9 @@
 <div id="limit-items" class="flex gap-2 overflow-x-auto no-scrollbar pb-4 px-1"></div>
 
 <div class="flex gap-2 mb-4 font-black">
-    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-rose-700 shadow-md text-white active:translate-y-1 active:border-b-0">Расход</button>
-    <button onclick="openModal('transfer')" class="flex-1 bg-slate-700 py-3 rounded-xl text-[10px] uppercase border-b-4 border-slate-900 shadow-md text-white active:translate-y-1 active:border-b-0">Перевод</button>
-    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-emerald-700 shadow-md text-white active:translate-y-1 active:border-b-0">Доход</button>
-</div>
-
-<div class="relative mb-3 px-1">
-    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
-    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="Поиск по истории..." class="w-full bg-white border border-slate-200 py-2.5 pl-8 pr-4 rounded-2xl text-[11px] font-medium text-slate-600 shadow-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition-all text-left">
+    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-rose-700 shadow-md text-white">Расход</button>
+    <button onclick="openModal('transfer')" class="flex-1 bg-slate-700 py-3 rounded-xl text-[10px] uppercase border-b-4 border-slate-900 shadow-md text-white">Перевод</button>
+    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-emerald-700 shadow-md text-white">Доход</button>
 </div>
 
 <div id="history" class="space-y-2 text-left"></div>
@@ -56,7 +51,7 @@
             <input type="hidden" id="txType"><input type="hidden" id="editRowId">
             <input type="date" id="date" class="w-full bg-slate-50 p-3 text-slate-800 text-xs font-bold border border-slate-200 rounded-xl">
             <input id="merchant" placeholder="Описание / Источник" class="w-full bg-slate-50 p-3 text-slate-800 text-xs font-bold border border-slate-200 rounded-xl text-center">
-
+            
             <div id="expenseFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2 font-bold italic">
                     <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-50 p-3 border border-slate-200 text-center rounded-xl text-slate-800">
@@ -70,13 +65,13 @@
             </div>
 
             <div id="transferFields" class="hidden space-y-3">
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-2 text-slate-800">
                     <select id="tFrom" class="bg-slate-50 p-3 text-slate-800 text-[10px] font-bold border border-slate-200 rounded-xl"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Валера">Из Валера</option><option value="Наличные EUR">Из Нал €</option><option value="Кредитка UAH">Из Кредитки ₴</option><option value="КОПИЛКА">Из КОПИЛКИ</option><option value="КОНВЕРТ">Из КОНВЕРТА</option><option value="СВИНКА">Из СВИНКИ</option></select>
                     <select id="tTo" class="bg-slate-50 p-3 text-orange-600 text-[10px] font-bold border border-slate-200 rounded-xl"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Валера">В Валера</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-orange-500 uppercase block">Сумма €</label><input type="number" id="tEur" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'eur', true)"></div>
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-blue-500 uppercase block">Сумма ₴</label><input type="number" id="tUah" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'uah', true)"></div>
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-orange-500 uppercase block text-slate-400">Сумма €</label><input type="number" id="tEur" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'eur', true)"></div>
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-blue-500 uppercase block text-slate-400">Сумма ₴</label><input type="number" id="tUah" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'uah', true)"></div>
                 </div>
             </div>
 
@@ -98,7 +93,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz4-b-RtsW9Gy1-H7E27APtoNL1GwTNRyZAANSe0L52ds31BwF89uydrxrzLgyHaFL9/exec";
 const MY_LIMITS = { "🍎 Продукты / Быт": 345, "🏠 Жилье / Счета / Мобильная связь": 50, "🚬 Табак / Алкоголь / Отдых": 64, "💊 Здоровье / 💇‍♀️красота": 70, "🚗 Транспорт": 70, "🏦 Банк": 25, "🙇‍♀️ Учеба": 70, "🛍 Остальное": 10, "💰 КОПИЛКА": 250, "🏖️ Развлечения": 10 };
 const INCLUDED_IN_TOTAL = ["Sparkasse", "Валера", "Наличные EUR", "Приват"];
-
 let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
@@ -132,22 +126,18 @@ function drawLimits() {
         let colorText = "text-emerald-600", colorBg = "bg-emerald-50";
         if (percent > 75) { colorText = "text-amber-600"; colorBg = "bg-amber-50"; }
         if (percent >= 100) { colorText = "text-rose-600"; colorBg = "bg-rose-50"; }
-        
-        container.innerHTML += `
-            <div class="flex-shrink-0 ${colorBg} ${colorText} px-3 py-1 rounded-2xl border border-current/10 flex flex-col items-center min-w-[70px]">
-                <span class="text-[7px] font-black uppercase tracking-tighter">${cat.split(' ')[0]}</span>
-                <span class="text-[9px] font-bold leading-tight">${spent.toFixed(0)}€</span>
-            </div>`;
+        container.innerHTML += `<div class="flex-shrink-0 ${colorBg} ${colorText} px-3 py-1 rounded-2xl border border-current/10 flex flex-col items-center min-w-[70px]"><span class="text-[7px] font-black uppercase tracking-tighter text-slate-400">${cat.split(' ')[0]}</span><span class="text-[9px] font-bold leading-tight">${spent.toFixed(0)}€</span></div>`;
     }
 }
 
 function draw(data) {
     if (!data || !data.rows) return;
-    // Скрупулезная сортировка: Новые даты сверху
+    // Сортировка: Свежие даты сверху
     allData = data.rows.sort((a, b) => new Date(b[0]) - new Date(a[0]));
     
     walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
+    
     allData.forEach(r => {
         const accF = r[5], desc = r[2], cat = r[1], dateRaw = r[0];
         const date = (dateRaw && !isNaN(Date.parse(dateRaw))) ? new Date(dateRaw) : null;
@@ -168,27 +158,24 @@ function draw(data) {
 }
 
 function filterHistory() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
     const hist = document.getElementById('history'); hist.innerHTML = "";
-    
-    allData.forEach(r => {
-        const acc = r[5], cat = r[1], desc = r[2], nameDE = r[3] || "", nameRU = r[4] || "";
-        const rowText = `${acc} ${cat} ${desc} ${nameDE} ${nameRU}`.toLowerCase();
-        
-        if (query && !rowText.includes(query)) return;
-
-        const isU = isUah(acc), valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
+    allData.slice(0, 30).forEach(r => {
+        const acc = r[5], isU = isUah(acc), cat = r[1];
+        const valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
         
+        // Поправка даты: берем только строку ГГГГ-ММ-ДД без сдвигов часовых поясов
+        const cleanDate = String(r[0]).split('T')[0].substring(5);
+
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-100 mb-2 flex justify-between items-center text-left shadow-sm">
-            <div class="flex items-center gap-3 truncate text-left text-slate-800">
+            <div class="flex items-center gap-3 truncate text-slate-800">
                 <div class="flex flex-col gap-1">
                     <button onclick="deleteRow(${rowId})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                     <button onclick="editEntry(${rowId})" class="text-slate-300 hover:text-blue-500"><i class="fa-solid fa-pencil text-[10px]"></i></button>
                 </div>
-                <div class="truncate text-left">
-                    <div class="text-[7px] text-slate-400 font-bold uppercase italic">${String(r[0]).split('T')[0].substring(5)} • ${acc}</div>
+                <div class="truncate">
+                    <div class="text-[7px] text-slate-400 font-bold uppercase italic">${cleanDate} • ${acc}</div>
                     <div class="text-[11px] font-bold text-slate-800 truncate leading-tight">${catIcon} ${r[2]}</div>
                 </div>
             </div>
@@ -226,6 +213,8 @@ async function save(e) {
     const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), date = document.getElementById('date').value;
     const editId = document.getElementById('editRowId').value;
     const action = editId ? 'update' : 'add';
+    
+    // Скрупулезно формируем объект для отправки
     let payload = { action: action, rowId: editId, date: date, rate: rate };
 
     if(type === 'transfer') {
