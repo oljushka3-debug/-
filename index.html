@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v36.2 (Final Fix)</title>
+    <title>SmartWallet v36.3 (Strict Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -22,7 +22,7 @@
 </button>
 
 <div class="bg-white p-4 rounded-[25px] border border-slate-200 mb-3 shadow-xl shadow-slate-200/50">
-    <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-60 uppercase tracking-tighter">
+    <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-60 uppercase tracking-tighter text-slate-400">
         <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-12 text-blue-600 font-black border-none focus:ring-0"></span>
         <span>ЯНВАРЬ 2026</span>
     </div>
@@ -38,8 +38,8 @@
     <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[10px] uppercase border-b-4 border-emerald-700 shadow-md text-white active:translate-y-1 active:border-b-0">Доход</button>
 </div>
 
-<div class="px-1 mb-3">
-    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="🔍 Поиск по названию или счету..." class="w-full bg-white border border-slate-200 p-2 rounded-xl text-[10px] font-bold text-slate-500 shadow-sm">
+<div class="relative mb-3 px-1">
+    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="🔍 Поиск по названию или счету..." class="w-full bg-white border border-slate-200 py-2.5 px-4 rounded-2xl text-[11px] font-medium text-slate-600 shadow-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition-all text-left">
 </div>
 
 <div id="history" class="space-y-2 text-left"></div>
@@ -62,9 +62,9 @@
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-50 p-3 border border-slate-200 text-blue-600 text-center rounded-xl">
                 </div>
                 <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2 border border-slate-200 rounded-xl text-[9px]">
-                    <div><label class="text-[7px] text-slate-400 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full font-black text-center text-slate-800"></div>
-                    <div class="border-l border-slate-200"><label class="text-[7px] text-orange-500 uppercase block">Цена €</label><input type="number" id="pEur" step="0.01" placeholder="0.00" class="w-full font-black text-center text-slate-800" oninput="syncFX(this, 'eur')"></div>
-                    <div class="border-l border-slate-200"><label class="text-[7px] text-blue-500 uppercase block">Цена ₴</label><input type="number" id="pUah" step="0.01" placeholder="0.00" class="w-full font-black text-center text-slate-800" oninput="syncFX(this, 'uah')"></div>
+                    <div><label class="text-[7px] text-slate-400 uppercase block">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full font-black text-center text-slate-800 bg-transparent"></div>
+                    <div class="border-l border-slate-200"><label class="text-[7px] text-orange-500 uppercase block">Цена €</label><input type="number" id="pEur" step="0.01" placeholder="0.00" class="w-full font-black text-center text-slate-800 bg-transparent" oninput="syncFX(this, 'eur')"></div>
+                    <div class="border-l border-slate-200"><label class="text-[7px] text-blue-500 uppercase block">Цена ₴</label><input type="number" id="pUah" step="0.01" placeholder="0.00" class="w-full font-black text-center text-slate-800 bg-transparent" oninput="syncFX(this, 'uah')"></div>
                 </div>
             </div>
 
@@ -74,14 +74,14 @@
                     <select id="tTo" class="bg-slate-50 p-3 text-orange-600 text-[10px] font-bold border border-slate-200 rounded-xl"><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option><option value="Sparkasse">В Sparkasse</option><option value="Приват">В Приват</option><option value="Валера">В Валера</option><option value="Наличные EUR">В Нал €</option><option value="Кредитка UAH">В Кредитку ₴</option></select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-orange-500 uppercase block">Сумма €</label><input type="number" id="tEur" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'eur', true)"></div>
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-blue-500 uppercase block">Сумма ₴</label><input type="number" id="tUah" step="0.01" class="w-full font-black text-slate-800 text-center" oninput="syncFX(this, 'uah', true)"></div>
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-orange-500 uppercase block">Сумма €</label><input type="number" id="tEur" step="0.01" class="w-full font-black text-slate-800 text-center bg-transparent" oninput="syncFX(this, 'eur', true)"></div>
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="text-[7px] text-blue-500 uppercase block">Сумма ₴</label><input type="number" id="tUah" step="0.01" class="w-full font-black text-slate-800 text-center bg-transparent" oninput="syncFX(this, 'uah', true)"></div>
                 </div>
             </div>
 
             <div id="incomeFields" class="hidden space-y-3">
                 <select id="accInc" class="w-full bg-slate-50 p-3 text-emerald-600 font-bold text-xs border border-slate-200 rounded-xl"><option value="Sparkasse">На Sparkasse</option><option value="Приват">На Приват</option><option value="Валера">На Валера</option><option value="Наличные EUR">На Нал €</option><option value="Кредитка UAH">На Кредитку ₴</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="СВИНКА">В СВИНКУ</option></select>
-                <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-50 p-3 text-xl font-black text-slate-800 border border-slate-200 rounded-xl text-center">
+                <input type="number" id="simplePrice" step="0.01" placeholder="Сумма" class="w-full bg-slate-50 p-3 text-xl font-black text-slate-800 border border-slate-200 rounded-xl text-center bg-transparent">
             </div>
 
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-center text-slate-800">
@@ -97,6 +97,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzM49uaS2TvN-5OzpVGSrThuN_lZJWU7CPTnFw3Q_DKyv6eJchIeq-5t3_taJiwEJXD/exec";
 const MY_LIMITS = { "🍎 Продукты / Быт": 345, "🏠 Жилье / Счета / Мобильная связь": 50, "🚬 Табак / Алкоголь / Отдых": 64, "💊 Здоровье / 💇‍♀️красота": 70, "🚗 Транспорт": 70, "🏦 Банк": 25, "🙇‍♀️ Учеба": 70, "🛍 Остальное": 10, "💰 КОПИЛКА": 250, "🏖️ Развлечения": 10 };
 const INCLUDED_IN_TOTAL = ["Sparkasse", "Валера", "Наличные EUR", "Приват"];
+
 let walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
 let spentThisMonth = {};
 let allData = [];
@@ -130,19 +131,24 @@ function drawLimits() {
         let colorText = "text-emerald-600", colorBg = "bg-emerald-50";
         if (percent > 75) { colorText = "text-amber-600"; colorBg = "bg-amber-50"; }
         if (percent >= 100) { colorText = "text-rose-600"; colorBg = "bg-rose-50"; }
-        container.innerHTML += `<div class="flex-shrink-0 ${colorBg} ${colorText} px-3 py-1 rounded-2xl border border-current/10 flex flex-col items-center min-w-[70px]"><span class="text-[7px] font-black uppercase tracking-tighter">${cat.split(' ')[0]}</span><span class="text-[9px] font-bold leading-tight">${spent.toFixed(0)}€</span></div>`;
+        container.innerHTML += `<div class="flex-shrink-0 ${colorBg} ${colorText} px-3 py-1 rounded-2xl border border-current/10 flex flex-col items-center min-w-[70px]"><span class="text-[7px] font-black uppercase tracking-tighter text-slate-400">${cat.split(' ')[0]}</span><span class="text-[9px] font-bold leading-tight">${spent.toFixed(0)}€</span></div>`;
     }
 }
 
 function draw(data) {
     if (!data || !data.rows) return;
+    // Сортировка: новые даты сверху
     allData = data.rows.sort((a, b) => new Date(b[0]) - new Date(a[0]));
+    
     walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
     spentThisMonth = {}; const now = new Date();
+    
     allData.forEach(r => {
         const accF = r[5], desc = r[2], cat = r[1], dateRaw = r[0];
-        const date = (dateRaw && !isNaN(Date.parse(dateRaw))) ? new Date(dateRaw) : null;
+        // Ювелирная работа с датой для расчетов лимитов
+        const date = dateRaw ? new Date(dateRaw) : null;
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
+        
         if (walletData.hasOwnProperty(accF)) walletData[accF] += (isUah(accF) ? uahVal : eurVal);
         if (desc && desc.includes("➡️")) {
             const target = desc.replace("➡️ ", "").trim();
@@ -161,21 +167,25 @@ function draw(data) {
 function filterHistory() {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const hist = document.getElementById('history'); hist.innerHTML = "";
+    
     allData.forEach(r => {
         const acc = r[5], cat = r[1], desc = r[2], dateRaw = r[0];
+        // Берем дату как текст ГГГГ-ММ-ДД
         const dateStr = String(dateRaw).split('T')[0];
-        if (q && !`${acc} ${cat} ${desc}`.toLowerCase().includes(q)) return;
         
+        if (q && !`${acc} ${cat} ${desc} ${dateStr}`.toLowerCase().includes(q)) return;
+
         const isU = isUah(acc), valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
+        
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-100 mb-2 flex justify-between items-center text-left shadow-sm">
-            <div class="flex items-center gap-3 truncate text-left text-slate-800">
+            <div class="flex items-center gap-3 truncate text-slate-800">
                 <div class="flex flex-col gap-1">
                     <button onclick="deleteRow(${rowId})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                     <button onclick="editEntry(${rowId})" class="text-slate-300 hover:text-blue-500"><i class="fa-solid fa-pencil text-[10px]"></i></button>
                 </div>
-                <div class="truncate text-left">
+                <div class="truncate">
                     <div class="text-[7px] text-slate-400 font-bold uppercase italic">${dateStr.substring(5)} • ${acc}</div>
                     <div class="text-[11px] font-bold text-slate-800 truncate leading-tight">${catIcon} ${desc}</div>
                 </div>
@@ -215,7 +225,7 @@ async function save(e) {
     const editId = document.getElementById('editRowId').value;
     const action = editId ? 'update' : 'add';
     
-    // Ювелирная правка: Передача rowId для обновления
+    // rowId передается в payload для Apps Script
     let payload = { action: action, rowId: editId, date: date, rate: rate };
 
     if(type === 'transfer') {
