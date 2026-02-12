@@ -24,7 +24,7 @@
 <div class="bg-white p-4 rounded-[25px] border border-slate-200 mb-3 shadow-xl shadow-slate-200/50">
     <div class="flex justify-between items-center mb-2 text-[9px] font-bold opacity-60 uppercase tracking-tighter text-slate-400">
         <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-12 text-blue-600 font-black border-none focus:ring-0"></span>
-        <span>ЯНВАРЬ 2026</span>
+        <span>ФЕВРАЛЬ 2026</span>
     </div>
     <h1 id="mainBalance" class="text-3xl font-black italic mb-3 tracking-tighter text-slate-900 text-center">€ 0.00</h1>
     <div class="grid grid-cols-2 gap-2" id="walletContainer"></div>
@@ -53,7 +53,15 @@
         </div>
         <form onsubmit="save(event)" class="space-y-3 text-center">
             <input type="hidden" id="txType"><input type="hidden" id="editRowId">
-            <input type="date" id="date" class="w-full bg-slate-50 p-3 text-slate-800 text-xs font-bold border border-slate-200 rounded-xl">
+            
+            <div class="grid grid-cols-2 gap-2">
+                <input type="date" id="date" class="w-full bg-slate-50 p-3 text-slate-800 text-xs font-bold border border-slate-200 rounded-xl">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-1">
+                    <label class="text-[7px] text-blue-500 uppercase block font-bold">Курс EUR/UAH</label>
+                    <input type="number" id="formRate" step="0.01" class="w-full text-xs font-black text-slate-800 bg-transparent">
+                </div>
+            </div>
+
             <input id="merchant" placeholder="Описание / Источник" class="w-full bg-slate-50 p-3 text-slate-800 text-xs font-bold border border-slate-200 rounded-xl text-center">
             
             <div id="expenseFields" class="hidden space-y-3">
@@ -105,7 +113,7 @@ let allData = [];
 function isUah(acc) { return ["Приват", "Валера", "Кредитка UAH", "КОНВЕРТ", "СВИНКА"].includes(acc); }
 
 function syncFX(el, type, isTransfer = false) {
-    const rate = parseFloat(document.getElementById('baseRate').value) || 50.76;
+    const rate = parseFloat(document.getElementById('formRate').value) || 50.76;
     const targetId = isTransfer ? (type === 'eur' ? 'tUah' : 'tEur') : (type === 'eur' ? 'pUah' : 'pEur');
     if (type === 'eur') { document.getElementById(targetId).value = (el.value * rate).toFixed(2); } 
     else { document.getElementById(targetId).value = (el.value / rate).toFixed(2); }
@@ -137,7 +145,6 @@ function drawLimits() {
 
 function draw(data) {
     if (!data || !data.rows) return;
-    // Сортировка: новые даты сверху
     allData = data.rows.sort((a, b) => new Date(b[0]) - new Date(a[0]));
     
     walletData = { "Sparkasse": 0, "Наличные EUR": 0, "КОПИЛКА": 0, "Приват": 0, "Валера": 0, "Кредитка UAH": 0, "КОНВЕРТ": 0, "СВИНКА": 0 };
@@ -145,7 +152,6 @@ function draw(data) {
     
     allData.forEach(r => {
         const accF = r[5], desc = r[2], cat = r[1], dateRaw = r[0];
-        // Ювелирная работа с датой для расчетов лимитов
         const date = dateRaw ? new Date(dateRaw) : null;
         const eurVal = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
         
@@ -170,11 +176,8 @@ function filterHistory() {
     
     allData.forEach(r => {
         const acc = r[5], cat = r[1], desc = r[2], dateRaw = r[0];
-        // Берем дату как текст ГГГГ-ММ-ДД
         const dateStr = String(dateRaw).split('T')[0];
-        
         if (q && !`${acc} ${cat} ${desc} ${dateStr}`.toLowerCase().includes(q)) return;
-
         const isU = isUah(acc), valMain = isU ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
         const isInc = valMain > 0; const rowId = r[r.length-1];
         let catIcon = cat.split(' ')[0]; if(cat === "🔄 Перевод") catIcon = "🔄"; if(cat === "💎 Доход") catIcon = "💰";
@@ -205,6 +208,7 @@ function editEntry(id) {
     document.getElementById('editRowId').value = id;
     document.getElementById('saveBtn').innerText = "Обновить";
     document.getElementById('date').value = String(row[0]).split('T')[0];
+    document.getElementById('formRate').value = row[12] || document.getElementById('baseRate').value;
     document.getElementById('merchant').value = row[2].replace('💎 ', '').replace('➡️ ', '').replace('⬅️ ', '');
     if(type === 'expense') {
         document.getElementById('acc').value = row[5]; document.getElementById('cat').value = cat;
@@ -221,11 +225,10 @@ function editEntry(id) {
 
 async function save(e) {
     e.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳";
-    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), date = document.getElementById('date').value;
+    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('formRate').value), date = document.getElementById('date').value;
     const editId = document.getElementById('editRowId').value;
     const action = editId ? 'update' : 'add';
     
-    // rowId передается в payload для Apps Script
     let payload = { action: action, rowId: editId, date: date, rate: rate };
 
     if(type === 'transfer') {
@@ -254,7 +257,13 @@ async function save(e) {
     location.reload();
 }
 
-function openModal(type) { document.getElementById('modal').classList.remove('hidden'); document.getElementById('editRowId').value = ""; document.getElementById('saveBtn').innerText = "Записать"; switchType(type); }
+function openModal(type) { 
+    document.getElementById('modal').classList.remove('hidden'); 
+    document.getElementById('editRowId').value = ""; 
+    document.getElementById('saveBtn').innerText = "Записать"; 
+    document.getElementById('formRate').value = document.getElementById('baseRate').value;
+    switchType(type); 
+}
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 function switchType(type) { 
     document.getElementById('txType').value = type; 
