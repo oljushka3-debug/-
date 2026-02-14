@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v30.9</title>
+    <title>SmartWallet Pro v31.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -20,6 +20,11 @@
     </div>
     <h1 id="mainBalance" class="text-4xl font-black italic mb-6 tracking-tighter text-slate-800">€ 0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-2 gap-3 text-[9px] font-bold uppercase italic text-center"></div>
+</div>
+
+<div class="bg-white p-5 rounded-[35px] border border-slate-100 mb-4 shadow-lg">
+    <h3 class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center">Бюджет / Лимиты</h3>
+    <div id="limitsContainer" class="space-y-4"></div>
 </div>
 
 <div class="flex gap-2 mb-8 font-black italic">
@@ -73,7 +78,20 @@
                 <select id="acc" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic">
                     <option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="КРЕДИТКА">КРЕДИТКА</option>
                 </select>
-                <select id="cat" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic"><option>🍎 Продукты</option><option>🏠 Жилье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option></select>
+                <select id="cat" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic">
+                    <option>🍎 Продукты / Быт</option>
+                    <option>🏠 Жилье / Связь</option>
+                    <option>🚬 Табак</option>
+                    <option>🍷 Алкоголь</option>
+                    <option>☕️ Кафе / Отдых</option>
+                    <option>💊 Здоровье / Красота</option>
+                    <option>🚗 Транспорт</option>
+                    <option>🏦 Банк / Комиссии</option>
+                    <option>🙇‍♀️ Учеба</option>
+                    <option>🛍 Остальное / Шопинг</option>
+                    <option>🏖️ Развлечения</option>
+                    <option>💰 КОПИЛКА</option>
+                </select>
             </div>
             <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-black uppercase text-[10px] text-slate-400 italic">Отмена</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg italic">Записать</button></div>
         </form>
@@ -82,8 +100,24 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyo-7ijLB_ICWfPKwkuksxSljZ9-K8KL23dECyyWi9ETv_rKnNo8MR-_tDe6-AWGnsD/exec";
-let walletData = {}; let allRows = [];
 
+// ТВОИ НОВЫЕ ЛИМИТЫ (v31.2)
+const LIMITS = {
+    "🍎 Продукты / Быт": 330,
+    "🏠 Жилье / Связь": 50,
+    "🚬 Табак": 30,
+    "🍷 Алкоголь": 30,
+    "☕️ Кафе / Отдых": 10,
+    "💊 Здоровье / Красота": 105,
+    "🚗 Транспорт": 77,
+    "🏦 Банк / Комиссии": 10,
+    "🙇‍♀️ Учеба": 80,
+    "🛍 Остальное / Шопинг": 30,
+    "🏖️ Развлечения": 30,
+    "💰 КОПИЛКА": 250
+};
+
+let walletData = {}; let categorySpent = {}; let allRows = [];
 const MARKERS = {
     UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'],
     OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ']
@@ -121,18 +155,34 @@ function drawBalance() {
         grid.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm transition-all active:scale-95"><span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter italic">${marker}</span>${content}</div>`;
     });
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
+    drawLimits(r);
+}
+
+function drawLimits(rate) {
+    const container = document.getElementById('limitsContainer'); container.innerHTML = "";
+    Object.keys(LIMITS).forEach(cat => {
+        const limit = LIMITS[cat], spent = Math.abs(categorySpent[cat] || 0);
+        const perc = Math.min((spent / limit) * 100, 100);
+        const remaining = limit - spent;
+        let colorClass = perc > 70 ? (perc >= 100 ? "bg-rose-500" : "bg-amber-500") : "bg-blue-500";
+        container.innerHTML += `<div><div class="flex justify-between text-[9px] font-black uppercase mb-1 italic"><span>${cat}</span><span class="${remaining < 0 ? 'text-rose-500' : 'text-slate-400'}">${spent.toFixed(2)} / ${limit} €</span></div><div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden"><div class="${colorClass} h-full transition-all duration-1000" style="width: ${perc}%"></div></div></div>`;
+    });
 }
 
 function draw(data) {
     if (!data || !data.rows) return;
-    allRows = data.rows;
-    const hist = document.getElementById('history'); hist.innerHTML = ""; walletData = {};
-    data.rows.forEach((r, i) => { 
-        if (i === 0 || !r[5]) return; 
-        const marker = getMarker(r[5]);
+    allRows = data.rows; const hist = document.getElementById('history'); hist.innerHTML = "";
+    walletData = {}; categorySpent = {}; const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
+    data.rows.forEach((row, i) => { 
+        if (i === 0 || !row[5]) return; 
+        const marker = getMarker(row[5]), cat = row[1], valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0;
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
-        walletData[marker].eur += (parseFloat(r[8]) || 0);
-        walletData[marker].uah += (parseFloat(r[10]) || 0);
+        walletData[marker].eur += valE; walletData[marker].uah += valU;
+        if (LIMITS[cat] !== undefined) {
+            if (!categorySpent[cat]) categorySpent[cat] = 0;
+            const eurEquivalent = valE !== 0 ? valE : (valU / r);
+            if (eurEquivalent < 0) categorySpent[cat] += eurEquivalent;
+        }
     });
     data.rows.slice(1, 25).forEach(r => { 
         const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
@@ -145,98 +195,45 @@ function draw(data) {
 
 function addItemRow() {
     const id = Date.now();
-    const html = `<div id="item-${id}" class="item-row bg-slate-50 p-3 rounded-2xl border border-slate-200 relative mb-2 italic">
-        <button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-white text-rose-500 shadow-sm border border-rose-100 w-5 h-5 rounded-full flex items-center justify-center text-[8px]"><i class="fa-solid fa-x"></i></button>
-        <div class="grid grid-cols-2 gap-2 mb-1"><input type="text" placeholder="RU / DE" class="nameRU bg-white p-2 rounded-xl text-[10px] font-bold outline-none italic"><input type="number" step="1" value="1" class="qty bg-white p-2 rounded-xl text-[10px] font-black outline-none text-center italic" oninput="calcRow(this, 'eur')"></div>
-        <div class="grid grid-cols-2 gap-2">
-            <div class="relative"><span class="absolute left-2 top-2 text-[8px] text-slate-400 font-black">€</span><input type="number" step="0.01" placeholder="Цена €" class="priceUnit bg-white p-2 pl-5 rounded-xl text-[10px] font-black outline-none italic w-full" oninput="calcRow(this, 'eur')"></div>
-            <div class="relative"><span class="absolute left-2 top-2 text-[8px] text-blue-400 font-black">₴</span><input type="number" step="0.01" placeholder="Итого ₴" class="totalUah bg-blue-50 p-2 pl-5 rounded-xl text-[10px] font-black outline-none italic w-full text-blue-600" oninput="calcRow(this, 'uah')"></div>
-        </div>
-    </div>`;
+    const html = `<div id="item-${id}" class="item-row bg-slate-50 p-3 rounded-2xl border border-slate-200 relative mb-2 italic"><button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-white text-rose-500 shadow-sm border border-rose-100 w-5 h-5 rounded-full flex items-center justify-center text-[8px]"><i class="fa-solid fa-x"></i></button><div class="grid grid-cols-2 gap-2 mb-1"><input type="text" placeholder="RU / DE" class="nameRU bg-white p-2 rounded-xl text-[10px] font-bold outline-none italic"><input type="number" step="1" value="1" class="qty bg-white p-2 rounded-xl text-[10px] font-black outline-none text-center italic" oninput="calcRow(this, 'eur')"></div><div class="grid grid-cols-2 gap-2"><div class="relative"><span class="absolute left-2 top-2 text-[8px] text-slate-400 font-black">€</span><input type="number" step="0.01" placeholder="Цена €" class="priceUnit bg-white p-2 pl-5 rounded-xl text-[10px] font-black outline-none italic w-full" oninput="calcRow(this, 'eur')"></div><div class="relative"><span class="absolute left-2 top-2 text-[8px] text-blue-400 font-black">₴</span><input type="number" step="0.01" placeholder="Итого ₴" class="totalUah bg-blue-50 p-2 pl-5 rounded-xl text-[10px] font-black outline-none italic w-full text-blue-600" oninput="calcRow(this, 'uah')"></div></div></div>`;
     document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
 }
-
 function calcRow(el, source) {
     const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value) || 51.55;
     const qty = parseFloat(row.querySelector('.qty').value) || 1;
-    const pUnit = row.querySelector('.priceUnit');
-    const tUah = row.querySelector('.totalUah');
-    
-    if (source === 'eur') {
-        const eurTotal = (parseFloat(pUnit.value) || 0) * qty;
-        tUah.value = (eurTotal * r).toFixed(2);
-    } else {
-        const eurTotal = (parseFloat(tUah.value) || 0) / r;
-        pUnit.value = (eurTotal / qty).toFixed(4); // Точная цена за единицу
-    }
+    const pUnit = row.querySelector('.priceUnit'), tUah = row.querySelector('.totalUah');
+    if (source === 'eur') { const eurTotal = (parseFloat(pUnit.value) || 0) * qty; tUah.value = (eurTotal * r).toFixed(2); } 
+    else { const eurTotal = (parseFloat(tUah.value) || 0) / r; pUnit.value = (eurTotal / qty).toFixed(4); }
 }
-
 function editRow(id) {
-    const row = allRows.find(r => r[r.length-1] == id);
-    if (!row) return;
-    const category = row[1];
-    let type = 'expense';
-    if (category.includes('Доход')) type = 'income';
-    if (category.includes('Перевод')) type = 'transfer';
-    openModal(type);
-    document.getElementById('editRowId').value = id;
+    const row = allRows.find(r => r[r.length-1] == id); if (!row) return;
+    const category = row[1]; let type = 'expense'; if (category.includes('Доход')) type = 'income'; if (category.includes('Перевод')) type = 'transfer';
+    openModal(type); document.getElementById('editRowId').value = id;
     document.getElementById('date').value = new Date(row[0]).toISOString().split('T')[0];
-    document.getElementById('merchant').value = row[2];
-    document.getElementById('customRate').value = row[12];
-    document.getElementById('acc').value = row[5];
-    document.getElementById('cat').value = row[1];
-    if (type === 'income') {
-        document.getElementById('valEur').value = Math.abs(row[8]);
-        document.getElementById('valUah').value = Math.abs(row[10]);
-    } else if (type === 'expense') {
-        document.getElementById('itemsList').innerHTML = "";
-        addItemRow();
-        const firstItem = document.querySelector('.item-row');
-        firstItem.querySelector('.nameRU').value = row[4] || row[3];
-        firstItem.querySelector('.priceUnit').value = Math.abs(row[7]);
-        firstItem.querySelector('.qty').value = row[6];
-        firstItem.querySelector('.totalUah').value = Math.abs(row[10]);
-        document.getElementById('addItemBtn').classList.add('hidden');
-    }
+    document.getElementById('merchant').value = row[2]; document.getElementById('customRate').value = row[12];
+    document.getElementById('acc').value = row[5]; document.getElementById('cat').value = row[1];
+    if (type === 'income') { document.getElementById('valEur').value = Math.abs(row[8]); document.getElementById('valUah').value = Math.abs(row[10]); } 
+    else if (type === 'expense') { document.getElementById('itemsList').innerHTML = ""; addItemRow(); const firstItem = document.querySelector('.item-row'); firstItem.querySelector('.nameRU').value = row[4] || row[3]; firstItem.querySelector('.priceUnit').value = Math.abs(row[7]); firstItem.querySelector('.qty').value = row[6]; firstItem.querySelector('.totalUah').value = Math.abs(row[10]); document.getElementById('addItemBtn').classList.add('hidden'); }
 }
-
-function calcSimple(source) {
-    const rate = parseFloat(document.getElementById('customRate').value) || 51.55;
-    if(source === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / rate).toFixed(2);
-    else document.getElementById('valUah').value = (document.getElementById('valEur').value * rate).toFixed(2);
-}
-
+function calcSimple(source) { const rate = parseFloat(document.getElementById('customRate').value) || 51.55; if(source === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / rate).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * rate).toFixed(2); }
 function updateAllItems() { document.querySelectorAll('.item-row').forEach(r => calcRow(r.querySelector('.priceUnit'), 'eur')); }
-
 async function save(e) {
     e.preventDefault(); document.getElementById('saveBtn').disabled = true;
     const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
     let p = { date: document.getElementById('date').value, rate: rate, merchant: document.getElementById('merchant').value, rowId: rowId };
-    if(type === 'expense') {
-        p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value;
-        p.items = Array.from(document.querySelectorAll('.item-row')).map(row => {
-            const qty = parseFloat(row.querySelector('.qty').value)||1;
-            const pUnit = parseFloat(row.querySelector('.priceUnit').value)||0;
-            return { nameRU: row.querySelector('.nameRU').value, qty: qty, priceUnit: pUnit, totalEur: (qty * pUnit), totalUah: parseFloat(row.querySelector('.totalUah').value)||0 };
-        });
-    } else if (type === 'transfer') {
-        p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0;
-    } else {
-        p.account = document.getElementById('acc').value; p.category = "💎 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0;
-    }
+    if(type === 'expense') { p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; p.items = Array.from(document.querySelectorAll('.item-row')).map(row => { const qty = parseFloat(row.querySelector('.qty').value)||1; const pUnit = parseFloat(row.querySelector('.priceUnit').value)||0; return { nameRU: row.querySelector('.nameRU').value, qty: qty, priceUnit: pUnit, totalEur: (qty * pUnit), totalUah: parseFloat(row.querySelector('.totalUah').value)||0 }; }); } 
+    else if (type === 'transfer') { p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; } 
+    else { p.account = document.getElementById('acc').value; p.category = "💎 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; }
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); location.reload();
 }
-
 function openModal(t) {
-    document.getElementById('txType').value = t; document.getElementById('editRowId').value = "";
-    document.getElementById('modal').classList.remove('hidden'); document.getElementById('addItemBtn').classList.remove('hidden');
+    document.getElementById('txType').value = t; document.getElementById('editRowId').value = ""; document.getElementById('modal').classList.remove('hidden'); document.getElementById('addItemBtn').classList.remove('hidden');
     ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden'));
     if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); }
     else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); }
     else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); }
     document.getElementById('customRate').value = document.getElementById('baseRate').value; document.getElementById('date').valueAsDate = new Date();
 }
-
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 async function deleteRow(id) { if(confirm('Удалить?')) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); } }
 window.onload = () => { const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + Date.now(); document.body.appendChild(s); };
