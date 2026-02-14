@@ -7,14 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-900 p-4 pb-10"> <button onclick="location.reload()" class="fixed top-6 right-6 z-50 bg-white w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center active:rotate-180 transition-transform shadow-lg">
+<body class="bg-slate-50 text-slate-900 p-4 pb-10">
+
+<button onclick="location.reload()" class="fixed top-6 right-6 z-50 bg-white w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center active:rotate-180 shadow-lg">
     <i class="fa-solid fa-rotate text-blue-500"></i>
 </button>
 
 <div class="bg-white p-5 rounded-[30px] border border-slate-200 mb-4 shadow-xl">
-    <div class="flex justify-between items-center mb-3 text-[10px] font-bold opacity-60 uppercase italic text-slate-500">
-        <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-12 bg-slate-100 rounded px-1 text-blue-600 outline-none font-black"></span>
-        <span id="currentMonth">ФЕВРАЛЬ 2026</span>
+    <div class="flex justify-between items-center mb-3 text-[10px] font-bold opacity-60 uppercase italic">
+        <span>Курс: <input type="number" id="baseRate" value="50.76" step="0.01" oninput="drawBalance()" class="w-12 bg-slate-100 rounded px-1 text-blue-600 outline-none"></span>
+        <span id="currentMonth">ОПЕРАЦИИ</span>
     </div>
     <h1 id="mainBalance" class="text-center text-4xl font-black italic mb-4 tracking-tighter text-slate-800">€ 0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-2 gap-2 text-[9px] font-bold uppercase italic text-center">
@@ -30,80 +32,60 @@
 <div id="history" class="space-y-2 font-medium"></div>
 
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white w-full max-w-sm rounded-[40px] p-6 shadow-2xl border border-white overflow-y-auto max-h-[95vh]">
+    <div class="bg-white w-full max-w-sm rounded-[40px] p-6 shadow-2xl overflow-y-auto max-h-[95vh]">
         <h2 id="modalTitle" class="text-xl font-black text-slate-800 mb-4 italic uppercase text-center tracking-widest underline underline-offset-8 decoration-blue-500">Запись</h2>
         <form onsubmit="save(event)" class="space-y-3">
             <input type="hidden" id="txType">
-            <input type="date" id="date" class="w-full bg-slate-50 p-3 rounded-xl font-bold border border-slate-200 text-slate-800">
-            <input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-800 font-bold outline-none focus:border-blue-400">
-
+            <input type="date" id="date" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold outline-none">
             <div id="expenseFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="text" id="nameDE" placeholder="Name (DE)" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
                     <input type="text" id="nameRU" placeholder="Название (РУ)" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-blue-600">
                 </div>
                 <div class="grid grid-cols-2 gap-2 bg-blue-50/50 p-3 rounded-2xl border border-blue-100">
-                    <div>
-                        <label class="text-[8px] text-slate-400 uppercase block mb-1">Кол-во</label>
-                        <input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none">
-                    </div>
-                    <div class="text-right border-l border-blue-100 pl-2">
-                        <label class="text-[8px] text-blue-500 uppercase block mb-1">Цена €</label>
-                        <input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none text-right">
-                    </div>
+                    <div><label class="text-[8px] text-slate-400 uppercase">Кол-во</label><input type="number" id="qty" value="1" step="0.01" class="w-full bg-transparent text-lg font-black outline-none"></div>
+                    <div class="text-right border-l border-blue-100 pl-2"><label class="text-[8px] text-blue-500 uppercase">Цена €</label><input type="number" id="priceUnit" step="0.01" placeholder="0.00" class="w-full bg-transparent text-lg font-black outline-none text-right"></div>
                 </div>
             </div>
-
             <div id="incomeFields" class="hidden">
-                <input type="number" id="simplePrice" step="0.01" placeholder="0.00" class="w-full bg-emerald-50 p-4 rounded-xl text-center text-2xl font-black text-emerald-600 border border-emerald-100">
+                <input type="number" id="simplePrice" step="0.01" placeholder="0.00" class="w-full bg-emerald-50 p-4 rounded-xl text-center text-2xl font-black text-emerald-600">
             </div>
-
             <div id="transferFields" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="tFrom" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[10px] font-bold"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Валера">Из Валера</option><option value="СВИНКА">Из СВИНКА</option><option value="Наличные EUR">Из Нал €</option></select>
+                    <select id="tFrom" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[10px] font-bold"><option value="Sparkasse">Из Sparkasse</option><option value="Приват">Из Приват</option><option value="Валера">Из Валера</option><option value="СВИНКА">Из СВИНКА</option></select>
                     <select id="tTo" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[10px] font-bold text-blue-600"><option value="СВИНКА">В СВИНКА</option><option value="Приват">В Приват</option><option value="Sparkasse">В Sparkasse</option></select>
                 </div>
                 <input type="number" id="tAmountFrom" step="0.01" class="w-full bg-blue-50 p-4 rounded-xl text-center text-xl font-black text-blue-600" placeholder="0.00">
             </div>
-
             <div id="accCatGroup" class="grid grid-cols-2 gap-2">
-                <select id="acc" class="bg-slate-50 p-3 rounded-xl font-bold text-[10px] border border-slate-200"><option value="Sparkasse">Sparkasse</option><option value="Приват">Приват</option><option value="Валера">Валера</option><option value="СВИНКА">СВИНКА</option><option value="Наличные EUR">Нал €</option></select>
+                <select id="acc" class="bg-slate-50 p-3 rounded-xl font-bold text-[10px] border border-slate-200"><option value="Sparkasse">Sparkasse</option><option value="Приват">Приват</option><option value="Валера">Валера</option><option value="СВИНКА">СВИНКА</option></select>
                 <select id="cat" class="bg-slate-50 p-3 rounded-xl font-bold text-[10px] border border-slate-200">
                     <option>🍎 Продукты / Быт</option><option>🚬 Табак / Отдых</option><option>🏠 Жилье / Счета</option><option>💊 Здоровье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option>
                 </select>
             </div>
-
             <div class="flex gap-2 pt-2">
-                <button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-bold uppercase text-[10px] text-slate-500">Отмена</button>
-                <button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase shadow-lg shadow-blue-200">Записать</button>
+                <button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-bold uppercase text-[10px]">Отмена</button>
+                <button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase">Записать</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// ТВОЯ НОВАЯ ССЫЛКА ИЗ SMARTWALLET_2026
 const API_URL = "https://script.google.com/macros/s/AKfycbxXa1SXMXJZ1R1g931CV8P2ILPXuewrpc3CoDcz5TWAWE8kFfX4v4Dj3CRdh-iZxVzu/exec";
 
 let walletData = {};
-function isUah(acc) { return acc && (acc.includes('Приват') || acc.includes('UAH')); }
+function isUah(acc) { return acc && (acc.includes('Приват') || acc.includes('UAH') || acc.includes('грн')); }
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 50.76;
     let totalEur = 0;
-    const grid = document.getElementById('walletsGrid');
-    grid.innerHTML = "";
-
+    const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     for(let k in walletData) {
-        const val = walletData[k];
         const isU = isUah(k);
-        totalEur += isU ? val / r : val;
-        
-        grid.innerHTML += `
-            <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                <span class="text-slate-400 block">${k}:</span>
-                <span class="text-slate-800 text-xs font-black italic">${isU ? '₴' : '€'} ${val.toFixed(2)}</span>
-            </div>`;
+        totalEur += isU ? (walletData[k] / r) : walletData[k];
+        grid.innerHTML += `<div class="bg-slate-50 p-2 rounded-xl border border-slate-100 shadow-sm"><span class="text-[7px] text-slate-400 block">${k}</span><span class="text-slate-800 text-[10px] font-black italic">${isU?'₴':'€'} ${walletData[k].toFixed(2)}</span></div>`;
     }
     document.getElementById('mainBalance').innerText = '€ ' + totalEur.toFixed(2);
 }
@@ -112,62 +94,34 @@ function draw(data) {
     if (!data || !data.rows) return;
     const hist = document.getElementById('history'); hist.innerHTML = "";
     walletData = {};
-    
-    // Считаем все кошельки динамически
-    data.rows.forEach((r, index) => {
-        if (index === 0) return; // Пропуск заголовка
-        const acc = r[5], eur = parseFloat(r[8] || 0), uahVal = parseFloat(r[10] || 0);
-        if (!acc) return;
-        if (!walletData[acc]) walletData[acc] = 0;
-        walletData[acc] += (isUah(acc) ? uahVal : eur);
+    data.rows.forEach((r, i) => {
+        if (i === 0 || !r[5]) return;
+        if (!walletData[r[5]]) walletData[r[5]] = 0;
+        walletData[r[5]] += isUah(r[5]) ? parseFloat(r[10] || 0) : parseFloat(r[8] || 0);
     });
-
-    // Рисуем последние 20 записей
     data.rows.slice().reverse().slice(0, 20).forEach(r => {
-        if (!r[1]) return;
+        if (!r[1] || r[1] === "Категория") return;
         const acc = r[5], isU = isUah(acc), val = Math.abs(isU ? r[10] : r[8]), isInc = (isU ? r[10] : r[8]) > 0;
-        const rowId = r[r.length-1];
-        
-        hist.innerHTML += `
-            <div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-100 mb-2 shadow-sm">
-                <div class="flex items-center gap-3 overflow-hidden">
-                    <button onclick="deleteRow(${rowId})" class="text-slate-300 hover:text-rose-500"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-                    <div class="truncate">
-                        <p class="text-[7px] text-slate-400 font-bold uppercase">${String(r[0]).split('T')[0].substring(5)} | ${acc}</p>
-                        <p class="text-slate-800 text-[10px] font-bold truncate">${r[2] || '...'}</p>
-                    </div>
-                </div>
-                <div class="text-right ml-2 font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">
-                    ${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}
-                </div>
-            </div>`;
+        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-100 mb-2 shadow-sm"><div class="flex items-center gap-3 overflow-hidden"><button onclick="deleteRow(${r[r.length-1]})" class="text-slate-300"><i class="fa-solid fa-trash-can text-[10px]"></i></button><div class="truncate"><p class="text-[7px] text-slate-400 font-bold uppercase">${String(r[0]).split('T')[0].substring(5)} | ${acc}</p><p class="text-slate-800 text-[10px] font-bold truncate">${r[2] || '...'}</p></div></div><div class="text-right ml-2 font-black text-[11px] ${isInc?'text-emerald-500':'text-rose-500'} italic">${isInc?'+':'-'}${val.toFixed(2)} ${isU?'₴':'€'}</div></div>`;
     });
     drawBalance();
 }
 
-// Функции модалок и сохранения остаются прежними...
-async function deleteRow(id) {
-    if(!confirm('Удалить?')) return;
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) });
-    location.reload();
-}
+async function deleteRow(id) { if(confirm('Удалить?')) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); } }
 
 async function save(e) {
-    e.preventDefault();
-    const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "⏳";
-    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value), date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-    let payload = { action: 'add', date: date, rate: rate, merchant: document.getElementById('merchant').value };
+    e.preventDefault(); document.getElementById('saveBtn').disabled = true;
+    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('baseRate').value);
+    let payload = { action: 'add', date: document.getElementById('date').value, rate: rate, merchant: document.getElementById('merchant').value };
     if(type === 'expense') {
         const q = parseFloat(document.getElementById('qty').value) || 1, p = parseFloat(document.getElementById('priceUnit').value) || 0;
         payload.category = document.getElementById('cat').value; payload.account = document.getElementById('acc').value;
-        payload.nameDE = document.getElementById('nameDE').value; payload.nameRU = document.getElementById('nameRU').value;
         payload.qty = q; payload.priceUnit = p; payload.totalTran = -(q * p);
         if (isUah(payload.account)) { payload.totalCard = -(q * p * rate); }
     } else if(type === 'income') {
         const p = parseFloat(document.getElementById('simplePrice').value) || 0;
         payload.category = "💎 Доход"; payload.account = document.getElementById('acc').value;
-        if (isUah(payload.account)) { payload.totalCard = p; payload.totalTran = p / rate; }
-        else { payload.totalTran = p; }
+        if (isUah(payload.account)) { payload.totalCard = p; payload.totalTran = p / rate; } else { payload.totalTran = p; }
     } else if(type === 'transfer') {
         const fAcc = document.getElementById('tFrom').value, tAcc = document.getElementById('tTo').value, amF = parseFloat(document.getElementById('tAmountFrom').value) || 0;
         payload.category = "🔄 Перевод"; payload.account = fAcc; payload.targetAcc = tAcc;
@@ -175,8 +129,7 @@ async function save(e) {
         else if (isUah(tAcc)) { payload.totalTran = -amF; payload.totalCard = amF*rate; }
         else { payload.totalTran = -amF; }
     }
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-    location.reload();
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); location.reload();
 }
 
 function openModal(type) {
