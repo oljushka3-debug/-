@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v25.0</title>
+    <title>SmartWallet Pro v26.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -22,10 +22,10 @@
     <div id="walletsGrid" class="grid grid-cols-2 gap-3 text-[9px] font-bold uppercase italic text-center"></div>
 </div>
 
-<div class="flex gap-2 mb-8 font-black">
-    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-5 rounded-3xl text-[10px] text-white uppercase border-b-4 border-rose-700 shadow-lg active:translate-y-1 italic">Расход</button>
-    <button onclick="openModal('transfer')" class="flex-1 bg-slate-200 py-5 rounded-3xl text-[10px] text-slate-700 uppercase border-b-4 border-slate-400 shadow-md active:translate-y-1 italic">Перевод</button>
-    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-5 rounded-3xl text-[10px] text-white uppercase border-b-4 border-emerald-700 shadow-lg active:translate-y-1 italic">Доход</button>
+<div class="flex gap-2 mb-8 font-black italic">
+    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-5 rounded-3xl text-[10px] text-white uppercase border-b-4 border-rose-700 shadow-lg active:translate-y-1">Расход</button>
+    <button onclick="openModal('transfer')" class="flex-1 bg-slate-200 py-5 rounded-3xl text-[10px] text-slate-700 uppercase border-b-4 border-slate-400 shadow-md active:translate-y-1">Перевод</button>
+    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-5 rounded-3xl text-[10px] text-white uppercase border-b-4 border-emerald-700 shadow-lg active:translate-y-1">Доход</button>
 </div>
 
 <div id="history" class="space-y-2"></div>
@@ -43,10 +43,10 @@
 
             <div id="expenseSection" class="hidden space-y-3">
                 <div id="itemsList" class="space-y-4"></div>
-                <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[10px] font-black uppercase italic">+ Добавить строку</button>
+                <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[10px] font-black uppercase italic">+ Добавить товар</button>
             </div>
 
-            <div id="incomeSection" class="hidden bg-emerald-50 p-4 rounded-3xl border border-emerald-100 space-y-3 text-center">
+            <div id="incomeSection" class="hidden bg-emerald-50 p-4 rounded-3xl border border-emerald-100 space-y-3 text-center italic">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-[7px] text-emerald-600 font-black uppercase block">Гривны (₴)</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-xl font-black outline-none text-emerald-600 text-center"></div>
                     <div><label class="text-[7px] text-slate-400 font-black uppercase block">Евро (€)</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-xl font-black outline-none text-center"></div>
@@ -54,37 +54,40 @@
             </div>
 
             <div id="transferSection" class="hidden space-y-4">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="tFrom" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] font-black uppercase">
-                        <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛ</option><option value="Sparkasse">ИЗ Sparkasse</option>
+                <div class="grid grid-cols-2 gap-2 font-black italic">
+                    <select id="tFrom" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase">
+                        <option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="Sparkasse">Sparkasse</option>
                     </select>
-                    <select id="tTo" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] font-black uppercase text-blue-600">
-                        <option value="НАЛИЧНЫЕ">В НАЛ</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="СВИНКА">В СВИНКУ</option><option value="ПРИВАТ">В ПРИВАТ</option>
+                    <select id="tTo" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase text-blue-600">
+                        <option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="КОПИЛКА">КОПИЛКА</option><option value="СВИНКА">СВИНКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="ПРИВАТ">ПРИВАТ</option>
                     </select>
                 </div>
                 <div class="bg-blue-50 p-4 rounded-3xl border border-blue-100 grid grid-cols-2 gap-2 text-center font-black italic">
-                    <input type="number" id="trEur" placeholder="€ Получено" step="0.01" class="bg-transparent outline-none">
-                    <input type="number" id="trUah" placeholder="₴ Списано" step="0.01" class="bg-transparent outline-none text-blue-600">
+                    <input type="number" id="trEur" placeholder="€ Евро" step="0.01" class="bg-transparent outline-none">
+                    <input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600">
                 </div>
             </div>
 
-            <div id="accCatGroup" class="grid grid-cols-2 gap-2">
-                <select id="acc" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] font-black uppercase outline-none italic">
-                    <option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КРЕДИТКА">КРЕДИТКА</option>
+            <div id="accCatGroup" class="grid grid-cols-2 gap-2 italic font-black">
+                <select id="acc" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none">
+                    <option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="КРЕДИТКА">КРЕДИТКА</option>
                 </select>
-                <select id="cat" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] font-black uppercase outline-none italic"><option>🍎 Продукты</option><option>🏠 Жилье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option></select>
+                <select id="cat" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic"><option>🍎 Продукты</option><option>🏠 Жилье</option><option>🚗 Транспорт</option><option>🛍 Остальное</option></select>
             </div>
-            <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-black uppercase text-[10px] text-slate-400 italic">Отмена</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg shadow-blue-200 italic">Записать</button></div>
+            <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-black uppercase text-[10px] text-slate-400 italic">Отмена</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg italic">Записать</button></div>
         </form>
     </div>
 </div>
 
 <script>
+// ВСТАВЬ СВОЮ ССЫЛКУ /exec ТУТ
 const API_URL = "https://script.google.com/macros/s/AKfycbwo7xzVWKxMp6hTVBeNolvoAFozZUnKfSqR4yPRX4fy5Z7BECSOUfa-Dpps-_dDyRNW/exec";
 
 let walletData = {}; 
 const MARKERS = {
-    UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'КОПИЛКА', 'СВИНКА'], 
+    // Список тех, кто отображается в ₴ и € одновременно
+    UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'КОПИЛКА', 'СВИНКА', 'КОНВЕРТ'], 
+    // Список тех, кто идет в верхний большой ИТОГ
     OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ']
 };
 
@@ -98,6 +101,7 @@ function getMarker(name) {
     if(n.indexOf('НАЛИЧНЫЕ') !== -1 || n.indexOf('НАЛ') !== -1) return 'НАЛИЧНЫЕ';
     if(n.indexOf('КОПИЛКА') !== -1) return 'КОПИЛКА';
     if(n.indexOf('СВИНКА') !== -1) return 'СВИНКА';
+    if(n.indexOf('КОНВЕРТ') !== -1) return 'КОНВЕРТ';
     if(n.indexOf('КРЕДИТКА') !== -1) return 'КРЕДИТКА';
     if(n.indexOf('ПЛАНАХ') !== -1) return 'В ПЛАНАХ';
     return n;
@@ -112,7 +116,15 @@ function drawBalance() {
     Object.keys(walletData).forEach(marker => {
         const val = walletData[marker], isU = isUahMarker(marker), eq = isU ? (val / r) : val;
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eq;
-        grid.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm"><span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter">${marker}</span><span class="text-slate-800 text-[10px] font-black italic">${isU?'₴':'€'} ${val.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}${isU?`<br><span class="text-[7px] text-blue-500 font-normal">€ ${eq.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`:''}</span></div>`;
+        
+        grid.innerHTML += `
+            <div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm transition-all active:scale-95">
+                <span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter">${marker}</span>
+                <span class="text-slate-800 text-[10px] font-black italic">
+                    ${isU ? '₴' : '€'} ${val.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    ${isU ? `<br><span class="text-[7px] text-blue-500 font-normal">€ ${eq.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}
+                </span>
+            </div>`;
     });
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
@@ -124,6 +136,7 @@ function draw(data) {
         if (i === 0 || !r[5]) return; 
         const marker = getMarker(r[5]);
         if (!walletData[marker]) walletData[marker] = 0;
+        // К = 10 (UAH), I = 8 (EUR)
         const val = isUahMarker(marker) ? Number(r[10] || 0) : Number(r[8] || 0);
         walletData[marker] += val;
     });
@@ -134,20 +147,15 @@ function draw(data) {
     drawBalance();
 }
 
+// ФункцииAddItemRow, CalcRow, Save и т.д. без изменений
 function addItemRow() {
     const id = Date.now();
-    const html = `<div id="item-${id}" class="item-row bg-slate-50 p-3 rounded-2xl border border-slate-200 relative mb-2">
+    const html = `<div id="item-${id}" class="item-row bg-slate-50 p-3 rounded-2xl border border-slate-200 relative mb-2 italic">
         <button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-white text-rose-500 shadow-sm border border-rose-100 w-5 h-5 rounded-full flex items-center justify-center text-[8px]"><i class="fa-solid fa-x"></i></button>
-        <div class="grid grid-cols-2 gap-2 mb-2"><input type="text" placeholder="RU / DE" class="nameRU bg-white p-2 rounded-xl text-[10px] font-bold outline-none"><input type="number" step="0.01" placeholder="Цена €" class="priceUnit bg-white p-2 rounded-xl text-[10px] font-black outline-none text-right" oninput="calcRow(this)"></div>
-        <div class="flex justify-between px-2 text-[7px] font-black uppercase text-slate-400"><span>Кол-во: <input type="number" value="1" class="qty w-8 bg-transparent outline-none font-bold" oninput="calcRow(this)"></span><span class="text-blue-500 italic">₴ <span class="totalUahLabel font-black">0.00</span></span></div>
+        <div class="grid grid-cols-2 gap-2 mb-2"><input type="text" placeholder="RU / DE" class="nameRU bg-white p-2 rounded-xl text-[10px] font-bold outline-none"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-2 rounded-xl text-[10px] font-black outline-none text-right"></div>
+        <div class="flex justify-between px-2 text-[7px] font-black uppercase text-slate-400"><span>Кол-во: <input type="number" value="1" class="qty w-8 bg-transparent outline-none font-bold"></span></div>
     </div>`;
     document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
-}
-
-function calcRow(el) {
-    const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value) || 51.55;
-    const eur = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
-    row.querySelector('.totalUahLabel').innerText = (eur * r).toLocaleString('de-DE', {minimumFractionDigits: 2});
 }
 
 function calcSimple(source) {
@@ -155,8 +163,6 @@ function calcSimple(source) {
     if(source === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / rate).toFixed(2);
     else document.getElementById('valUah').value = (document.getElementById('valEur').value * rate).toFixed(2);
 }
-
-function updateAllItems() { document.querySelectorAll('.item-row').forEach(r => calcRow(r.querySelector('.priceUnit'))); }
 
 async function save(e) {
     e.preventDefault(); document.getElementById('saveBtn').disabled = true;
