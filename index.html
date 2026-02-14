@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v30.4</title>
+    <title>SmartWallet Pro v30.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -33,8 +33,9 @@
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white w-full max-w-sm rounded-[45px] p-6 shadow-2xl border border-white overflow-y-auto max-h-[95vh]">
         <h2 id="modalTitle" class="text-xl font-black text-slate-800 mb-6 italic uppercase text-center underline decoration-blue-500 decoration-4 underline-offset-8 italic">ЗАПИСЬ</h2>
-        <form onsubmit="save(event)" class="space-y-4">
+        <form id="mainForm" onsubmit="save(event)" class="space-y-4">
             <input type="hidden" id="txType">
+            <input type="hidden" id="editRowId">
             <div class="grid grid-cols-2 gap-2">
                 <input type="date" id="date" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 font-bold text-xs outline-none">
                 <input type="number" id="customRate" step="0.01" placeholder="Курс" oninput="updateAllItems()" class="bg-blue-50 p-3 rounded-2xl border border-blue-100 font-bold text-xs text-blue-600 outline-none italic">
@@ -43,7 +44,7 @@
 
             <div id="expenseSection" class="hidden space-y-3">
                 <div id="itemsList" class="space-y-4"></div>
-                <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[10px] font-black uppercase italic">+ Добавить строку</button>
+                <button type="button" id="addItemBtn" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[10px] font-black uppercase italic">+ Добавить строку</button>
             </div>
 
             <div id="incomeSection" class="hidden bg-emerald-50 p-4 rounded-3xl border border-emerald-100 space-y-3 text-center italic">
@@ -81,11 +82,11 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyo-7ijLB_ICWfPKwkuksxSljZ9-K8KL23dECyyWi9ETv_rKnNo8MR-_tDe6-AWGnsD/exec";
-
 let walletData = {}; 
+let allRows = [];
 
 const MARKERS = {
-    UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'], // Копилка убрана из чисто гривневых для спец. отображения
+    UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'],
     OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ']
 };
 
@@ -114,46 +115,25 @@ function drawBalance() {
     let totalOpEur = 0; 
     const grid = document.getElementById('walletsGrid'); 
     grid.innerHTML = "";
-    
     Object.keys(walletData).sort().forEach(marker => {
         const uah = walletData[marker].uah;
         const eur = walletData[marker].eur;
-        
         const isKopilka = marker === 'КОПИЛКА';
         const isUah = isUahMarker(marker);
-
-        // Расчет эквивалента в евро для общего баланса
         const eqEur = isKopilka ? eur : (isUah ? (uah / r) : eur);
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
-        
-        // Отрисовка карточки
-        let content = '';
-        if (isKopilka) {
-            content = `<span class="text-slate-800 text-[10px] font-black italic">€ ${eur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>`;
-        } else if (isUah) {
-            content = `
-                <span class="text-slate-800 text-[10px] font-black italic">₴ ${uah.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>
-                <br>
-                <span class="text-[7px] text-blue-500 font-normal">€ ${eqEur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>`;
-        } else {
-            content = `<span class="text-slate-800 text-[10px] font-black italic">€ ${eur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>`;
-        }
-
-        grid.innerHTML += `
-            <div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm transition-all active:scale-95">
-                <span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter italic">${marker}</span>
-                ${content}
-            </div>`;
+        let content = isKopilka ? `<span class="text-slate-800 text-[10px] font-black italic">€ ${eur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>` :
+                      isUah ? `<span class="text-slate-800 text-[10px] font-black italic">₴ ${uah.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span><br><span class="text-[7px] text-blue-500 font-normal">€ ${eqEur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>` :
+                      `<span class="text-slate-800 text-[10px] font-black italic">€ ${eur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>`;
+        grid.innerHTML += `<div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm transition-all active:scale-95"><span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter italic">${marker}</span>${content}</div>`;
     });
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
 }
 
 function draw(data) {
     if (!data || !data.rows) return;
-    const hist = document.getElementById('history'); 
-    hist.innerHTML = ""; 
-    walletData = {};
-    
+    allRows = data.rows;
+    const hist = document.getElementById('history'); hist.innerHTML = ""; walletData = {};
     data.rows.forEach((r, i) => { 
         if (i === 0 || !r[5]) return; 
         const marker = getMarker(r[5]);
@@ -161,33 +141,46 @@ function draw(data) {
         walletData[marker].eur += (parseFloat(r[8]) || 0);
         walletData[marker].uah += (parseFloat(r[10]) || 0);
     });
-    
     data.rows.slice(1, 25).forEach(r => { 
-        const marker = getMarker(r[5]);
-        const valU = parseFloat(r[10]) || 0;
-        const valE = parseFloat(r[8]) || 0;
-        
-        const isKopilka = marker === 'КОПИЛКА';
-        const displayAmt = (isKopilka || !isUahMarker(marker)) ? valE : valU;
-        const displayUnit = (isKopilka || !isUahMarker(marker)) ? '€' : '₴';
-        
-        const isInc = displayAmt > 0;
-
-        hist.innerHTML += `
-            <div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold">
-                <div class="flex items-center gap-2 truncate">
-                    <button onclick="deleteRow(${r[r.length-1]})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
-                    <div>
-                        <p class="text-[7px] text-slate-300 uppercase">${marker}</p>
-                        <p class="truncate uppercase">${r[4]||r[3]||r[2]}</p>
-                    </div>
-                </div>
-                <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">
-                    ${isInc?'+':''}${Math.abs(displayAmt).toLocaleString('de-DE',{minimumFractionDigits:2})} ${displayUnit}
-                </div>
-            </div>`; 
+        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
+        const isKopilka = marker === 'КОПИЛКА', isU = isUahMarker(marker);
+        const displayAmt = (isKopilka || !isU) ? valE : valU, displayUnit = (isKopilka || !isU) ? '€' : '₴', isInc = displayAmt > 0;
+        hist.innerHTML += `<div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold"><div class="flex items-center gap-2 truncate">
+            <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="editRow(${id})" class="text-blue-200 ml-1"><i class="fa-solid fa-pen"></i></button>
+            <div><p class="text-[7px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div></div>
+            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(displayAmt).toLocaleString('de-DE',{minimumFractionDigits:2})} ${displayUnit}</div></div>`; 
     });
     drawBalance();
+}
+
+function editRow(id) {
+    const row = allRows.find(r => r[r.length-1] == id);
+    if (!row) return;
+    const category = row[1];
+    let type = 'expense';
+    if (category.includes('Доход')) type = 'income';
+    if (category.includes('Перевод')) type = 'transfer';
+    openModal(type);
+    document.getElementById('editRowId').value = id;
+    document.getElementById('date').value = new Date(row[0]).toISOString().split('T')[0];
+    document.getElementById('merchant').value = row[2];
+    document.getElementById('customRate').value = row[12];
+    document.getElementById('acc').value = row[5];
+    document.getElementById('cat').value = row[1];
+    if (type === 'income') {
+        document.getElementById('valEur').value = Math.abs(row[8]);
+        document.getElementById('valUah').value = Math.abs(row[10]);
+    } else if (type === 'expense') {
+        document.getElementById('itemsList').innerHTML = "";
+        addItemRow();
+        const firstItem = document.querySelector('.item-row');
+        firstItem.querySelector('.nameRU').value = row[4] || row[3];
+        firstItem.querySelector('.priceUnit').value = Math.abs(row[7]);
+        firstItem.querySelector('.qty').value = row[6];
+        calcRow(firstItem.querySelector('.priceUnit'));
+        document.getElementById('addItemBtn').classList.add('hidden'); // Ограничение: редактируем по одной строке
+    }
 }
 
 function addItemRow() {
@@ -216,41 +209,37 @@ function updateAllItems() { document.querySelectorAll('.item-row').forEach(r => 
 
 async function save(e) {
     e.preventDefault(); document.getElementById('saveBtn').disabled = true;
-    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('customRate').value);
-    let p = { date: document.getElementById('date').value, rate: rate, merchant: document.getElementById('merchant').value };
+    const type = document.getElementById('txType').value, rate = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
+    let p = { date: document.getElementById('date').value, rate: rate, merchant: document.getElementById('merchant').value, rowId: rowId };
     if(type === 'expense') {
-        p.account = document.getElementById('acc').value; p.category = "Расход";
-        p.items = Array.from(document.querySelectorAll('.item-row')).map(row => {
-            const eur = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
-            return { nameRU: row.querySelector('.nameRU').value, qty: row.querySelector('.qty').value, priceUnit: row.querySelector('.priceUnit').value, totalEur: -eur, totalUah: -(eur * rate) };
-        });
+        const row = document.querySelector('.item-row');
+        const eur = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
+        p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value;
+        if (!rowId) { // Если создание - поддерживаем список
+            p.items = Array.from(document.querySelectorAll('.item-row')).map(row => {
+                const e = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
+                return { nameRU: row.querySelector('.nameRU').value, qty: row.querySelector('.qty').value, priceUnit: row.querySelector('.priceUnit').value, totalEur: -e, totalUah: -(e * rate) };
+            });
+        } else { // Если редактирование - одну строку
+            p.nameRU = row.querySelector('.nameRU').value; p.qty = row.querySelector('.qty').value; p.priceUnit = row.querySelector('.priceUnit').value; p.totalEur = -eur; p.totalUah = -(eur * rate);
+        }
     } else if (type === 'transfer') {
-        p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; p.rate = rate;
+        p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0;
     } else {
-        p.account = document.getElementById('acc').value; p.category = "💎 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; p.rate = rate;
+        p.account = document.getElementById('acc').value; p.category = "💎 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0;
     }
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); location.reload();
 }
 
 function openModal(t) {
-    document.getElementById('txType').value = t; 
+    document.getElementById('txType').value = t; document.getElementById('editRowId').value = "";
     document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('addItemBtn').classList.remove('hidden');
     ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden'));
-    if(t==='expense'){ 
-        document.getElementById('expenseSection').classList.remove('hidden'); 
-        document.getElementById('accCatGroup').classList.remove('hidden'); 
-        document.getElementById('itemsList').innerHTML = "";
-        addItemRow(); 
-    }
-    else if(t==='income'){ 
-        document.getElementById('incomeSection').classList.remove('hidden'); 
-        document.getElementById('accCatGroup').classList.remove('hidden'); 
-    }
-    else if(t==='transfer'){ 
-        document.getElementById('transferSection').classList.remove('hidden'); 
-    }
-    document.getElementById('customRate').value = document.getElementById('baseRate').value; 
-    document.getElementById('date').valueAsDate = new Date();
+    if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); }
+    else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); }
+    else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); }
+    document.getElementById('customRate').value = document.getElementById('baseRate').value; document.getElementById('date').valueAsDate = new Date();
 }
 
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
