@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v30.6</title>
+    <title>SmartWallet Pro v30.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -33,7 +33,7 @@
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white w-full max-w-sm rounded-[45px] p-6 shadow-2xl border border-white overflow-y-auto max-h-[95vh]">
         <h2 id="modalTitle" class="text-xl font-black text-slate-800 mb-6 italic uppercase text-center underline decoration-blue-500 decoration-4 underline-offset-8 italic">ЗАПИСЬ</h2>
-        <form id="mainForm" onsubmit="save(event)" class="space-y-4">
+        <form onsubmit="save(event)" class="space-y-4">
             <input type="hidden" id="txType">
             <input type="hidden" id="editRowId">
             <div class="grid grid-cols-2 gap-2">
@@ -112,14 +112,10 @@ function isUahMarker(marker) {
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
-    let totalOpEur = 0; 
-    const grid = document.getElementById('walletsGrid'); 
-    grid.innerHTML = "";
+    let totalOpEur = 0; const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     Object.keys(walletData).sort().forEach(marker => {
-        const uah = walletData[marker].uah;
-        const eur = walletData[marker].eur;
-        const isKopilka = marker === 'КОПИЛКА';
-        const isUah = isUahMarker(marker);
+        const uah = walletData[marker].uah, eur = walletData[marker].eur;
+        const isKopilka = marker === 'КОПИЛКА', isUah = isUahMarker(marker);
         const eqEur = isKopilka ? eur : (isUah ? (uah / r) : eur);
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
         let content = isKopilka ? `<span class="text-slate-800 text-[10px] font-black italic">€ ${eur.toLocaleString('de-DE', {minimumFractionDigits: 2})}</span>` :
@@ -145,11 +141,14 @@ function draw(data) {
         const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
         const isKopilka = marker === 'КОПИЛКА', isU = isUahMarker(marker);
         const displayAmt = (isKopilka || !isU) ? valE : valU, displayUnit = (isKopilka || !isU) ? '€' : '₴', isInc = displayAmt > 0;
-        hist.innerHTML += `<div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold"><div class="flex items-center gap-2 truncate">
-            <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
-            <button onclick="editRow(${id})" class="text-blue-200 ml-1"><i class="fa-solid fa-pen"></i></button>
-            <div><p class="text-[7px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div></div>
-            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(displayAmt).toLocaleString('de-DE',{minimumFractionDigits:2})} ${displayUnit}</div></div>`; 
+        hist.innerHTML += `<div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold">
+            <div class="flex items-center gap-2 truncate">
+                <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="editRow(${id})" class="text-blue-200 ml-1"><i class="fa-solid fa-pen"></i></button>
+                <div><p class="text-[7px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div>
+            </div>
+            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(displayAmt).toLocaleString('de-DE',{minimumFractionDigits:2})} ${displayUnit}</div>
+        </div>`; 
     });
     drawBalance();
 }
@@ -179,7 +178,7 @@ function editRow(id) {
         firstItem.querySelector('.priceUnit').value = Math.abs(row[7]);
         firstItem.querySelector('.qty').value = row[6];
         calcRow(firstItem.querySelector('.priceUnit'));
-        document.getElementById('addItemBtn').classList.add('hidden'); // Ограничение: редактируем по одной строке
+        document.getElementById('addItemBtn').classList.add('hidden');
     }
 }
 
@@ -215,12 +214,12 @@ async function save(e) {
         const row = document.querySelector('.item-row');
         const eur = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value;
-        if (!rowId) { // Если создание - поддерживаем список
+        if (!rowId) {
             p.items = Array.from(document.querySelectorAll('.item-row')).map(row => {
                 const e = (parseFloat(row.querySelector('.priceUnit').value)||0) * (parseFloat(row.querySelector('.qty').value)||1);
                 return { nameRU: row.querySelector('.nameRU').value, qty: row.querySelector('.qty').value, priceUnit: row.querySelector('.priceUnit').value, totalEur: -e, totalUah: -(e * rate) };
             });
-        } else { // Если редактирование - одну строку
+        } else {
             p.nameRU = row.querySelector('.nameRU').value; p.qty = row.querySelector('.qty').value; p.priceUnit = row.querySelector('.priceUnit').value; p.totalEur = -eur; p.totalUah = -(eur * rate);
         }
     } else if (type === 'transfer') {
@@ -233,8 +232,7 @@ async function save(e) {
 
 function openModal(t) {
     document.getElementById('txType').value = t; document.getElementById('editRowId').value = "";
-    document.getElementById('modal').classList.remove('hidden');
-    document.getElementById('addItemBtn').classList.remove('hidden');
+    document.getElementById('modal').classList.remove('hidden'); document.getElementById('addItemBtn').classList.remove('hidden');
     ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden'));
     if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); }
     else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); }
