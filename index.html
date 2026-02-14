@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v32.0</title>
+    <title>SmartWallet Pro v32.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,14 +16,14 @@
 <div class="bg-white p-6 rounded-[35px] border border-slate-100 mb-4 shadow-xl text-center">
     <div class="flex justify-between items-center mb-4 text-[10px] font-black opacity-40 uppercase">
         <span>Курс: <input type="number" id="baseRate" value="51.55" step="0.01" oninput="drawBalance()" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none font-bold italic"></span>
-        <span id="currentPeriodLabel">ПЕРИОД...</span>
+        <span id="currentPeriodLabel">ЗАГРУЗКА...</span>
     </div>
     <h1 id="mainBalance" class="text-4xl font-black italic mb-6 tracking-tighter text-slate-800">€ 0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-2 gap-3 text-[9px] font-bold uppercase italic text-center"></div>
 </div>
 
 <div class="bg-white p-5 rounded-[35px] border border-slate-100 mb-4 shadow-lg">
-    <h3 class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center italic">Лимиты (20-е — 19-е)</h3>
+    <h3 class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest text-center italic">Ваш бюджет на текущий цикл</h3>
     <div id="limitsContainer" class="space-y-4"></div>
 </div>
 
@@ -48,7 +48,8 @@
             <div id="expenseSection" class="hidden space-y-3"><div id="itemsList" class="space-y-4"></div><button type="button" id="addItemBtn" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[10px] font-black uppercase italic">+ Добавить строку</button></div>
             <div id="incomeSection" class="hidden bg-emerald-50 p-4 rounded-3xl border border-emerald-100 space-y-3 text-center italic"><div class="grid grid-cols-2 gap-4"><div><label class="text-[7px] text-emerald-600 font-black uppercase block italic">Гривны (₴)</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-xl font-black outline-none text-emerald-600 text-center italic"></div><div><label class="text-[7px] text-slate-400 font-black uppercase block italic">Евро (€)</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-xl font-black outline-none text-center italic"></div></div></div>
             <div id="transferSection" class="hidden space-y-4 font-black italic"><div class="grid grid-cols-2 gap-2 text-[10px]"><select id="tFrom" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 uppercase italic"><option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Sparkasse">ИЗ Sparkasse</option></select><select id="tTo" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 uppercase text-blue-600 italic"><option value="НАЛИЧНЫЕ">В НАЛИЧНЫЕ</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="СВИНКА">В СВИНКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="ПРИВАТ">В ПРИВАТ</option></select></div><div class="bg-blue-50 p-4 rounded-3xl border border-blue-100 grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€ Евро" step="0.01" class="bg-transparent outline-none italic font-black"><input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600 italic font-black"></div></div>
-            <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic"><select id="acc" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic"><option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="КРЕДИТКА">КРЕДИТКА</option></select>
+            <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic">
+                <select id="acc" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic"><option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="КРЕДИТКА">КРЕДИТКА</option></select>
                 <select id="cat" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] uppercase outline-none italic">
                     <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 КОПИЛКА</option>
                 </select>
@@ -68,16 +69,11 @@ const LIMITS = {
 let walletData = {}; let categorySpent = {}; let allRows = [];
 const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
 
-// ЛОГИКА ОПРЕДЕЛЕНИЯ ПЕРИОДА (20 - 19)
 function getCycleDates() {
     const now = new Date();
     let start = new Date(now.getFullYear(), now.getMonth(), 20);
     let end = new Date(now.getFullYear(), now.getMonth() + 1, 19);
-    
-    if (now.getDate() < 20) {
-        start = new Date(now.getFullYear(), now.getMonth() - 1, 20);
-        end = new Date(now.getFullYear(), now.getMonth(), 19);
-    }
+    if (now.getDate() < 20) { start = new Date(now.getFullYear(), now.getMonth() - 1, 20); end = new Date(now.getFullYear(), now.getMonth(), 19); }
     return { start, end };
 }
 
@@ -133,19 +129,15 @@ function draw(data) {
     walletData = {}; categorySpent = {}; const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     
     const cycle = getCycleDates();
-    const months = ["ЯНВ", "ФЕВ", "МАР", "АПР", "МАЙ", "ИЮН", "ИЮЛ", "АВГ", "СЕН", "ОКТ", "НОЯ", "ДЕК"];
-    document.getElementById('currentPeriodLabel').innerText = `20 ${months[cycle.start.getMonth()]} — 19 ${months[cycle.end.getMonth()]}`;
+    const months = ["ЯНВАРЯ", "ФЕВРАЛЯ", "МАРТА", "АПРЕЛЯ", "МАЯ", "ИЮНЯ", "ИЮЛЯ", "АВГУСТА", "СЕНТЯБРЯ", "ОКТЯБРЯ", "НОЯБРЯ", "ДЕКАБРЯ"];
+    document.getElementById('currentPeriodLabel').innerText = `ЦИКЛ: 20 ${months[cycle.start.getMonth()]} — 19 ${months[cycle.end.getMonth()]}`;
 
     data.rows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
         const marker = getMarker(row[5]), cat = row[1], valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0;
         const rowDate = new Date(row[0]);
-
-        // Считаем кошельки (всегда за все время)
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
         walletData[marker].eur += valE; walletData[marker].uah += valU;
-
-        // Считаем лимиты (ТОЛЬКО если дата попадает в цикл 20-19)
         if (LIMITS[cat] !== undefined && rowDate >= cycle.start && rowDate <= cycle.end) {
             if (!categorySpent[cat]) categorySpent[cat] = 0;
             const eurEquivalent = valE !== 0 ? valE : (valU / r);
