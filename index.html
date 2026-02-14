@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v30.1</title>
+    <title>SmartWallet Pro v30.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -80,7 +80,7 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwo7xzVWKxMp6hTVBeNolvoAFozZUnKfSqR4yPRX4fy5Z7BECSOUfa-Dpps-_dDyRNW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyo-7ijLB_ICWfPKwkuksxSljZ9-K8KL23dECyyWi9ETv_rKnNo8MR-_tDe6-AWGnsD/exec";
 
 let walletData = {}; 
 const MARKERS = {
@@ -104,22 +104,30 @@ function getMarker(name) {
     return n;
 }
 
-function isUahMarker(marker) { return MARKERS.UAH.includes(marker); }
+function isUahMarker(marker) { 
+    return MARKERS.UAH.some(m => marker.toUpperCase().indexOf(m) !== -1); 
+}
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     let totalOpEur = 0; const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     
     Object.keys(walletData).sort().forEach(marker => {
-        const val = walletData[marker], isU = isUahMarker(marker), eq = isU ? (val / r) : val;
-        if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eq;
+        const val = walletData[marker];
+        const isU = isUahMarker(marker);
+        const eqEur = isU ? (val / r) : val;
+        
+        if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
         
         grid.innerHTML += `
             <div class="bg-white p-3 rounded-2xl border border-slate-50 shadow-sm transition-all active:scale-95">
                 <span class="text-slate-400 block text-[8px] uppercase font-black tracking-tighter italic">${marker}</span>
                 <span class="text-slate-800 text-[10px] font-black italic">
                     ${isU ? '₴' : '€'} ${val.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                    ${isU ? `<br><span class="text-[7px] text-blue-500 font-normal">€ ${eq.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}
+                    <br>
+                    <span class="text-[7px] text-blue-500 font-normal">
+                        ${isU ? '€ ' + eqEur.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : ''}
+                    </span>
                 </span>
             </div>`;
     });
@@ -129,18 +137,36 @@ function drawBalance() {
 function draw(data) {
     if (!data || !data.rows) return;
     const hist = document.getElementById('history'); hist.innerHTML = ""; walletData = {};
+    
     data.rows.forEach((r, i) => { 
         if (i === 0 || !r[5]) return; 
         const marker = getMarker(r[5]);
         if (!walletData[marker]) walletData[marker] = 0;
-        // ХИРУРГИЧЕСКИЙ РАСЧЕТ: Гривны из K(10), Евро из I(8)
+        // КРИТИЧЕСКОЕ: берем из K(10) для гривны и из I(8) для евро
         const val = isUahMarker(marker) ? (parseFloat(r[10]) || 0) : (parseFloat(r[8]) || 0);
         walletData[marker] += val;
     });
     
     data.rows.slice(1, 25).forEach(r => { 
-        const marker = getMarker(r[5]), isU = isUahMarker(marker), amt = Math.abs(isU ? (parseFloat(r[10]) || 0) : (parseFloat(r[8]) || 0)), isInc = (isU ? parseFloat(r[10]) : parseFloat(r[8])) > 0;
-        hist.innerHTML += `<div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold"><div class="flex items-center gap-2 truncate"><button onclick="deleteRow(${r[r.length-1]})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button><div><p class="text-[7px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div></div><div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${amt.toLocaleString('de-DE',{minimumFractionDigits:2})} ${isU?'₴':'€'}</div></div>`; 
+        const marker = getMarker(r[5]);
+        const isU = isUahMarker(marker);
+        const valRaw = isU ? (parseFloat(r[10]) || 0) : (parseFloat(r[8]) || 0);
+        const isInc = valRaw > 0;
+        const amt = Math.abs(valRaw);
+
+        hist.innerHTML += `
+            <div class="bg-white p-4 rounded-[25px] flex justify-between items-center border border-slate-100 mb-2 shadow-sm italic text-[10px] font-bold">
+                <div class="flex items-center gap-2 truncate">
+                    <button onclick="deleteRow(${r[r.length-1]})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
+                    <div>
+                        <p class="text-[7px] text-slate-300 uppercase">${marker}</p>
+                        <p class="truncate uppercase">${r[4]||r[3]||r[2]}</p>
+                    </div>
+                </div>
+                <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">
+                    ${isInc?'+':''}${amt.toLocaleString('de-DE',{minimumFractionDigits:2})} ${isU?'₴':'€'}
+                </div>
+            </div>`; 
     });
     drawBalance();
 }
