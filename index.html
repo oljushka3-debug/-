@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v34.1</title>
+    <title>SmartWallet Pro v34.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -14,11 +14,17 @@
 </button>
 
 <div class="bg-white p-5 rounded-[30px] border border-slate-100 mb-3 shadow-lg text-center">
-    <div class="flex justify-between items-center mb-2 text-[8px] font-black opacity-40 uppercase tracking-tighter">
+    <div class="flex justify-between items-center mb-1 text-[8px] font-black opacity-40 uppercase tracking-tighter">
         <span>Курс: <input type="number" id="baseRate" value="51.55" step="0.01" oninput="drawBalance()" class="w-12 bg-slate-50 rounded px-1 text-blue-600 outline-none font-bold italic"></span>
         <span id="currentPeriodLabel">...</span>
     </div>
-    <h1 id="mainBalance" class="text-3xl font-black italic mb-4 tracking-tighter text-slate-800">€ 0.00</h1>
+    
+    <h1 id="mainBalance" class="text-3xl font-black italic mb-1 tracking-tighter text-slate-800">€ 0.00</h1>
+    
+    <div id="dailyLimitContainer" class="mb-4">
+        <span class="text-[7px] font-black uppercase text-slate-400 italic tracking-widest">Лимит на сегодня:</span>
+        <div id="dailyLimitValue" class="text-sm font-black italic text-emerald-500 leading-none">€ 0.00</div>
+    </div>
     
     <div id="walletsGrid" class="grid grid-cols-2 gap-2 text-[8px] font-bold uppercase italic text-center">
         <div id="leftColumn" class="space-y-2"></div>
@@ -99,8 +105,7 @@ function drawBalance() {
     let totalOpEur = 0;
     const leftCol = document.getElementById('leftColumn');
     const rightCol = document.getElementById('rightColumn');
-    leftCol.innerHTML = "";
-    rightCol.innerHTML = "";
+    leftCol.innerHTML = ""; rightCol.innerHTML = "";
 
     function createWalletHTML(marker) {
         const val = walletData[marker] || { uah: 0, eur: 0 };
@@ -113,20 +118,33 @@ function drawBalance() {
         const textStyle = isLow ? 'text-rose-600 animate-pulse' : 'text-slate-800';
         const cardStyle = isLow ? 'bg-rose-50 border-rose-200 shadow-inner' : 'bg-white border-slate-50 shadow-sm';
 
-        return `
-            <div class="${cardStyle} p-2 rounded-xl border text-center active:scale-95 transition-all">
-                <span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span>
-                <span class="${textStyle} text-[9px] font-black italic leading-none">
-                    ${isU ? '₴ ' + val.uah.toFixed(2) : '€ ' + val.eur.toFixed(2)}
-                    ${isU ? `<br><span class="text-[8px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(2)}</span>` : ''}
-                </span>
-            </div>`;
+        return `<div class="${cardStyle} p-2 rounded-xl border text-center active:scale-95 transition-all"><span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span><span class="${textStyle} text-[9px] font-black italic leading-none">${isU ? '₴ ' + val.uah.toFixed(2) : '€ ' + val.eur.toFixed(2)}${isU ? `<br><span class="text-[8px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(2)}</span>` : ''}</span></div>`;
     }
 
     LEFT_ORDER.forEach(m => leftCol.innerHTML += createWalletHTML(m));
     RIGHT_ORDER.forEach(m => rightCol.innerHTML += createWalletHTML(m));
-
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
+    
+    // РАСЧЕТ ДНЕВНОГО ЛИМИТА
+    let totalRemaining = 0;
+    Object.keys(LIMITS).forEach(cat => {
+        const spent = Math.abs(categorySpent[cat] || 0);
+        totalRemaining += (LIMITS[cat] - spent);
+    });
+
+    const cycle = getCycleDates();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const msDiff = cycle.end.getTime() - today.getTime();
+    const daysLeft = Math.max(1, Math.ceil(msDiff / (1000 * 60 * 60 * 24)) + 1);
+    
+    const dailyLimit = totalRemaining / daysLeft;
+    const dailyEl = document.getElementById('dailyLimitValue');
+    dailyEl.innerText = '€ ' + Math.max(0, dailyLimit).toFixed(2);
+    
+    if (dailyLimit <= 0) { dailyEl.className = "text-sm font-black italic text-rose-600 animate-pulse"; dailyEl.innerText = "ПРЕВЫШЕНО"; }
+    else if (dailyLimit < 10) { dailyEl.className = "text-sm font-black italic text-amber-500"; }
+    else { dailyEl.className = "text-sm font-black italic text-emerald-500"; }
+
     drawLimits();
 }
 
