@@ -113,8 +113,8 @@ function drawBalance() {
             <div class="bg-white p-2 rounded-xl border border-slate-50 shadow-sm text-center active:scale-95 transition-all">
                 <span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span>
                 <span class="text-slate-800 text-[9px] font-black italic leading-none">
-                    ${isU ? '₴ ' + val.uah.toFixed(0) : '€ ' + val.eur.toFixed(0)}
-                    ${isU ? `<br><span class="text-[6px] text-blue-500 font-normal">€ ${eqEur.toFixed(0)}</span>` : ''}
+                    ${isU ? '₴ ' + val.uah.toFixed(2) : '€ ' + val.eur.toFixed(2)}
+                    ${isU ? `<br><span class="text-[6px] text-blue-500 font-normal">€ ${eqEur.toFixed(2)}</span>` : ''}
                 </span>
             </div>`;
     }
@@ -134,7 +134,7 @@ function drawLimits() {
         let textC = perc > 80 ? (perc >= 100 ? "text-rose-600" : "text-amber-600") : "text-blue-600";
         let bg = perc > 80 ? (perc >= 100 ? "bg-rose-50" : "bg-amber-50") : "bg-blue-50";
         const emoji = cat.split(' ')[0];
-        container.innerHTML += `<div class="${bg} p-1.5 rounded-xl text-center relative overflow-hidden active:scale-95 transition-all"><div class="text-base">${emoji}</div><div class="text-[5px] font-black uppercase text-slate-400 truncate leading-none mb-1">${cat.replace(emoji,'').trim()}</div><div class="text-[8px] font-black ${textC} italic leading-none">${spent.toFixed(0)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-white/40"><div class="h-full ${color} transition-all" style="width:${perc}%"></div></div></div>`;
+        container.innerHTML += `<div class="${bg} p-1.5 rounded-xl text-center relative overflow-hidden active:scale-95 transition-all"><div class="text-base">${emoji}</div><div class="text-[5px] font-black uppercase text-slate-400 truncate leading-none mb-1">${cat.replace(emoji,'').trim()}</div><div class="text-[8px] font-black ${textC} italic leading-none">${spent.toFixed(2)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-white/40"><div class="h-full ${color} transition-all" style="width:${perc}%"></div></div></div>`;
     });
 }
 
@@ -159,7 +159,7 @@ function draw(data) {
     data.rows.slice(1, 20).forEach(r => { 
         const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1], isU = isUahMarker(marker);
         const amt = isU ? valU : valE, isInc = amt > 0;
-        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm italic text-[10px] font-bold"><div class="flex items-center gap-2 truncate"><button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can text-[10px]"></i></button><button onclick="editRow(${id})" class="text-blue-200 ml-0.5"><i class="fa-solid fa-pen text-[10px]"></i></button><div><p class="text-[6px] text-slate-300 uppercase leading-none">${marker}</p><p class="truncate uppercase leading-tight">${r[4]||r[3]||r[2]}</p></div></div><div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE')} ${isU?'₴':'€'}</div></div>`; 
+        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm italic text-[10px] font-bold"><div class="flex items-center gap-2 truncate"><button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can text-[10px]"></i></button><button onclick="editRow(${id})" class="text-blue-200 ml-0.5"><i class="fa-solid fa-pen text-[10px]"></i></button><div><p class="text-[6px] text-slate-300 uppercase leading-none">${marker}</p><p class="truncate uppercase leading-tight">${r[4]||r[3]||r[2]}</p></div></div><div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}</div></div>`; 
     });
     drawBalance();
 }
