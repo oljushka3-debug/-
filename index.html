@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v34.2</title>
+    <title>SmartWallet Pro v34.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -56,7 +56,7 @@
             <div id="transferSection" class="hidden space-y-3 font-black italic">
                 <div class="grid grid-cols-2 gap-2 text-[9px]">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase italic">
-                        <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Sparkasse">ИЗ Sparkasse</option><option value="КРЕДИТКА">ИЗ КРЕДИТКИ</option>
+                        <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Sparkasse">ИЗ Sparkasse</option><option value="Кредитка Оля">ИЗ Кредитка Оля</option><option value="Кредитка Валера">ИЗ Кредитка Валера</option>
                     </select>
                     <select id="tTo" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase text-blue-600 italic">
                         <option value="НАЛИЧНЫЕ">В НАЛИЧНЫЕ</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="СВИНКА">В СВИНКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="ПРИВАТ">В ПРИВАТ</option>
@@ -67,7 +67,10 @@
                     <input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600 italic font-black text-sm">
                 </div>
             </div>
-            <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic text-[9px]"><select id="acc" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic"><option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="КРЕДИТКА">КРЕДИТКА</option></select>
+            <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic text-[9px]">
+                <select id="acc" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
+                    <option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="Кредитка Оля">Кредитка Оля</option><option value="Кредитка Валера">Кредитка Валера</option>
+                </select>
                 <select id="cat" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
                     <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 КОПИЛКА</option>
                 </select>
@@ -81,10 +84,10 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyo-7ijLB_ICWfPKwkuksxSljZ9-K8KL23dECyyWi9ETv_rKnNo8MR-_tDe6-AWGnsD/exec";
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 КОПИЛКА": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
-const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
+const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
 
 const LEFT_ORDER = ['SPARKASSE', 'НАЛИЧНЫЕ', 'ПРИВАТ', 'ВАЛЕРА', 'КОПИЛКА'];
-const RIGHT_ORDER = ['КРЕДИТКА', 'КОНВЕРТ', 'СВИНКА', 'В ПЛАНАХ', 'ПОГАСИТЬ КРЕДИТ'];
+const RIGHT_ORDER = ['КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'КОНВЕРТ', 'СВИНКА', 'В ПЛАНАХ'];
 
 function getCycleDates() {
     const now = new Date(); let start = new Date(now.getFullYear(), now.getMonth(), 20), end = new Date(now.getFullYear(), now.getMonth() + 1, 19);
@@ -94,7 +97,7 @@ function getCycleDates() {
 
 function getMarker(name) {
     if(!name) return "ОСТАЛЬНОЕ"; const n = name.toUpperCase();
-    if(n.indexOf('ПОГАСИТЬ') !== -1) return 'ПОГАСИТЬ КРЕДИТ'; if(n.indexOf('ПРИВАТ') !== -1) return 'ПРИВАТ'; if(n.indexOf('ВАЛЕРА') !== -1) return 'ВАЛЕРА'; if(n.indexOf('SPARKASSE') !== -1) return 'SPARKASSE'; if(n.indexOf('НАЛИЧНЫЕ') !== -1) return 'НАЛИЧНЫЕ'; if(n.indexOf('КОПИЛКА') !== -1) return 'КОПИЛКА'; if(n.indexOf('СВИНКА') !== -1) return 'СВИНКА'; if(n.indexOf('КОНВЕРТ') !== -1) return 'КОНВЕРТ'; if(n.indexOf('КРЕДИТКА') !== -1) return 'КРЕДИТКА'; if(n.indexOf('В ПЛАНАХ') !== -1) return 'В ПЛАНАХ';
+    if(n.indexOf('КРЕДИТКА ВАЛЕРА') !== -1) return 'КРЕДИТКА ВАЛЕРА'; if(n.indexOf('КРЕДИТКА ОЛЯ') !== -1) return 'КРЕДИТКА ОЛЯ'; if(n.indexOf('ПРИВАТ') !== -1) return 'ПРИВАТ'; if(n.indexOf('ВАЛЕРА') !== -1) return 'ВАЛЕРА'; if(n.indexOf('SPARKASSE') !== -1) return 'SPARKASSE'; if(n.indexOf('НАЛИЧНЫЕ') !== -1) return 'НАЛИЧНЫЕ'; if(n.indexOf('КОПИЛКА') !== -1) return 'КОПИЛКА'; if(n.indexOf('СВИНКА') !== -1) return 'СВИНКА'; if(n.indexOf('КОНВЕРТ') !== -1) return 'КОНВЕРТ'; if(n.indexOf('В ПЛАНАХ') !== -1) return 'В ПЛАНАХ';
     return n;
 }
 
@@ -125,7 +128,6 @@ function drawBalance() {
     RIGHT_ORDER.forEach(m => rightCol.innerHTML += createWalletHTML(m));
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
     
-    // РАСЧЕТ ДНЕВНОГО ЛИМИТА
     let totalRemaining = 0;
     Object.keys(LIMITS).forEach(cat => {
         const spent = Math.abs(categorySpent[cat] || 0);
