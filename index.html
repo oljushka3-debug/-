@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v34.9</title>
+    <title>SmartWallet Pro v35.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -162,6 +162,7 @@ function draw(data) {
     
     let lastDateStr = "";
 
+    // ОБРАБОТКА ВСЕХ ДАННЫХ ДЛЯ БАЛАНСОВ
     data.rows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
         const marker = getMarker(row[5]);
@@ -179,23 +180,26 @@ function draw(data) {
         });
     });
 
-    data.rows.slice(1, 41).forEach(r => { 
+    // ВЫВОД ИСТОРИИ (ЛИМИТ 500 СТРОК)
+    data.rows.slice(1, 501).forEach(r => { 
+        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
+        const isU = isUahMarker(marker);
+        const amt = isU ? valU : valE;
+        
+        // Пропускаем только если оба значения по нулям (технический мусор)
+        if (valU === 0 && valE === 0) return;
+
         const rowDate = new Date(r[0]);
         const today = new Date();
         let dateStr = rowDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
         if (rowDate.toDateString() === today.toDateString()) dateStr = "Сегодня, " + rowDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 
         if (dateStr !== lastDateStr) {
-            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-4 mb-1 ml-2 tracking-widest italic">${dateStr}</div>`;
+            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-3 mb-0.5 ml-2 tracking-widest italic">${dateStr}</div>`;
             lastDateStr = dateStr;
         }
 
-        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
-        const isU = isUahMarker(marker);
-        const amt = isU ? valU : valE;
-        if (amt === 0 && !isU && valU !== 0) return;
         const isInc = amt > 0;
-        
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
             <div class="flex items-center gap-2 truncate">
                 <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
