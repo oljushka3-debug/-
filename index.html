@@ -81,7 +81,7 @@
                     <option value="Sparkasse">Sparkasse</option><option value="ПРИВАТ">ПРИВАТ</option><option value="ВАЛЕРА">ВАЛЕРА</option><option value="НАЛИЧНЫЕ">НАЛИЧНЫЕ</option><option value="СВИНКА">СВИНКА</option><option value="КОПИЛКА">КОПИЛКА</option><option value="КОНВЕРТ">КОНВЕРТ</option><option value="Кредитка Оля">Кредитка Оля</option><option value="Кредитка Валера">Кредитка Валера</option>
                 </select>
                 <select id="cat" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
-                    <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 КОПИЛКА</option>
+                    <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 Доход</option>
                 </select>
             </div>
             <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 py-3 rounded-xl font-black uppercase text-[9px] text-slate-400 italic">Отмена</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[9px] shadow-lg italic">Записать</button></div>
@@ -90,10 +90,10 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxM--9aaTf2FK4cV6Tj09BjEKo7-PpLKEeECwSnygbVTyHnu0oDbeslE-oODSIlccyX/exec";
-const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 КОПИЛКА": 250 };
+const API_URL = "https://script.google.com/macros/s/AKfycbyx1rHxvAwEFiDiBMz2PREdDTh9MQPo5JR6TgHMgzu5eNvPhzseZS69Q0CB8mRbwMnA/exec";
+const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
-const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'ПОГАСИТЬ', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
+const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
 const LEFT_ORDER = ['SPARKASSE', 'НАЛИЧНЫЕ', 'ПРИВАТ', 'ВАЛЕРА', 'КОПИЛКА'];
 const RIGHT_ORDER = ['КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'КОНВЕРТ', 'СВИНКА', 'В ПЛАНАХ'];
 
@@ -104,14 +104,25 @@ function getCycleDates() {
 }
 
 function getMarker(name) {
-    if(!name) return "ОСТАЛЬНОЕ"; const n = name.toUpperCase();
-    if(n.indexOf('КРЕДИТКА ВАЛЕРА') !== -1) return 'КРЕДИТКА ВАЛЕРА'; if(n.indexOf('КРЕДИТКА ОЛЯ') !== -1) return 'КРЕДИТКА ОЛЯ'; if(n.indexOf('ПРИВАТ') !== -1) return 'ПРИВАТ'; if(n.indexOf('ВАЛЕРА') !== -1) return 'ВАЛЕРА'; if(n.indexOf('SPARKASSE') !== -1) return 'SPARKASSE'; if(n.indexOf('НАЛИЧНЫЕ') !== -1) return 'НАЛИЧНЫЕ'; if(n.indexOf('КОПИЛКА') !== -1) return 'КОПИЛКА'; if(n.indexOf('СВИНКА') !== -1) return 'СВИНКА'; if(n.indexOf('КОНВЕРТ') !== -1) return 'КОНВЕРТ';
+    if(!name) return "ОСТАЛЬНОЕ"; 
+    const n = name.toUpperCase();
+    if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; 
+    if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; 
+    if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; 
+    if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; 
+    if(n.includes('SPARKASSE')) return 'SPARKASSE'; 
+    if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; 
+    if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; 
+    if(n.includes('СВИНКА')) return 'СВИНКА'; 
+    if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ';
+    if(n.includes('В ПЛАНАХ')) return 'В ПЛАНАХ';
     return n;
 }
 
 function isUahMarker(marker) { 
-    if (marker.toUpperCase() === 'КОПИЛКА') return false; 
-    return MARKERS.UAH.some(m => marker.toUpperCase().indexOf(m) !== -1); 
+    const m = marker.toUpperCase();
+    if (m.includes('КОПИЛКА')) return false; 
+    return MARKERS.UAH.some(key => m.includes(key)); 
 }
 
 function drawBalance() {
@@ -120,25 +131,36 @@ function drawBalance() {
     const leftCol = document.getElementById('leftColumn');
     const rightCol = document.getElementById('rightColumn');
     leftCol.innerHTML = ""; rightCol.innerHTML = "";
+    
     function createWalletHTML(marker) {
         const val = walletData[marker] || { uah: 0, eur: 0 };
         const isU = isUahMarker(marker);
         const eqEur = marker === 'КОПИЛКА' ? val.eur : (isU ? (val.uah / r) : val.eur);
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
         const isLow = (marker === 'SPARKASSE' || marker === 'НАЛИЧНЫЕ') && eqEur < 10;
-        return `<div class="${isLow ? 'bg-rose-50' : 'bg-white'} p-2 rounded-xl border text-center"><span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span><span class="${isLow ? 'text-rose-600 animate-pulse' : 'text-slate-800'} text-[9px] font-black italic leading-none">${isU ? '₴ ' + val.uah.toFixed(2) : '€ ' + val.eur.toFixed(2)}${isU ? `<br><span class="text-[8px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(2)}</span>` : ''}</span></div>`;
+        
+        return `<div class="${isLow ? 'bg-rose-50' : 'bg-white'} p-2 rounded-xl border text-center shadow-sm">
+            <span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span>
+            <span class="${isLow ? 'text-rose-600 animate-pulse' : 'text-slate-800'} text-[9px] font-black italic leading-none">
+                ${isU ? '₴ ' + val.uah.toFixed(0) : '€ ' + val.eur.toFixed(2)}
+                ${isU ? `<br><span class="text-[7px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(1)}</span>` : ''}
+            </span>
+        </div>`;
     }
+    
     LEFT_ORDER.forEach(m => leftCol.innerHTML += createWalletHTML(m));
     RIGHT_ORDER.forEach(m => rightCol.innerHTML += createWalletHTML(m));
+    
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
+    
     let totalRemaining = 0;
-    Object.keys(LIMITS).forEach(cat => totalRemaining += (LIMITS[cat] - Math.abs(categorySpent[cat] || 0)));
+    Object.keys(LIMITS).forEach(cat => { totalRemaining += (LIMITS[cat] - Math.abs(categorySpent[cat] || 0)); });
+    
     const cycle = getCycleDates(); const today = new Date(); today.setHours(0,0,0,0);
     const daysLeft = Math.max(1, Math.ceil((cycle.end.getTime() - today.getTime()) / (1000*60*60*24)) + 1);
     const dailyLimit = totalRemaining / daysLeft;
-    const dailyEl = document.getElementById('dailyLimitValue');
-    dailyEl.innerText = '€ ' + Math.max(0, dailyLimit).toFixed(2);
-    dailyEl.className = dailyLimit <= 0 ? "text-sm font-black italic text-rose-600 animate-pulse" : (dailyLimit < 10 ? "text-sm font-black italic text-amber-500" : "text-sm font-black italic text-emerald-500");
+    document.getElementById('dailyLimitValue').innerText = '€ ' + Math.max(0, dailyLimit).toFixed(2);
+    document.getElementById('currentPeriodLabel').innerText = daysLeft + " дн. осталось";
     drawLimits();
 }
 
@@ -148,7 +170,11 @@ function drawLimits() {
         const limit = LIMITS[cat], spent = Math.abs(categorySpent[cat] || 0), perc = Math.min((spent / limit) * 100, 100);
         let color = perc > 80 ? (perc >= 100 ? "bg-rose-500" : "bg-amber-500") : "bg-blue-500";
         const emoji = cat.split(' ')[0];
-        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden"><div class="text-base">${emoji}</div><div class="text-[8px] font-black italic">${spent.toFixed(2)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-white/40"><div class="h-full ${color}" style="width:${perc}%"></div></div></div>`;
+        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden shadow-sm">
+            <div class="text-base">${emoji}</div>
+            <div class="text-[8px] font-black italic">${spent.toFixed(0)}€</div>
+            <div class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-200"><div class="h-full ${color}" style="width:${perc}%"></div></div>
+        </div>`;
     });
 }
 
@@ -156,26 +182,40 @@ function draw(data) {
     if (!data || !data.rows) return;
     allRows = data.rows; const hist = document.getElementById('history'); hist.innerHTML = ""; walletData = {}; categorySpent = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
+    
     data.rows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
-        const marker = getMarker(row[5]), cat = row[1], valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0, date = new Date(row[0]);
+        const marker = getMarker(row[5]);
+        const cat = row[1];
+        const valE = parseFloat(row[8]) || 0;
+        const valU = parseFloat(row[10]) || 0;
+        const date = new Date(row[0]);
+        
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
         walletData[marker].eur += valE; walletData[marker].uah += valU;
+        
         const cycle = getCycleDates();
-        if (LIMITS[cat] && date >= cycle.start && date <= cycle.end) {
-            categorySpent[cat] = (categorySpent[cat] || 0) + (valE !== 0 ? valE : (valU / r));
-        }
+        Object.keys(LIMITS).forEach(limitCat => {
+            if (cat && cat.includes(limitCat.substring(2)) && date >= cycle.start && date <= cycle.end) {
+                categorySpent[limitCat] = (categorySpent[limitCat] || 0) + (valE !== 0 ? valE : (valU / r));
+            }
+        });
     });
-    data.rows.slice(1, 21).forEach(r => { 
-        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1], isU = isUahMarker(marker);
-        const amt = isU ? valU : valE, isInc = amt > 0;
-        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm italic text-[10px] font-bold">
+
+    data.rows.slice(1, 31).forEach(r => { 
+        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
+        const isU = isUahMarker(marker);
+        const amt = isU ? valU : valE;
+        if (amt === 0 && !isU && valU !== 0) return;
+        const isInc = amt > 0;
+        
+        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
             <div class="flex items-center gap-2 truncate">
                 <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="editRow(${id})" class="text-blue-200 ml-0.5"><i class="fa-solid fa-pen"></i></button>
-                <div><p class="text-[6px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div>
+                <div class="truncate"><p class="text-[6px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[3]||r[2]}</p></div>
             </div>
-            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}</div>
+            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic whitespace-nowrap">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}</div>
         </div>`; 
     });
     drawBalance();
@@ -204,32 +244,23 @@ function editRow(id) {
     let type = cat.includes('Доход') ? 'income' : (cat.includes('Перевод') ? 'transfer' : 'expense');
     openModal(type); 
     document.getElementById('editRowId').value = id; 
-    try {
-        const rawDate = new Date(row[0]);
-        document.getElementById('date').value = rawDate.toISOString().split('T')[0];
-    } catch(e) {}
+    try { const rawDate = new Date(row[0]); document.getElementById('date').value = rawDate.toISOString().split('T')[0]; } catch(e) {}
     document.getElementById('merchant').value = row[2] || ""; 
     document.getElementById('customRate').value = row[12] || document.getElementById('baseRate').value; 
-    document.getElementById('acc').value = row[5] || ""; 
-    document.getElementById('cat').value = row[1] || "";
+    document.getElementById('acc').value = row[5].replace(/^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])+\s*/, ""); 
+    document.getElementById('cat').value = row[1];
     if (type === 'income') {
         document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || 0; 
         document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    } 
-    else if (type === 'expense') {
-        document.getElementById('itemsList').innerHTML = ""; 
-        addItemRow(); 
+    } else if (type === 'expense') {
+        document.getElementById('itemsList').innerHTML = ""; addItemRow(); 
         const f = document.querySelector('.item-row'); 
         f.querySelector('.nameRU').value = row[4] || row[3] || ""; 
         f.querySelector('.qty').value = parseFloat(row[6]) || 1; 
         f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; 
-        const uTotal = Math.abs(parseFloat(row[10]));
-        const eTotal = Math.abs(parseFloat(row[8]));
-        f.querySelector('.totalUah').value = uTotal > 0 ? uTotal : (eTotal * (row[12] || 51.55)).toFixed(2);
+        f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || (Math.abs(parseFloat(row[8])) * 51.55).toFixed(2);
         document.getElementById('addItemBtn').classList.add('hidden'); 
-    }
-    else {
-        document.getElementById('tFrom').value = row[5]; 
+    } else {
         document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || 0; 
         document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || 0; 
     }
@@ -240,10 +271,11 @@ function updateAllItems() { document.querySelectorAll('.item-row').forEach(r => 
 
 async function save(event) {
     event.preventDefault(); 
-    document.getElementById('saveBtn').disabled = true;
-    document.getElementById('saveBtn').innerText = "СОХРАНЯЮ...";
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerText = "СОХРАНЯЮ...";
     const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
     let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId };
+    
     if(t === 'expense') { 
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; 
         const rows = document.querySelectorAll('.item-row');
@@ -263,16 +295,17 @@ async function save(event) {
             p.totalEur = p.qty * p.priceUnit;
             p.totalUah = parseFloat(first.querySelector('.totalUah').value)||0;
         }
-    } 
-    else if (t === 'transfer') { p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; } 
-    else { p.account = document.getElementById('acc').value; p.category = "💎 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; }
+    } else if (t === 'transfer') { 
+        p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; 
+    } else { 
+        p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; 
+    }
+    
     try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
         location.reload(); 
     } catch(err) {
-        alert("Ошибка!");
-        document.getElementById('saveBtn').disabled = false;
-        document.getElementById('saveBtn').innerText = "ЗАПИСАТЬ";
+        alert("Ошибка!"); btn.disabled = false; btn.innerText = "ЗАПИСАТЬ";
     }
 }
 
