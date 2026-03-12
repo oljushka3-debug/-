@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v35.1</title>
+    <title>SmartWallet Pro v36.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -33,10 +33,15 @@
     <div id="limitsGrid" class="grid grid-cols-4 gap-1.5"></div>
 </div>
 
-<div class="flex gap-1.5 mb-6 font-black italic">
+<div class="flex gap-1.5 mb-4 font-black italic">
     <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-rose-700 shadow-md active:translate-y-0.5 italic">Расход</button>
     <button onclick="openModal('transfer')" class="flex-1 bg-slate-200 py-4 rounded-2xl text-[9px] text-slate-700 uppercase border-b-4 border-slate-400 shadow-sm active:translate-y-0.5 italic">Перевод</button>
     <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-emerald-700 shadow-md active:translate-y-0.5 italic">Доход</button>
+</div>
+
+<div class="relative mb-3">
+    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК ПО ИСТОРИИ..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
 </div>
 
 <div id="history" class="space-y-1.5 text-xs"></div>
@@ -153,17 +158,26 @@ function drawLimits() {
     });
 }
 
+// НОВОЕ: ФУНКЦИЯ ФИЛЬТРАЦИИ
+function filterHistory() {
+    draw({ rows: allRows });
+}
+
 function draw(data) {
     if (!data || !data.rows) return;
-    allRows = data.rows; 
-    const hist = document.getElementById('history'); hist.innerHTML = ""; 
+    const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toUpperCase() : "";
+    
+    // Если это первичная загрузка, сохраняем все строки
+    if (allRows.length === 0) allRows = data.rows; 
+    
+    const hist = document.getElementById('history'); 
+    hist.innerHTML = ""; 
     walletData = {}; categorySpent = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
-    
     let lastDateStr = "";
 
-    // ОБРАБОТКА ВСЕХ ДАННЫХ ДЛЯ БАЛАНСОВ
-    data.rows.forEach((row, i) => { 
+    // Обработка данных для балансов (всегда по всем строкам)
+    allRows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
         const marker = getMarker(row[5]);
         const cat = row[1];
@@ -180,13 +194,19 @@ function draw(data) {
         });
     });
 
-    // ВЫВОД ИСТОРИИ (ЛИМИТ 500 СТРОК)
-    data.rows.slice(1, 501).forEach(r => { 
-        const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
-        const isU = isUahMarker(marker);
-        const amt = isU ? valU : valE;
+    // Отрисовка истории с учетом фильтра
+    allRows.slice(1, 501).forEach(r => { 
+        const marker = getMarker(r[5]);
+        const merchant = String(r[2] || "").toUpperCase();
+        const nameRU = String(r[4] || "").toUpperCase();
+        const nameDE = String(r[3] || "").toUpperCase();
         
-        // Пропускаем только если оба значения по нулям (технический мусор)
+        // Проверка поиска
+        if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query) && !nameDE.includes(query)) return;
+
+        const valU = parseFloat(r[10]) || 0;
+        const valE = parseFloat(r[8]) || 0;
+        const id = r[r.length-1];
         if (valU === 0 && valE === 0) return;
 
         const rowDate = new Date(r[0]);
@@ -199,7 +219,10 @@ function draw(data) {
             lastDateStr = dateStr;
         }
 
+        const isU = isUahMarker(marker);
+        const amt = isU ? valU : valE;
         const isInc = amt > 0;
+        
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
             <div class="flex items-center gap-2 truncate">
                 <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
