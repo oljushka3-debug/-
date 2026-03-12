@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v34.8</title>
+    <title>SmartWallet Pro v34.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -106,16 +106,7 @@ function getCycleDates() {
 function getMarker(name) {
     if(!name) return "ОСТАЛЬНОЕ"; 
     const n = name.toUpperCase();
-    if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; 
-    if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; 
-    if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; 
-    if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; 
-    if(n.includes('SPARKASSE')) return 'SPARKASSE'; 
-    if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; 
-    if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; 
-    if(n.includes('СВИНКА')) return 'СВИНКА'; 
-    if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ';
-    if(n.includes('В ПЛАНАХ')) return 'В ПЛАНАХ';
+    if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ'; if(n.includes('В ПЛАНАХ')) return 'В ПЛАНАХ';
     return n;
 }
 
@@ -131,31 +122,19 @@ function drawBalance() {
     const leftCol = document.getElementById('leftColumn');
     const rightCol = document.getElementById('rightColumn');
     leftCol.innerHTML = ""; rightCol.innerHTML = "";
-    
     function createWalletHTML(marker) {
         const val = walletData[marker] || { uah: 0, eur: 0 };
         const isU = isUahMarker(marker);
         const eqEur = marker === 'КОПИЛКА' ? val.eur : (isU ? (val.uah / r) : val.eur);
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
         const isLow = (marker === 'SPARKASSE' || marker === 'НАЛИЧНЫЕ') && eqEur < 10;
-        
-        return `<div class="${isLow ? 'bg-rose-50' : 'bg-white'} p-2 rounded-xl border text-center shadow-sm">
-            <span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span>
-            <span class="${isLow ? 'text-rose-600 animate-pulse' : 'text-slate-800'} text-[9px] font-black italic leading-none">
-                ${isU ? '₴ ' + val.uah.toFixed(0) : '€ ' + val.eur.toFixed(2)}
-                ${isU ? `<br><span class="text-[7px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(1)}</span>` : ''}
-            </span>
-        </div>`;
+        return `<div class="${isLow ? 'bg-rose-50' : 'bg-white'} p-2 rounded-xl border text-center shadow-sm"><span class="text-slate-400 block text-[6px] uppercase font-black italic tracking-tighter">${marker}</span><span class="${isLow ? 'text-rose-600 animate-pulse' : 'text-slate-800'} text-[9px] font-black italic leading-none">${isU ? '₴ ' + val.uah.toFixed(0) : '€ ' + val.eur.toFixed(2)}${isU ? `<br><span class="text-[7px] text-blue-700 font-bold block mt-0.5">€ ${eqEur.toFixed(1)}</span>` : ''}</span></div>`;
     }
-    
     LEFT_ORDER.forEach(m => leftCol.innerHTML += createWalletHTML(m));
     RIGHT_ORDER.forEach(m => rightCol.innerHTML += createWalletHTML(m));
-    
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
-    
     let totalRemaining = 0;
     Object.keys(LIMITS).forEach(cat => { totalRemaining += (LIMITS[cat] - Math.abs(categorySpent[cat] || 0)); });
-    
     const cycle = getCycleDates(); const today = new Date(); today.setHours(0,0,0,0);
     const daysLeft = Math.max(1, Math.ceil((cycle.end.getTime() - today.getTime()) / (1000*60*60*24)) + 1);
     const dailyLimit = totalRemaining / daysLeft;
@@ -170,19 +149,19 @@ function drawLimits() {
         const limit = LIMITS[cat], spent = Math.abs(categorySpent[cat] || 0), perc = Math.min((spent / limit) * 100, 100);
         let color = perc > 80 ? (perc >= 100 ? "bg-rose-500" : "bg-amber-500") : "bg-blue-500";
         const emoji = cat.split(' ')[0];
-        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden shadow-sm">
-            <div class="text-base">${emoji}</div>
-            <div class="text-[8px] font-black italic">${spent.toFixed(0)}€</div>
-            <div class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-200"><div class="h-full ${color}" style="width:${perc}%"></div></div>
-        </div>`;
+        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden shadow-sm"><div class="text-base">${emoji}</div><div class="text-[8px] font-black italic">${spent.toFixed(0)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-200"><div class="h-full ${color}" style="width:${perc}%"></div></div></div>`;
     });
 }
 
 function draw(data) {
     if (!data || !data.rows) return;
-    allRows = data.rows; const hist = document.getElementById('history'); hist.innerHTML = ""; walletData = {}; categorySpent = {};
+    allRows = data.rows; 
+    const hist = document.getElementById('history'); hist.innerHTML = ""; 
+    walletData = {}; categorySpent = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     
+    let lastDateStr = "";
+
     data.rows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
         const marker = getMarker(row[5]);
@@ -190,10 +169,8 @@ function draw(data) {
         const valE = parseFloat(row[8]) || 0;
         const valU = parseFloat(row[10]) || 0;
         const date = new Date(row[0]);
-        
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
         walletData[marker].eur += valE; walletData[marker].uah += valU;
-        
         const cycle = getCycleDates();
         Object.keys(LIMITS).forEach(limitCat => {
             if (cat && cat.includes(limitCat.substring(2)) && date >= cycle.start && date <= cycle.end) {
@@ -202,7 +179,17 @@ function draw(data) {
         });
     });
 
-    data.rows.slice(1, 31).forEach(r => { 
+    data.rows.slice(1, 41).forEach(r => { 
+        const rowDate = new Date(r[0]);
+        const today = new Date();
+        let dateStr = rowDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+        if (rowDate.toDateString() === today.toDateString()) dateStr = "Сегодня, " + rowDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+
+        if (dateStr !== lastDateStr) {
+            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-4 mb-1 ml-2 tracking-widest italic">${dateStr}</div>`;
+            lastDateStr = dateStr;
+        }
+
         const marker = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
         const isU = isUahMarker(marker);
         const amt = isU ? valU : valE;
@@ -275,7 +262,6 @@ async function save(event) {
     btn.disabled = true; btn.innerText = "СОХРАНЯЮ...";
     const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
     let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId };
-    
     if(t === 'expense') { 
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; 
         const rows = document.querySelectorAll('.item-row');
@@ -300,7 +286,6 @@ async function save(event) {
     } else { 
         p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; 
     }
-    
     try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
         location.reload(); 
