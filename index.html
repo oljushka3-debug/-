@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v34.3</title>
+    <title>SmartWallet Pro v34.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -56,6 +56,7 @@
             <div id="transferSection" class="hidden space-y-3 font-black italic">
                 <div class="grid grid-cols-2 gap-2 text-[9px]">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase italic">
+                        <option value="КОПИЛКА">ИЗ КОПИЛКИ</option>
                         <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Sparkasse">ИЗ Sparkasse</option><option value="Кредитка Оля">ИЗ Кредитка Оля</option><option value="Кредитка Валера">ИЗ Кредитка Валера</option>
                     </select>
                     <select id="tTo" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase text-blue-600 italic">
@@ -101,7 +102,11 @@ function getMarker(name) {
     return n;
 }
 
-function isUahMarker(marker) { return MARKERS.UAH.some(m => marker.toUpperCase().indexOf(m) !== -1); }
+// Изменено: теперь КОПИЛКА не считается гривневым маркером, даже если входит в подстроку
+function isUahMarker(marker) { 
+    if (marker.toUpperCase() === 'КОПИЛКА') return false;
+    return MARKERS.UAH.some(m => marker.toUpperCase().indexOf(m) !== -1); 
+}
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
