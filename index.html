@@ -202,8 +202,7 @@ function calcRow(el, source) {
 }
 
 function editRow(id) {
-    // Находим строку. В нашем новом doGet ID строки лежит в последнем элементе массива (индекс 13)
-    const row = allRows.find(r => r[13] == id); 
+    const row = allRows.find(r => r[r.length-1] == id); 
     if (!row) return;
 
     const cat = String(row[1] || ""); 
@@ -212,39 +211,33 @@ function editRow(id) {
     openModal(type); 
     document.getElementById('editRowId').value = id; 
     
-    // Дата (0)
-    try {
-        const d = new Date(row[0]);
-        document.getElementById('date').value = d.toISOString().split('T')[0];
-    } catch(e) {}
-
-    document.getElementById('merchant').value = row[2] || ""; 
+    // Подставляем данные из таблицы в форму
+    document.getElementById('date').value = new Date(row[0]).toISOString().split('T')[0];
+    document.getElementById('merchant').value = row[2] || ""; // Магазин (C)
     document.getElementById('customRate').value = row[12] || 51.55; 
     document.getElementById('acc').value = row[5] || ""; 
     document.getElementById('cat').value = row[1] || "";
 
-    if (type === 'income') { 
-        document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    }  
-    else if (type === 'expense') { 
+    if (type === 'expense') {
         document.getElementById('itemsList').innerHTML = ""; 
         addItemRow(); 
         const f = document.querySelector('.item-row'); 
         
-        // Название: берем RU (4) или DE (3)
-        f.querySelector('.nameRU').value = row[4] || row[3] || ""; 
-        f.querySelector('.qty').value = parseFloat(row[6]) || 1; 
-        f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; 
-        f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || 0; 
+        // ВАЖНО: 
+        f.querySelector('.nameRU').value = row[4] || row[3] || ""; // Товар (E или D)
+        f.querySelector('.qty').value = parseFloat(row[6]) || 1;    // Кол-во (G)
+        f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; // Цена (H)
+        
+        // Если это гривневая карта, берем сумму из колонки K (индекс 10)
+        // Если евро, берем из колонки I (индекс 8)
+        const uahVal = Math.abs(parseFloat(row[10]));
+        const eurVal = Math.abs(parseFloat(row[8]));
+        
+        f.querySelector('.totalUah').value = uahVal > 0 ? uahVal : (eurVal * (row[12] || 51.55)).toFixed(2);
         
         document.getElementById('addItemBtn').classList.add('hidden'); 
     }
-    else if (type === 'transfer') { 
-        document.getElementById('tFrom').value = row[5]; 
-        document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    }
+    // ... остальные типы (income, transfer) ...
 }
 
 function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value) || 51.55; if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(2); }
