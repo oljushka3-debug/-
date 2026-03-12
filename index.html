@@ -202,26 +202,47 @@ function calcRow(el, source) {
 }
 
 function editRow(id) {
-    const row = allRows.find(r => r[r.length-1] == id); if (!row) return;
-    const cat = row[1]; let type = cat.includes('Доход') ? 'income' : (cat.includes('Перевод') ? 'transfer' : 'expense');
-    openModal(type); document.getElementById('editRowId').value = id;
-    document.getElementById('date').value = new Date(row[0]).toISOString().split('T')[0];
-    document.getElementById('merchant').value = row[2]; document.getElementById('customRate').value = row[12];
-    document.getElementById('acc').value = row[5]; document.getElementById('cat').value = row[1];
-    if (type === 'income') { 
-        document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    } 
-    else if (type === 'expense') { 
-        document.getElementById('itemsList').innerHTML = ""; addItemRow(); const f = document.querySelector('.item-row');
-        f.querySelector('.nameRU').value = row[4] || row[3]; f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0;
-        f.querySelector('.qty').value = parseFloat(row[6]) || 1; f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || 0;
-        document.getElementById('addItemBtn').classList.add('hidden');
+    const row = allRows.find(r => r[r.length-1] == id); 
+    if (!row) return;
+
+    const cat = String(row[1]); 
+    let type = 'expense'; 
+    if (cat.includes('Доход')) type = 'income'; 
+    if (cat.includes('Перевод')) type = 'transfer';
+
+    openModal(type); 
+    document.getElementById('editRowId').value = id; 
+    
+    // Корректная дата
+    const d = new Date(row[0]);
+    if (!isNaN(d.getTime())) {
+        document.getElementById('date').value = d.toISOString().split('T')[0];
     }
-    else { 
+
+    document.getElementById('merchant').value = row[2] || ""; 
+    document.getElementById('customRate').value = row[12] || document.getElementById('baseRate').value; 
+    document.getElementById('acc').value = row[5] || ""; 
+    document.getElementById('cat').value = row[1] || "";
+
+    if (type === 'income') { 
+        document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || ""; 
+        document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || ""; 
+    }  
+    else if (type === 'expense') { 
+        document.getElementById('itemsList').innerHTML = ""; 
+        addItemRow(); 
+        const f = document.querySelector('.item-row'); 
+        // Если в таблице есть DE, приоритет ему для автоперевода, если нет - берем RU
+        f.querySelector('.nameRU').value = row[3] || row[4] || ""; 
+        f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; 
+        f.querySelector('.qty').value = parseFloat(row[6]) || 1; 
+        f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || 0; 
+        document.getElementById('addItemBtn').classList.add('hidden'); 
+    }
+    else if (type === 'transfer') { 
         document.getElementById('tFrom').value = row[5]; 
-        document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || 0; 
+        document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || ""; 
+        document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || ""; 
     }
 }
 
