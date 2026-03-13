@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v36.0</title>
+    <title>SmartWallet Pro v36.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -69,11 +69,14 @@
             <div id="transferSection" class="hidden space-y-3 font-black italic">
                 <div class="grid grid-cols-2 gap-2 text-[9px]">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase italic">
+                        <option value="Sparkasse">ИЗ Sparkasse</option>
                         <option value="КОПИЛКА">ИЗ КОПИЛКИ</option>
-                        <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Sparkasse">ИЗ Sparkasse</option><option value="Кредитка Оля">ИЗ Кредитка Оля</option><option value="Кредитка Валера">ИЗ Кредитка Валера</option>
+                        <option value="ПРИВАТ">ИЗ ПРИВАТ</option><option value="ВАЛЕРА">ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">ИЗ НАЛИЧНЫХ</option><option value="Кредитка Оля">ИЗ Кредитка Оля</option><option value="Кредитка Валера">ИЗ Кредитка Валера</option>
                     </select>
                     <select id="tTo" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase text-blue-600 italic">
-                        <option value="НАЛИЧНЫЕ">В НАЛИЧНЫЕ</option><option value="КОПИЛКА">В КОПИЛКУ</option><option value="СВИНКА">В СВИНКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="ПРИВАТ">В ПРИВАТ</option>
+                        <option value="НАЛИЧНЫЕ">В НАЛИЧНЫЕ</option>
+                        <option value="Sparkasse">В Sparkasse</option>
+                        <option value="КОПИЛКА">В КОПИЛКУ</option><option value="СВИНКА">В СВИНКУ</option><option value="КОНВЕРТ">В КОНВЕРТ</option><option value="ПРИВАТ">В ПРИВАТ</option>
                     </select>
                 </div>
                 <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 grid grid-cols-2 gap-2 text-center">
@@ -158,7 +161,6 @@ function drawLimits() {
     });
 }
 
-// НОВОЕ: ФУНКЦИЯ ФИЛЬТРАЦИИ
 function filterHistory() {
     draw({ rows: allRows });
 }
@@ -166,17 +168,13 @@ function filterHistory() {
 function draw(data) {
     if (!data || !data.rows) return;
     const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toUpperCase() : "";
-    
-    // Если это первичная загрузка, сохраняем все строки
     if (allRows.length === 0) allRows = data.rows; 
-    
     const hist = document.getElementById('history'); 
     hist.innerHTML = ""; 
     walletData = {}; categorySpent = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     let lastDateStr = "";
 
-    // Обработка данных для балансов (всегда по всем строкам)
     allRows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
         const marker = getMarker(row[5]);
@@ -194,35 +192,27 @@ function draw(data) {
         });
     });
 
-    // Отрисовка истории с учетом фильтра
     allRows.slice(1, 501).forEach(r => { 
         const marker = getMarker(r[5]);
         const merchant = String(r[2] || "").toUpperCase();
         const nameRU = String(r[4] || "").toUpperCase();
         const nameDE = String(r[3] || "").toUpperCase();
-        
-        // Проверка поиска
         if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query) && !nameDE.includes(query)) return;
-
         const valU = parseFloat(r[10]) || 0;
         const valE = parseFloat(r[8]) || 0;
         const id = r[r.length-1];
         if (valU === 0 && valE === 0) return;
-
         const rowDate = new Date(r[0]);
         const today = new Date();
         let dateStr = rowDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
         if (rowDate.toDateString() === today.toDateString()) dateStr = "Сегодня, " + rowDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-
         if (dateStr !== lastDateStr) {
             hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-3 mb-0.5 ml-2 tracking-widest italic">${dateStr}</div>`;
             lastDateStr = dateStr;
         }
-
         const isU = isUahMarker(marker);
         const amt = isU ? valU : valE;
         const isInc = amt > 0;
-        
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
             <div class="flex items-center gap-2 truncate">
                 <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
