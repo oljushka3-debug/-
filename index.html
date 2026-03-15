@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v37.4</title>
+    <title>SmartWallet Pro v37.4 Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic">
+<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic selection:bg-blue-100">
 
 <button onclick="location.reload()" class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center shadow-md active:scale-90 transition-all">
     <i class="fa-solid fa-rotate text-blue-500 text-xs"></i>
@@ -58,7 +58,7 @@
             
             <div class="space-y-1">
                 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
-                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-500 ml-2 hidden tracking-tighter"></div>
+                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-400 ml-2 hidden tracking-tighter"></div>
             </div>
 
             <div id="expenseSection" class="hidden space-y-2">
@@ -102,7 +102,9 @@
 </div>
 
 <script>
-const API_URL = "ТВОЯ_НОВАЯ_ССЫЛКА_ЗДЕСЬ";
+// ВАЖНО: ВСТАВЬ СВОЮ НОВУЮ ССЫЛКУ СЮДА
+const API_URL = "https://script.google.com/macros/s/AKfycby2JPgGstySuKogwpuQh_sWsmgHpJR3qD8yPds-tgi70morvqCzr1gQvKxvFUbOdBWp/exec";
+
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
 const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
@@ -221,11 +223,11 @@ function draw(data) {
         const isU = isUahMarker(marker), amt = isU ? valU : valE, isInc = amt > 0;
         
         hist.innerHTML += `
-        <div class="bg-white p-3.5 rounded-[22px] flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm">
+        <div class="bg-white p-3.5 rounded-[22px] flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm active:scale-[0.98] transition-transform">
             <div class="flex items-center gap-3 overflow-hidden">
                 <div class="flex flex-col gap-1">
-                    <button onclick="deleteRow(${id})" class="text-rose-100 text-[10px]"><i class="fa-solid fa-trash-can"></i></button>
-                    <button onclick="editRow(${id})" class="text-blue-100 text-[10px]"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteRow(${id})" class="text-rose-100 hover:text-rose-300 text-[10px]"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="editRow(${id})" class="text-blue-100 hover:text-blue-300 text-[10px]"><i class="fa-solid fa-pen"></i></button>
                 </div>
                 <div class="truncate">
                     <p class="text-[11px] font-black uppercase italic text-slate-700 leading-tight truncate">${r[4]||r[2]}</p>
