@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v37.0</title>
+    <title>SmartWallet Pro v37.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -55,17 +55,24 @@
                 <input type="date" id="date" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-bold text-[10px] outline-none">
                 <input type="number" id="customRate" step="0.01" placeholder="Курс" oninput="updateAllItems()" class="bg-blue-50 p-2.5 rounded-xl border border-blue-100 font-bold text-[10px] text-blue-600 outline-none italic">
             </div>
-            <input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
+            
+            <div class="space-y-1">
+                <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
+                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-400 ml-2 hidden tracking-tighter"></div>
+            </div>
+
             <div id="expenseSection" class="hidden space-y-2">
                 <div id="itemsList" class="space-y-2"></div>
                 <button type="button" id="addItemBtn" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[8px] font-black uppercase italic">+ Добавить строку</button>
             </div>
+
             <div id="incomeSection" class="hidden bg-emerald-50 p-3 rounded-2xl border border-emerald-100 space-y-2 text-center italic">
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-[6px] text-emerald-600 font-black uppercase block italic">Гривны (₴)</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-lg font-black outline-none text-emerald-600 text-center italic"></div>
                     <div><label class="text-[6px] text-slate-400 font-black uppercase block italic">Евро (€)</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-lg font-black outline-none text-center italic"></div>
                 </div>
             </div>
+
             <div id="transferSection" class="hidden space-y-3 font-black italic">
                 <div class="grid grid-cols-2 gap-2 text-[9px]">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase italic">
@@ -84,6 +91,7 @@
                     <input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600 italic font-black text-sm">
                 </div>
             </div>
+
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic text-[9px]">
                 <select id="acc" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
                     <option value="Sparkasse">🏦 Sparkasse</option><option value="ПРИВАТ">💳 ПРИВАТ</option><option value="ВАЛЕРА">💳 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">💎 КОПИЛКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="Кредитка Оля">👩‍💻 Кредитка Оля</option><option value="Кредитка Валера">👨‍💻 Кредитка Валера</option>
@@ -109,6 +117,31 @@ function getCycleDates() {
     const now = new Date(); let start = new Date(now.getFullYear(), now.getMonth(), 20), end = new Date(now.getFullYear(), now.getMonth() + 1, 19);
     if (now.getDate() < 20) { start = new Date(now.getFullYear(), now.getMonth() - 1, 20); end = new Date(now.getFullYear(), now.getMonth(), 19); }
     return { start, end };
+}
+
+function liveClassify(text) {
+    const preview = document.getElementById('subCatPreview');
+    if (!text || text.length < 2) { preview.classList.add('hidden'); return; }
+    
+    let low = text.toLowerCase();
+    let subCat = "";
+    if (/интернет|icloud|google one|телеком|telekom|подписк/.test(low)) subCat = "🌐 Связь и IT";
+    else if (/стрижк|стоматолог|врач|аптек|медицин|страховк|опипрамол|декристол/.test(low)) subCat = "🧾 Услуги и Здоровье";
+    else if (/комисси|кредит|перевод|сыну|мужу|стипенди|выплат/.test(low)) subCat = "🏦 Финансы";
+    else if (/бензин|парковк|заправк|авто|антифриз|тюв|tüv|литр|л_/.test(low)) subCat = "🚗 Авто";
+    else if (/мыло|салфетк|туалетная|дезодорант|моющее|пакет|сковородк|цветы|тюльпан|камели/.test(low)) subCat = "🏠 Дом и Быт";
+    else if (/огурцы|капуст|фасоль|оливк|томатн|паст|банка|консерв|масло подсолн|соус|соль/.test(low)) subCat = "🥫 Консервация";
+    else if (/сыр|йогурт|сметан|творог|кефир|молок|масло слив/.test(low)) subCat = "🧀 Молочка и Сыры";
+    else if (/мясо|колбас|ветчин|салями|куриц|рыба|тунец|пельмен|вареник|пицца/.test(low)) subCat = "🥩 Мясо и Заморозка";
+    else if (/хлеб|булочк|чиабатт|бурек|банан|яблок|картоф|лук|морков|помидор/.test(low)) subCat = "🥖 Хлеб и Свежее";
+    else if (/шоколад|конфет|мармелад|пудинг|кекс|вафли|кофе|чай|вода|сок|пиво|водка|вино|сигарет|табак|залог|pfand/.test(low)) subCat = "☕ Напитки и Сладости";
+
+    if (subCat) {
+        preview.innerText = "Будет записано в: " + subCat;
+        preview.classList.remove('hidden');
+    } else {
+        preview.classList.add('hidden');
+    }
 }
 
 function getMarker(name) {
@@ -194,9 +227,7 @@ function draw(data) {
         const marker = getMarker(r[5]);
         const merchant = String(r[2] || "").toUpperCase();
         const nameRU = String(r[4] || "").toUpperCase();
-        const subCat = String(r[13] || "").toUpperCase(); // Колонка N
-        
-        // Поиск теперь ищет и в подкатегориях
+        const subCat = String(r[13] || "").toUpperCase();
         if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query) && !subCat.includes(query)) return;
 
         const valU = parseFloat(r[10]) || 0;
@@ -314,6 +345,7 @@ async function save(event) {
 
 function openModal(t) {
     document.getElementById('txType').value = t; document.getElementById('editRowId').value = ""; document.getElementById('modal').classList.remove('hidden'); document.getElementById('addItemBtn').classList.remove('hidden');
+    document.getElementById('subCatPreview').classList.add('hidden');
     ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden'));
     if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); }
     else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); }
