@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v36.2</title>
+    <title>SmartWallet Pro v37.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -41,7 +41,7 @@
 
 <div class="relative mb-3">
     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
-    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК ПО ИСТОРИИ..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
+    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК (ТОВАР, СЧЕТ, ПОДКАТЕГОРИЯ)..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
 </div>
 
 <div id="history" class="space-y-1.5 text-xs"></div>
@@ -56,37 +56,27 @@
                 <input type="number" id="customRate" step="0.01" placeholder="Курс" oninput="updateAllItems()" class="bg-blue-50 p-2.5 rounded-xl border border-blue-100 font-bold text-[10px] text-blue-600 outline-none italic">
             </div>
             <input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
-            
             <div id="expenseSection" class="hidden space-y-2">
                 <div id="itemsList" class="space-y-2"></div>
                 <button type="button" id="addItemBtn" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-rose-200 rounded-xl text-rose-400 text-[8px] font-black uppercase italic">+ Добавить строку</button>
             </div>
-
             <div id="incomeSection" class="hidden bg-emerald-50 p-3 rounded-2xl border border-emerald-100 space-y-2 text-center italic">
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-[6px] text-emerald-600 font-black uppercase block italic">Гривны (₴)</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-lg font-black outline-none text-emerald-600 text-center italic"></div>
                     <div><label class="text-[6px] text-slate-400 font-black uppercase block italic">Евро (€)</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-lg font-black outline-none text-center italic"></div>
                 </div>
             </div>
-
             <div id="transferSection" class="hidden space-y-3 font-black italic">
                 <div class="grid grid-cols-2 gap-2 text-[9px]">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase italic">
                         <option value="Sparkasse">🏦 ИЗ Sparkasse</option>
                         <option value="КОПИЛКА">💎 ИЗ КОПИЛКИ</option>
-                        <option value="ПРИВАТ">💳 ИЗ ПРИВАТ</option>
-                        <option value="ВАЛЕРА">💳 ИЗ ВАЛЕРА</option>
-                        <option value="НАЛИЧНЫЕ">💵 ИЗ НАЛИЧНЫХ</option>
-                        <option value="Кредитка Оля">👩‍💻 ИЗ Кредитка Оля</option>
-                        <option value="Кредитка Валера">👨‍💻 ИЗ Кредитка Валера</option>
+                        <option value="ПРИВАТ">💳 ИЗ ПРИВАТ</option><option value="ВАЛЕРА">💳 ИЗ ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 ИЗ НАЛИЧНЫХ</option><option value="Кредитка Оля">👩‍💻 ИЗ Кредитка Оля</option><option value="Кредитка Валера">👨‍💻 ИЗ Кредитка Валера</option>
                     </select>
                     <select id="tTo" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase text-blue-600 italic">
                         <option value="НАЛИЧНЫЕ">💵 В НАЛИЧНЫЕ</option>
                         <option value="Sparkasse">🏦 В Sparkasse</option>
-                        <option value="КОПИЛКА">💎 В КОПИЛКУ</option>
-                        <option value="СВИНКА">🐷 В СВИНКУ</option>
-                        <option value="КОНВЕРТ">✉️ В КОНВЕРТ</option>
-                        <option value="ПРИВАТ">💳 В ПРИВАТ</option>
+                        <option value="КОПИЛКА">💎 В КОПИЛКУ</option><option value="СВИНКА">🐷 В СВИНКУ</option><option value="КОНВЕРТ">✉️ В КОНВЕРТ</option><option value="ПРИВАТ">💳 В ПРИВАТ</option>
                     </select>
                 </div>
                 <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 grid grid-cols-2 gap-2 text-center">
@@ -94,18 +84,9 @@
                     <input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600 italic font-black text-sm">
                 </div>
             </div>
-
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 font-black italic text-[9px]">
                 <select id="acc" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
-                    <option value="Sparkasse">🏦 Sparkasse</option>
-                    <option value="ПРИВАТ">💳 ПРИВАТ</option>
-                    <option value="ВАЛЕРА">💳 ВАЛЕРА</option>
-                    <option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option>
-                    <option value="СВИНКА">🐷 СВИНКА</option>
-                    <option value="КОПИЛКА">💎 КОПИЛКА</option>
-                    <option value="КОНВЕРТ">✉️ КОНВЕРТ</option>
-                    <option value="Кредитка Оля">👩‍💻 Кредитка Оля</option>
-                    <option value="Кредитка Валера">👨‍💻 Кредитка Валера</option>
+                    <option value="Sparkasse">🏦 Sparkasse</option><option value="ПРИВАТ">💳 ПРИВАТ</option><option value="ВАЛЕРА">💳 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">💎 КОПИЛКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="Кредитка Оля">👩‍💻 Кредитка Оля</option><option value="Кредитка Валера">👨‍💻 Кредитка Валера</option>
                 </select>
                 <select id="cat" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase outline-none italic">
                     <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 Доход</option>
@@ -117,7 +98,6 @@
 </div>
 
 <script>
-// (Скрипты остаются без изменений, так как мы обновили HTML-разметку для эмодзи)
 const API_URL = "https://script.google.com/macros/s/AKfycbyx1rHxvAwEFiDiBMz2PREdDTh9MQPo5JR6TgHMgzu5eNvPhzseZS69Q0CB8mRbwMnA/exec";
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
@@ -214,7 +194,11 @@ function draw(data) {
         const marker = getMarker(r[5]);
         const merchant = String(r[2] || "").toUpperCase();
         const nameRU = String(r[4] || "").toUpperCase();
-        if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query)) return;
+        const subCat = String(r[13] || "").toUpperCase(); // Колонка N
+        
+        // Поиск теперь ищет и в подкатегориях
+        if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query) && !subCat.includes(query)) return;
+
         const valU = parseFloat(r[10]) || 0;
         const valE = parseFloat(r[8]) || 0;
         const id = r[r.length-1];
@@ -228,11 +212,15 @@ function draw(data) {
         const isU = isUahMarker(marker);
         const amt = isU ? valU : valE;
         const isInc = amt > 0;
+        
         hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
             <div class="flex items-center gap-2 truncate">
                 <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="editRow(${id})" class="text-blue-200 ml-0.5"><i class="fa-solid fa-pen"></i></button>
-                <div class="truncate"><p class="text-[6px] text-slate-300 uppercase">${marker}</p><p class="truncate uppercase">${r[4]||r[2]}</p></div>
+                <div class="truncate">
+                    <p class="text-[6px] text-slate-300 uppercase">${marker} ${r[13] ? '• ' + r[13] : ''}</p>
+                    <p class="truncate uppercase">${r[4]||r[2]}</p>
+                </div>
             </div>
             <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic whitespace-nowrap">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}</div>
         </div>`; 
@@ -294,7 +282,6 @@ async function save(event) {
     btn.disabled = true; btn.innerText = "СОХРАНЯЮ...";
     const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
     let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId };
-    
     if(t === 'expense') { 
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; 
         const rows = document.querySelectorAll('.item-row');
@@ -319,7 +306,6 @@ async function save(event) {
     } else { 
         p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; 
     }
-    
     try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
         location.reload(); 
