@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v37.4 Fixed</title>
+    <title>SmartWallet Pro v37.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic selection:bg-blue-100">
+<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic">
 
 <button onclick="location.reload()" class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center shadow-md active:scale-90 transition-all">
     <i class="fa-solid fa-rotate text-blue-500 text-xs"></i>
@@ -58,7 +58,7 @@
             
             <div class="space-y-1">
                 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
-                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-400 ml-2 hidden tracking-tighter"></div>
+                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-500 ml-2 hidden tracking-tighter"></div>
             </div>
 
             <div id="expenseSection" class="hidden space-y-2">
@@ -102,8 +102,8 @@
 </div>
 
 <script>
-// ВАЖНО: ВСТАВЬ СВОЮ НОВУЮ ССЫЛКУ СЮДА
-const API_URL = "https://script.google.com/macros/s/AKfycby2JPgGstySuKogwpuQh_sWsmgHpJR3qD8yPds-tgi70morvqCzr1gQvKxvFUbOdBWp/exec";
+// ВСТАВЬ СВОЮ ССЫЛКУ НИЖЕ
+const API_URL = "https://script.google.com/macros/s/AKfycbz-Jk701wnbHsU9ZYHipEmbD-XFakrSfENzvz7ty-GBBjLdqTTQWepWPbB8I7buGIMS/exec";
 
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
@@ -123,20 +123,20 @@ function liveClassify(text) {
     let low = text.toLowerCase();
     let subCat = "";
     if (/залог|pfand|тара/.test(low)) subCat = "♻️ Залог (Pfand)";
-    else if (/вино|пиво|водка|ром|коньяк|джин|ликер|игристое|креман/.test(low)) subCat = "🍷 Алкоголь";
-    else if (/табак|сигарет|зажигалка|парамаунт|gold long|гильзы/.test(low)) subCat = "🚬 Табак";
-    else if (/интернет|icloud|google one|телеком|telekom|подписк|мобильный|связь/.test(low)) subCat = "🌐 Связь и IT";
-    else if (/стрижк|парикмахер|стоматолог|врач|аптек|медицин|страховк|опипрамол|декристол|капли|зубная|паст|щетка/.test(low)) subCat = "🧾 Услуги и Здоровье";
-    else if (/мыло|дезодорант|моющее|пакет|салфетк|туалетная|унитаз|гель-душ|концентрат|патчи|подушечки|прокладки|сковородк|цветы|тюльпан|камели|крючки|коробочки|подставки|ботинки|фольга|губки/.test(low)) subCat = "🏠 Дом и Быт";
-    else if (/комисси|кредит|перевод|сыну|мужу|стипенди|выплат|снятие|возврат/.test(low)) subCat = "🏦 Финансы";
-    else if (/бензин|парковк|заправк|авто|антифриз|тюв|tüv|литр|л_|tanken/.test(low)) subCat = "🚗 Авто";
-    else if (/огурцы|капуст|фасоль|оливк|томатн|паст|банка|консерв|масло подсолн|соус|соль|тунец|сельдь|приправа|базилик|мука|сахар|крупа|рис|гречка|макарон|pasta/.test(low)) subCat = "🥫 Консервация";
-    else if (/сыр|йогурт|сметан|творог|кефир|молок|масло слив|тост|эдам|лимбургер|моцарелла|гауда|пудинг|яйца|яйцо|айран|моццарела|пармезан|фета|frischkäse|sahne/.test(low)) subCat = "🧀 Молочка и Сыры";
-    else if (/мясо|колбас|ветчин|салями|куриц|рыба|пельмен|вареник|пицца|фрикадельк|шея|лионер|кости|сало|паштет|хамон|бекон|стейк|фарш|hackfleisch|hähnchen|wurst|frosta/.test(low)) subCat = "🥩 Мясо и Заморозка";
-    else if (/хлеб|булочк|чиабатт|бурек|банан|яблок|картоф|лук|морков|помидор|мандарин|артишок|зелень|грибы|шампиньон/.test(low)) subCat = "🥖 Хлеб и Свежее";
-    else if (/шоколад|конфет|мармелад|кекс|вафли|шогеттен|раффаэлло|тоффифи|арахис|чипсы|батончик|десерт|кофе|чай|вода|сок|лимонад|шорле|маккиато|латте|eis|мороженое/.test(low)) subCat = "🍫 Сладости и Напитки";
-    if (subCat) { preview.innerText = "Группа: " + subCat; preview.classList.remove('hidden'); }
-    else { preview.innerText = "Группа: Разное"; preview.classList.remove('hidden'); }
+    else if (/вино|пиво|водка|ром|коньяк|джин|ликер|игристое|креман|bier|wein|sekt/.test(low)) subCat = "🍷 Алкоголь";
+    else if (/табак|сигарет|зажигалка|парамаунт|gold long|гильзы|zigaretten|tabak/.test(low)) subCat = "🚬 Табак";
+    else if (/масло подсолн|масло раст|уксус|оливковое|рапс|essig|öl|sonnenblumenöl|огурцы|капуст|фасоль|оливк|томатн|паст|банка|консерв|соус|соль|тунец|сельдь|приправа|базилик|мука|сахар|крупа|рис|гречка|макарон|pasta|nudeln/.test(low)) subCat = "🥫 Бакалея и Консервы";
+    else if (/сыр|йогурт|сметан|творог|кефир|молок|масло слив|тост|эдам|лимбургер|моцарелла|гауда|пудинг|яйца|яйцо|айран|моццарела|пармезан|фета|frischkäse|sahne|milch|käse|joghurt/.test(low)) subCat = "🧀 Молочка и Сыры";
+    else if (/мясо|колбас|ветчин|салями|куриц|рыба|пельмен|вареник|пицца|фрикадельк|шея|лионер|кости|сало|паштет|хамон|бекон|стейк|фарш|hackfleisch|hähnchen|wurst|frosta|tiefkühl/.test(low)) subCat = "🥩 Мясо и Заморозка";
+    else if (/хлеб|булочк|чиабатт|бурек|банан|яблок|картоф|лук|морков|помидор|мандарин|артишок|зелень|грибы|шампиньон|brotr|brötchen|obst|gemüse/.test(low)) subCat = "🥖 Хлеб и Свежее";
+    else if (/шоколад|конфет|мармелад|кекс|вафли|шогеттен|раффаэлло|тоффифи|арахис|чипсы|батончик|десерт|кофе|чай|вода|сок|лимонад|шорле|маккиато|латте|eis|мороженое|süßigkeiten|wasser|kaffee/.test(low)) subCat = "🍫 Сладости и Напитки";
+    else if (/мыло|дезодорант|моющее|пакет|салфетк|туалетная|унитаз|гель-душ|концентрат|патчи|подушечки|прокладки|сковородк|цветы|тюльпан|камели|крючки|коробочки|подставки|ботинки|фольга|губки|spülmittel|seife/.test(low)) subCat = "🏠 Дом и Быт";
+    else if (/интернет|icloud|google one|связь|подписк/.test(low)) subCat = "🌐 Связь и IT";
+    else if (/комисси|кредит|перевод|сыну|мужу|банк/.test(low)) subCat = "🏦 Финансы";
+    else if (/бензин|парковк|авто|tanken/.test(low)) subCat = "🚗 Авто";
+    else if (/стрижк|врач|аптек|медицин|страховк/.test(low)) subCat = "🧾 Услуги и Здоровье";
+    if (subCat) { preview.innerText = "Отдел: " + subCat; preview.classList.remove('hidden'); }
+    else { preview.innerText = "Отдел: Разное"; preview.classList.remove('hidden'); }
 }
 
 function getMarker(name) {
@@ -231,7 +231,7 @@ function draw(data) {
                 </div>
                 <div class="truncate">
                     <p class="text-[11px] font-black uppercase italic text-slate-700 leading-tight truncate">${r[4]||r[2]}</p>
-                    <p class="text-[7px] font-bold uppercase italic text-slate-300 tracking-tighter mt-1">
+                    <p class="text-[7px] font-bold uppercase italic tracking-tighter mt-1">
                         <span class="text-slate-400/80">${marker}</span> • <span class="text-blue-400/80">${r[13] || 'Разное'}</span>
                     </p>
                 </div>
