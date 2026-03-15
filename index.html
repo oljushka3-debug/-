@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v37.1</title>
+    <title>SmartWallet Pro v37.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic">
+<body class="bg-slate-50 text-slate-900 p-3 pb-10 italic selection:bg-blue-100">
 
 <button onclick="location.reload()" class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center shadow-md active:scale-90 transition-all">
     <i class="fa-solid fa-rotate text-blue-500 text-xs"></i>
@@ -41,10 +41,10 @@
 
 <div class="relative mb-3">
     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
-    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК (ТОВАР, СЧЕТ, ПОДКАТЕГОРИЯ)..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
+    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК ПО ИСТОРИИ..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
 </div>
 
-<div id="history" class="space-y-1.5 text-xs"></div>
+<div id="history" class="space-y-2 text-xs"></div>
 
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white w-full max-w-sm rounded-[40px] p-5 shadow-2xl border border-white overflow-y-auto max-h-[90vh]">
@@ -58,7 +58,7 @@
             
             <div class="space-y-1">
                 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
-                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-400 ml-2 hidden tracking-tighter"></div>
+                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-500 ml-2 hidden tracking-tighter"></div>
             </div>
 
             <div id="expenseSection" class="hidden space-y-2">
@@ -106,7 +106,7 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyx1rHxvAwEFiDiBMz2PREdDTh9MQPo5JR6TgHMgzu5eNvPhzseZS69Q0CB8mRbwMnA/exec";
+const API_URL = "ТВОЯ_ССЫЛКА_ЗДЕСЬ";
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
 let walletData = {}; let categorySpent = {}; let allRows = [];
 const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
@@ -122,32 +122,26 @@ function getCycleDates() {
 function liveClassify(text) {
     const preview = document.getElementById('subCatPreview');
     if (!text || text.length < 2) { preview.classList.add('hidden'); return; }
-    
     let low = text.toLowerCase();
     let subCat = "";
-    if (/интернет|icloud|google one|телеком|telekom|подписк/.test(low)) subCat = "🌐 Связь и IT";
-    else if (/стрижк|стоматолог|врач|аптек|медицин|страховк|опипрамол|декристол/.test(low)) subCat = "🧾 Услуги и Здоровье";
-    else if (/комисси|кредит|перевод|сыну|мужу|стипенди|выплат/.test(low)) subCat = "🏦 Финансы";
-    else if (/бензин|парковк|заправк|авто|антифриз|тюв|tüv|литр|л_/.test(low)) subCat = "🚗 Авто";
-    else if (/мыло|салфетк|туалетная|дезодорант|моющее|пакет|сковородк|цветы|тюльпан|камели/.test(low)) subCat = "🏠 Дом и Быт";
-    else if (/огурцы|капуст|фасоль|оливк|томатн|паст|банка|консерв|масло подсолн|соус|соль/.test(low)) subCat = "🥫 Консервация";
-    else if (/сыр|йогурт|сметан|творог|кефир|молок|масло слив/.test(low)) subCat = "🧀 Молочка и Сыры";
-    else if (/мясо|колбас|ветчин|салями|куриц|рыба|тунец|пельмен|вареник|пицца/.test(low)) subCat = "🥩 Мясо и Заморозка";
-    else if (/хлеб|булочк|чиабатт|бурек|банан|яблок|картоф|лук|морков|помидор/.test(low)) subCat = "🥖 Хлеб и Свежее";
-    else if (/шоколад|конфет|мармелад|пудинг|кекс|вафли|кофе|чай|вода|сок|пиво|водка|вино|сигарет|табак|залог|pfand/.test(low)) subCat = "☕ Напитки и Сладости";
-
-    if (subCat) {
-        preview.innerText = "Будет записано в: " + subCat;
-        preview.classList.remove('hidden');
-    } else {
-        preview.classList.add('hidden');
-    }
+    if (/интернет|icloud|google one|телеком|telekom|подписк|мобильный|связь/.test(low)) subCat = "🌐 Связь и IT";
+    else if (/стрижк|стоматолог|врач|аптек|медицин|страховк|опипрамол|декристол|капли|зубная|паст|щетка|гель-душ|концентрат|патчи|подушечки|салфетки|унитаз|прокладки/.test(low)) subCat = "🧾 Услуги и Здоровье";
+    else if (/комисси|кредит|перевод|сыну|мужу|стипенди|выплат|снятие|возврат/.test(low)) subCat = "🏦 Финансы";
+    else if (/бензин|парковк|заправк|авто|антифриз|тюв|tüv|литр|л_|tanken/.test(low)) subCat = "🚗 Авто";
+    else if (/мыло|дезодорант|моющее|пакет|сковородк|цветы|тюльпан|камели|крючки|коробочки|подставки|ботинки|салфетки/.test(low)) subCat = "🏠 Дом и Быт";
+    else if (/огурцы|капуст|фасоль|оливк|томатн|паст|банка|консерв|масло подсолн|соус|соль|тунец|сельдь|приправа|базилик/.test(low)) subCat = "🥫 Консервация";
+    else if (/сыр|йогурт|сметан|творог|кефир|молок|масло слив|тост|эдам|лимбургер|моцарелла|гауда|пудинг/.test(low)) subCat = "🧀 Молочка и Сыры";
+    else if (/мясо|колбас|ветчин|салями|куриц|рыба|пельмен|вареник|пицца|фрикадельк|шея|яйца|яйцо|лионер/.test(low)) subCat = "🥩 Мясо и Заморозка";
+    else if (/хлеб|булочк|чиабатт|бурек|банан|яблок|картоф|лук|морков|помидор|мандарин|артишок|овощи frosta/.test(low)) subCat = "🥖 Хлеб и Свежее";
+    else if (/шоколад|конфет|мармелад|пудинг|кекс|вафли|кофе|чай|вода|сок|пиво|водка|вино|сигарет|табак|залог|pfand|тара|арахис|чипсы|батончик|шогеттен|раффаэлло|тоффифи|креман|лимонад|шорле|маккиато|латте/.test(low)) subCat = "☕ Напитки и Сладости";
+    if (subCat) { preview.innerText = "Группа: " + subCat; preview.classList.remove('hidden'); }
+    else { preview.innerText = "Группа: Разное"; preview.classList.remove('hidden'); }
 }
 
 function getMarker(name) {
     if(!name) return "ОСТАЛЬНОЕ"; 
     const n = name.toUpperCase();
-    if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ'; if(n.includes('В ПЛАНАХ')) return 'В ПЛАНАХ';
+    if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ';
     return n;
 }
 
@@ -160,12 +154,10 @@ function isUahMarker(marker) {
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     let totalOpEur = 0;
-    const leftCol = document.getElementById('leftColumn');
-    const rightCol = document.getElementById('rightColumn');
+    const leftCol = document.getElementById('leftColumn'), rightCol = document.getElementById('rightColumn');
     leftCol.innerHTML = ""; rightCol.innerHTML = "";
     function createWalletHTML(marker) {
-        const val = walletData[marker] || { uah: 0, eur: 0 };
-        const isU = isUahMarker(marker);
+        const val = walletData[marker] || { uah: 0, eur: 0 }, isU = isUahMarker(marker);
         const eqEur = marker === 'КОПИЛКА' ? val.eur : (isU ? (val.uah / r) : val.eur);
         if (MARKERS.OPERATIVE.includes(marker)) totalOpEur += eqEur;
         const isLow = (marker === 'SPARKASSE' || marker === 'НАЛИЧНЫЕ') && eqEur < 10;
@@ -176,10 +168,9 @@ function drawBalance() {
     document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
     let totalRemaining = 0;
     Object.keys(LIMITS).forEach(cat => { totalRemaining += (LIMITS[cat] - Math.abs(categorySpent[cat] || 0)); });
-    const cycle = getCycleDates(); const today = new Date(); today.setHours(0,0,0,0);
+    const cycle = getCycleDates(), today = new Date(); today.setHours(0,0,0,0);
     const daysLeft = Math.max(1, Math.ceil((cycle.end.getTime() - today.getTime()) / (1000*60*60*24)) + 1);
-    const dailyLimit = totalRemaining / daysLeft;
-    document.getElementById('dailyLimitValue').innerText = '€ ' + Math.max(0, dailyLimit).toFixed(2);
+    document.getElementById('dailyLimitValue').innerText = '€ ' + Math.max(0, totalRemaining / daysLeft).toFixed(2);
     document.getElementById('currentPeriodLabel').innerText = daysLeft + " дн. осталось";
     drawLimits();
 }
@@ -189,8 +180,7 @@ function drawLimits() {
     Object.keys(LIMITS).forEach(cat => {
         const limit = LIMITS[cat], spent = Math.abs(categorySpent[cat] || 0), perc = Math.min((spent / limit) * 100, 100);
         let color = perc > 80 ? (perc >= 100 ? "bg-rose-500" : "bg-amber-500") : "bg-blue-500";
-        const emoji = cat.split(' ')[0];
-        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden shadow-sm"><div class="text-base">${emoji}</div><div class="text-[8px] font-black italic">${spent.toFixed(0)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-200"><div class="h-full ${color}" style="width:${perc}%"></div></div></div>`;
+        container.innerHTML += `<div class="bg-slate-50 p-1.5 rounded-xl text-center relative overflow-hidden shadow-sm"><div class="text-base">${cat.split(' ')[0]}</div><div class="text-[8px] font-black italic">${spent.toFixed(0)}€</div><div class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-200"><div class="h-full ${color}" style="width:${perc}%"></div></div></div>`;
     });
 }
 
@@ -200,60 +190,54 @@ function draw(data) {
     if (!data || !data.rows) return;
     const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toUpperCase() : "";
     if (allRows.length === 0) allRows = data.rows; 
-    const hist = document.getElementById('history'); 
-    hist.innerHTML = ""; 
+    const hist = document.getElementById('history'); hist.innerHTML = ""; 
     walletData = {}; categorySpent = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     let lastDateStr = "";
 
     allRows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
-        const marker = getMarker(row[5]);
-        const cat = row[1];
-        const valE = parseFloat(row[8]) || 0;
-        const valU = parseFloat(row[10]) || 0;
-        const date = new Date(row[0]);
+        const marker = getMarker(row[5]), cat = row[1], valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0, date = new Date(row[0]);
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
         walletData[marker].eur += valE; walletData[marker].uah += valU;
         const cycle = getCycleDates();
-        Object.keys(LIMITS).forEach(limitCat => {
-            if (cat && cat.includes(limitCat.substring(2)) && date >= cycle.start && date <= cycle.end) {
-                categorySpent[limitCat] = (categorySpent[limitCat] || 0) + (valE !== 0 ? valE : (valU / r));
+        Object.keys(LIMITS).forEach(lCat => {
+            if (cat && cat.includes(lCat.substring(2)) && date >= cycle.start && date <= cycle.end) {
+                categorySpent[lCat] = (categorySpent[lCat] || 0) + (valE !== 0 ? valE : (valU / r));
             }
         });
     });
 
     allRows.slice(1, 501).forEach(r => { 
-        const marker = getMarker(r[5]);
-        const merchant = String(r[2] || "").toUpperCase();
-        const nameRU = String(r[4] || "").toUpperCase();
-        const subCat = String(r[13] || "").toUpperCase();
+        const marker = getMarker(r[5]), merchant = String(r[2] || "").toUpperCase(), nameRU = String(r[4] || "").toUpperCase(), subCat = String(r[13] || "").toUpperCase();
         if (query && !marker.includes(query) && !merchant.includes(query) && !nameRU.includes(query) && !subCat.includes(query)) return;
-
-        const valU = parseFloat(r[10]) || 0;
-        const valE = parseFloat(r[8]) || 0;
-        const id = r[r.length-1];
+        const valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
         if (valU === 0 && valE === 0) return;
         const rowDate = new Date(r[0]);
         let dateStr = rowDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
         if (dateStr !== lastDateStr) {
-            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-3 mb-0.5 ml-2 tracking-widest italic">${dateStr}</div>`;
+            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-5 mb-1.5 ml-3 tracking-widest italic border-l-2 border-slate-200 pl-2">${dateStr}</div>`;
             lastDateStr = dateStr;
         }
-        const isU = isUahMarker(marker);
-        const amt = isU ? valU : valE;
-        const isInc = amt > 0;
+        const isU = isUahMarker(marker), amt = isU ? valU : valE, isInc = amt > 0;
         
-        hist.innerHTML += `<div class="bg-white p-3 rounded-2xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm italic text-[10px] font-bold">
-            <div class="flex items-center gap-2 truncate">
-                <button onclick="deleteRow(${id})" class="text-slate-200"><i class="fa-solid fa-trash-can"></i></button>
-                <button onclick="editRow(${id})" class="text-blue-200 ml-0.5"><i class="fa-solid fa-pen"></i></button>
+        hist.innerHTML += `
+        <div class="bg-white p-3.5 rounded-[22px] flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm active:scale-[0.98] transition-transform">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="flex flex-col gap-1">
+                    <button onclick="deleteRow(${id})" class="text-rose-100 hover:text-rose-300 text-[10px]"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="editRow(${id})" class="text-blue-100 hover:text-blue-300 text-[10px]"><i class="fa-solid fa-pen"></i></button>
+                </div>
                 <div class="truncate">
-                    <p class="text-[6px] text-slate-300 uppercase">${marker} ${r[13] ? '• ' + r[13] : ''}</p>
-                    <p class="truncate uppercase">${r[4]||r[2]}</p>
+                    <p class="text-[11px] font-black uppercase italic text-slate-700 leading-tight truncate">${r[4]||r[2]}</p>
+                    <p class="text-[7px] font-bold uppercase italic text-slate-300 tracking-tighter mt-0.5">
+                        <span class="text-blue-400/60">${marker}</span> • <span class="text-slate-400">${r[13] || 'Разное'}</span>
+                    </p>
                 </div>
             </div>
-            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic whitespace-nowrap">${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}</div>
+            <div class="${isInc?'text-emerald-500':'text-rose-500'} font-black italic text-[12px] whitespace-nowrap pl-2">
+                ${isInc?'+':''}${Math.abs(amt).toLocaleString('de-DE', {minimumFractionDigits: 2})} ${isU?'₴':'€'}
+            </div>
         </div>`; 
     });
     drawBalance();
@@ -280,67 +264,39 @@ function editRow(id) {
     const row = allRows.find(r => r[r.length-1] == id); if (!row) return;
     const cat = String(row[1] || ""); 
     let type = cat.includes('Доход') ? 'income' : (cat.includes('Перевод') ? 'transfer' : 'expense');
-    openModal(type); 
-    document.getElementById('editRowId').value = id; 
+    openModal(type); document.getElementById('editRowId').value = id; 
     try { const rawDate = new Date(row[0]); document.getElementById('date').value = rawDate.toISOString().split('T')[0]; } catch(e) {}
     document.getElementById('merchant').value = row[2] || ""; 
     document.getElementById('customRate').value = row[12] || document.getElementById('baseRate').value; 
     document.getElementById('acc').value = row[5].replace(/^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])+\s*/, ""); 
     document.getElementById('cat').value = row[1];
-    if (type === 'income') {
-        document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    } else if (type === 'expense') {
+    if (type === 'income') { document.getElementById('valEur').value = Math.abs(parseFloat(row[8])) || 0; document.getElementById('valUah').value = Math.abs(parseFloat(row[10])) || 0; }
+    else if (type === 'expense') {
         document.getElementById('itemsList').innerHTML = ""; addItemRow(); 
-        const f = document.querySelector('.item-row'); 
-        f.querySelector('.nameRU').value = row[4] || ""; 
-        f.querySelector('.qty').value = parseFloat(row[6]) || 1; 
-        f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; 
-        f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || 0;
+        const f = document.querySelector('.item-row'); f.querySelector('.nameRU').value = row[4] || ""; f.querySelector('.qty').value = parseFloat(row[6]) || 1; 
+        f.querySelector('.priceUnit').value = Math.abs(parseFloat(row[7])) || 0; f.querySelector('.totalUah').value = Math.abs(parseFloat(row[10])) || 0;
         document.getElementById('addItemBtn').classList.add('hidden'); 
-    } else {
-        document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || 0; 
-        document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || 0; 
-    }
+    } else { document.getElementById('trEur').value = Math.abs(parseFloat(row[8])) || 0; document.getElementById('trUah').value = Math.abs(parseFloat(row[10])) || 0; }
 }
 
 function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value) || 51.55; if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(2); }
 function updateAllItems() { document.querySelectorAll('.item-row').forEach(r => calcRow(r.querySelector('.priceUnit'), 'eur')); if(document.getElementById('txType').value === 'transfer') document.getElementById('trEur').oninput(); }
 
 async function save(event) {
-    event.preventDefault(); 
-    const btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.innerText = "СОХРАНЯЮ...";
+    event.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "СОХРАНЯЮ...";
     const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
     let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId };
     if(t === 'expense') { 
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; 
         const rows = document.querySelectorAll('.item-row');
         if (!rowId && rows.length > 1) {
-            p.items = Array.from(rows).map(row => ({ 
-                nameRU: row.querySelector('.nameRU').value, 
-                qty: parseFloat(row.querySelector('.qty').value)||1, 
-                priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0, 
-                totalEur: (parseFloat(row.querySelector('.qty').value)||1) * (parseFloat(row.querySelector('.priceUnit').value)||0), 
-                totalUah: parseFloat(row.querySelector('.totalUah').value)||0 
-            })); 
+            p.items = Array.from(rows).map(row => ({ nameRU: row.querySelector('.nameRU').value, qty: parseFloat(row.querySelector('.qty').value)||1, priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0, totalEur: (parseFloat(row.querySelector('.qty').value)||1) * (parseFloat(row.querySelector('.priceUnit').value)||0), totalUah: parseFloat(row.querySelector('.totalUah').value)||0 })); 
         } else {
-            const first = rows[0];
-            p.nameRU = first.querySelector('.nameRU').value;
-            p.qty = parseFloat(first.querySelector('.qty').value)||1;
-            p.priceUnit = parseFloat(first.querySelector('.priceUnit').value)||0;
-            p.totalEur = p.qty * p.priceUnit;
-            p.totalUah = parseFloat(first.querySelector('.totalUah').value)||0;
+            const first = rows[0]; p.nameRU = first.querySelector('.nameRU').value; p.qty = parseFloat(first.querySelector('.qty').value)||1; p.priceUnit = parseFloat(first.querySelector('.priceUnit').value)||0; p.totalEur = p.qty * p.priceUnit; p.totalUah = parseFloat(first.querySelector('.totalUah').value)||0;
         }
-    } else if (t === 'transfer') { 
-        p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; 
-    } else { 
-        p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; 
-    }
-    try {
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
-        location.reload(); 
-    } catch(err) { alert("Ошибка!"); btn.disabled = false; btn.innerText = "ЗАПИСАТЬ"; }
+    } else if (t === 'transfer') { p.action = 'transfer'; p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; }
+    else { p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; }
+    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); location.reload(); } catch(err) { alert("Ошибка!"); btn.disabled = false; btn.innerText = "ЗАПИСАТЬ"; }
 }
 
 function openModal(t) {
