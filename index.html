@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet Pro v37.5</title>
+    <title>SmartWallet Pro v38.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -34,14 +34,27 @@
 </div>
 
 <div class="flex gap-1.5 mb-4 font-black italic">
-    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-rose-700 shadow-md active:translate-y-0.5 italic">Расход</button>
-    <button onclick="openModal('transfer')" class="flex-1 bg-slate-200 py-4 rounded-2xl text-[9px] text-slate-700 uppercase border-b-4 border-slate-400 shadow-sm active:translate-y-0.5 italic">Перевод</button>
-    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-emerald-700 shadow-md active:translate-y-0.5 italic">Доход</button>
+    <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-rose-700 shadow-md active:translate-y-0.5 italic font-black">Расход</button>
+    <button onclick="openModal('transfer')" class="flex-1 bg-slate-200 py-4 rounded-2xl text-[9px] text-slate-700 uppercase border-b-4 border-slate-400 shadow-sm active:translate-y-0.5 italic font-black">Перевод</button>
+    <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-4 rounded-2xl text-[9px] text-white uppercase border-b-4 border-emerald-700 shadow-md active:translate-y-0.5 italic font-black">Доход</button>
 </div>
 
-<div class="relative mb-3">
-    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
-    <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК ПО ИСТОРИИ..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
+<div class="flex gap-2 mb-3">
+    <div class="relative flex-[3]">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+        <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК..." class="w-full bg-white border border-slate-100 py-3 pl-10 pr-4 rounded-2xl text-[9px] font-black italic outline-none shadow-sm focus:border-blue-200 transition-all uppercase tracking-widest">
+    </div>
+    <button onclick="toggleAnalysis()" class="flex-1 bg-blue-600 text-white rounded-2xl text-[8px] font-black uppercase italic shadow-md active:scale-95 transition-all">
+        <i class="fa-solid fa-chart-pie mr-1"></i> Анализ
+    </button>
+</div>
+
+<div id="analysisPanel" class="hidden bg-slate-900 text-white p-5 rounded-[30px] mb-4 shadow-xl italic">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-[10px] font-black uppercase tracking-widest text-blue-400 italic">Траты по отделам</h3>
+        <button onclick="toggleAnalysis()" class="text-slate-500 text-xs"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="analysisContent" class="space-y-3"></div>
 </div>
 
 <div id="history" class="space-y-2 text-xs"></div>
@@ -58,7 +71,7 @@
             
             <div class="space-y-1">
                 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-xs outline-none italic">
-                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-500 ml-2 hidden tracking-tighter"></div>
+                <div id="subCatPreview" class="text-[7px] font-black uppercase text-blue-500 ml-2 hidden tracking-tighter italic"></div>
             </div>
 
             <div id="expenseSection" class="hidden space-y-2">
@@ -82,7 +95,7 @@
                         <option value="НАЛИЧНЫЕ">💵 В НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 В Sparkasse</option><option value="КОПИЛКА">💎 В КОПИЛКУ</option><option value="СВИНКА">🐷 В СВИНКУ</option><option value="КОНВЕРТ">✉️ В КОНВЕРТ</option><option value="ПРИВАТ">💳 В ПРИВАТ</option>
                     </select>
                 </div>
-                <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 grid grid-cols-2 gap-2 text-center">
+                <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 grid grid-cols-2 gap-2 text-center font-black">
                     <input type="number" id="trEur" placeholder="€ Евро" step="0.01" oninput="document.getElementById('trUah').value = (this.value * (document.getElementById('customRate').value || 51.55)).toFixed(2)" class="bg-transparent outline-none italic font-black text-sm">
                     <input type="number" id="trUah" placeholder="₴ Гривны" step="0.01" class="bg-transparent outline-none text-blue-600 italic font-black text-sm">
                 </div>
@@ -102,11 +115,11 @@
 </div>
 
 <script>
-// ВСТАВЬ СВОЮ ССЫЛКУ НИЖЕ
+// ВСТАВЬ СВОЮ ССЫЛКУ ТУТ
 const API_URL = "https://script.google.com/macros/s/AKfycbz-Jk701wnbHsU9ZYHipEmbD-XFakrSfENzvz7ty-GBBjLdqTTQWepWPbB8I7buGIMS/exec";
 
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "🙇‍♀️ Учеба": 80, "🛍 Остальное / Шопинг": 30, "🏖️ Развлечения": 30, "💰 Доход": 250 };
-let walletData = {}; let categorySpent = {}; let allRows = [];
+let walletData = {}; let categorySpent = {}; let subCatStats = {}; let allRows = [];
 const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ'] };
 const LEFT_ORDER = ['SPARKASSE', 'НАЛИЧНЫЕ', 'ПРИВАТ', 'ВАЛЕРА', 'КОПИЛКА'];
 const RIGHT_ORDER = ['КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'КОНВЕРТ', 'СВИНКА', 'В ПЛАНАХ'];
@@ -115,6 +128,35 @@ function getCycleDates() {
     const now = new Date(); let start = new Date(now.getFullYear(), now.getMonth(), 20), end = new Date(now.getFullYear(), now.getMonth() + 1, 19);
     if (now.getDate() < 20) { start = new Date(now.getFullYear(), now.getMonth() - 1, 20); end = new Date(now.getFullYear(), now.getMonth(), 19); }
     return { start, end };
+}
+
+function toggleAnalysis() {
+    const panel = document.getElementById('analysisPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) renderAnalysis();
+}
+
+function renderAnalysis() {
+    const container = document.getElementById('analysisContent');
+    container.innerHTML = "";
+    const sorted = Object.entries(subCatStats).sort((a, b) => b[1] - a[1]);
+    const total = sorted.reduce((sum, el) => sum + el[1], 0);
+
+    sorted.forEach(([name, val]) => {
+        if (val <= 0) return;
+        const perc = ((val / total) * 100).toFixed(0);
+        container.innerHTML += `
+            <div class="relative pt-1">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[9px] font-black uppercase">${name}</span>
+                    <span class="text-[9px] font-black text-blue-400">€ ${val.toFixed(2)}</span>
+                </div>
+                <div class="overflow-hidden h-1 text-xs flex rounded bg-slate-800">
+                    <div style="width:${perc}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500"></div>
+                </div>
+                <div class="text-[6px] text-right mt-0.5 opacity-50">${perc}% от трат периода</div>
+            </div>`;
+    });
 }
 
 function liveClassify(text) {
@@ -133,10 +175,10 @@ function liveClassify(text) {
     else if (/мыло|дезодорант|моющее|пакет|салфетк|туалетная|унитаз|гель-душ|концентрат|патчи|подушечки|прокладки|сковородк|цветы|тюльпан|камели|крючки|коробочки|подставки|ботинки|фольга|губки|spülmittel|seife/.test(low)) subCat = "🏠 Дом и Быт";
     else if (/интернет|icloud|google one|связь|подписк/.test(low)) subCat = "🌐 Связь и IT";
     else if (/комисси|кредит|перевод|сыну|мужу|банк/.test(low)) subCat = "🏦 Финансы";
-    else if (/бензин|парковк|авто|tanken/.test(low)) subCat = "🚗 Авто";
+    else if (/бензин|парковк|заправк|авто|tanken/.test(low)) subCat = "🚗 Авто";
     else if (/стрижк|врач|аптек|медицин|страховк/.test(low)) subCat = "🧾 Услуги и Здоровье";
-    if (subCat) { preview.innerText = "Отдел: " + subCat; preview.classList.remove('hidden'); }
-    else { preview.innerText = "Отдел: Разное"; preview.classList.remove('hidden'); }
+    if (subCat) { preview.innerText = "Группа: " + subCat; preview.classList.remove('hidden'); }
+    else { preview.innerText = "Группа: Разное"; preview.classList.remove('hidden'); }
 }
 
 function getMarker(name) {
@@ -148,7 +190,6 @@ function getMarker(name) {
 
 function isUahMarker(marker) { 
     const m = marker.toUpperCase();
-    if (m.includes('КОПИЛКА')) return false; 
     return MARKERS.UAH.some(key => m.includes(key)); 
 }
 
@@ -192,21 +233,28 @@ function draw(data) {
     const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toUpperCase() : "";
     if (allRows.length === 0) allRows = data.rows; 
     const hist = document.getElementById('history'); hist.innerHTML = ""; 
-    walletData = {}; categorySpent = {};
+    walletData = {}; categorySpent = {}; subCatStats = {};
     const r = parseFloat(document.getElementById('baseRate').value) || 51.55;
     let lastDateStr = "";
 
     allRows.forEach((row, i) => { 
         if (i === 0 || !row[5]) return; 
-        const marker = getMarker(row[5]), cat = row[1], valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0, date = new Date(row[0]);
+        const marker = getMarker(row[5]), cat = row[1], subCat = row[13] || "Разное", valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0, date = new Date(row[0]);
+        const amountEur = valE !== 0 ? Math.abs(valE) : Math.abs(valU / r);
+
         if (!walletData[marker]) walletData[marker] = { uah: 0, eur: 0 };
         walletData[marker].eur += valE; walletData[marker].uah += valU;
+
         const cycle = getCycleDates();
-        Object.keys(LIMITS).forEach(lCat => {
-            if (cat && cat.includes(lCat.substring(2)) && date >= cycle.start && date <= cycle.end) {
-                categorySpent[lCat] = (categorySpent[lCat] || 0) + (valE !== 0 ? valE : (valU / r));
+        if (date >= cycle.start && date <= cycle.end) {
+            Object.keys(LIMITS).forEach(lCat => {
+                if (cat && cat.includes(lCat.substring(2))) categorySpent[lCat] = (categorySpent[lCat] || 0) + amountEur;
+            });
+            // Статистика для АНАЛИЗА (только расходы)
+            if (valE < 0 || valU < 0) {
+                subCatStats[subCat] = (subCatStats[subCat] || 0) + amountEur;
             }
-        });
+        }
     });
 
     allRows.slice(1, 501).forEach(r => { 
@@ -217,11 +265,10 @@ function draw(data) {
         const rowDate = new Date(r[0]);
         let dateStr = rowDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
         if (dateStr !== lastDateStr) {
-            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-5 mb-1.5 ml-3 tracking-widest italic border-l-2 border-slate-200 pl-2">${dateStr}</div>`;
+            hist.innerHTML += `<div class="text-[7px] font-black uppercase text-slate-400 mt-5 mb-1.5 ml-3 tracking-widest italic border-l-2 border-slate-200 pl-2 font-black">${dateStr}</div>`;
             lastDateStr = dateStr;
         }
         const isU = isUahMarker(marker), amt = isU ? valU : valE, isInc = amt > 0;
-        
         hist.innerHTML += `
         <div class="bg-white p-3.5 rounded-[22px] flex justify-between items-center border border-slate-50 mb-1.5 shadow-sm active:scale-[0.98] transition-transform">
             <div class="flex items-center gap-3 overflow-hidden">
@@ -230,8 +277,8 @@ function draw(data) {
                     <button onclick="editRow(${id})" class="text-blue-100 hover:text-blue-300 text-[10px]"><i class="fa-solid fa-pen"></i></button>
                 </div>
                 <div class="truncate">
-                    <p class="text-[11px] font-black uppercase italic text-slate-700 leading-tight truncate">${r[4]||r[2]}</p>
-                    <p class="text-[7px] font-bold uppercase italic tracking-tighter mt-1">
+                    <p class="text-[11px] font-black uppercase italic text-slate-700 leading-tight truncate font-black">${r[4]||r[2]}</p>
+                    <p class="text-[7px] font-bold uppercase italic tracking-tighter mt-1 font-black">
                         <span class="text-slate-400/80">${marker}</span> • <span class="text-blue-400/80">${r[13] || 'Разное'}</span>
                     </p>
                 </div>
@@ -248,8 +295,8 @@ function addItemRow() {
     const id = Date.now();
     const html = `<div id="item-${id}" class="item-row bg-slate-50 p-2 rounded-xl border border-slate-200 relative mb-2 italic">
         <button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-white text-rose-500 w-4 h-4 rounded-full flex items-center justify-center text-[6px] border shadow-sm"><i class="fa-solid fa-x"></i></button>
-        <div class="grid grid-cols-2 gap-2 mb-1"><input type="text" placeholder="Товар RU / DE" class="nameRU bg-white p-1.5 rounded-lg text-[10px] font-bold outline-none italic"><input type="number" value="1" class="qty bg-white p-1.5 rounded-lg text-[10px] font-black outline-none text-center italic" oninput="calcRow(this, 'eur')"></div>
-        <div class="grid grid-cols-2 gap-2"><input type="number" step="0.01" placeholder="Цена €" class="priceUnit bg-white p-1.5 rounded-lg text-[10px] font-black outline-none italic" oninput="calcRow(this, 'eur')"><input type="number" step="0.01" placeholder="Итого ₴" class="totalUah bg-blue-50 p-1.5 rounded-lg text-[10px] font-black outline-none text-blue-600 italic" oninput="calcRow(this, 'uah')"></div>
+        <div class="grid grid-cols-2 gap-2 mb-1"><input type="text" placeholder="Товар RU / DE" class="nameRU bg-white p-1.5 rounded-lg text-[10px] font-bold outline-none italic"><input type="number" value="1" class="qty bg-white p-1.5 rounded-lg text-[10px] font-black outline-none text-center italic font-black" oninput="calcRow(this, 'eur')"></div>
+        <div class="grid grid-cols-2 gap-2"><input type="number" step="0.01" placeholder="Цена €" class="priceUnit bg-white p-1.5 rounded-lg text-[10px] font-black outline-none italic font-black" oninput="calcRow(this, 'eur')"><input type="number" step="0.01" placeholder="Итого ₴" class="totalUah bg-blue-50 p-1.5 rounded-lg text-[10px] font-black outline-none text-blue-600 italic font-black" oninput="calcRow(this, 'uah')"></div>
     </div>`;
     document.getElementById('itemsList').insertAdjacentHTML('beforeend', html);
 }
