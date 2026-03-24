@@ -73,10 +73,10 @@
             <div id="transferSection" class="hidden space-y-3">
                 <div class="grid grid-cols-2 gap-2 text-[9px] font-black italic">
                     <select id="tFrom" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase">
-                        <option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="КОПИЛКА">💎 КОПИЛКА</option><option value="ПРИВАТ">🇺🇦 ПРИВАТ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option>
+                        <option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="КОПИЛКА">💎 КОПИЛКА</option><option value="ПРИВАТ ОЛЯ">🇺🇦 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option>
                     </select>
                     <select id="tTo" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase text-blue-600">
-                        <option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="КОПИЛКА">💎 КОПИЛКУ</option><option value="СВИНКА">🐷 СВИНКУ</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="ПРИВАТ">🇺🇦 ПРИВАТ</option>
+                        <option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="КОПИЛКА">💎 КОПИЛКУ</option><option value="СВИНКА">🐷 СВИНКУ</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="ПРИВАТ ОЛЯ">🇺🇦 ПРИВАТ ОЛЯ</option>
                     </select>
                 </div>
                 <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 grid grid-cols-2 gap-2 text-center">
@@ -85,7 +85,7 @@
             </div>
             <div id="accCatGroup" class="grid grid-cols-2 gap-2 text-[9px] font-black italic">
                 <select id="acc" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase">
-                    <option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ">🇺🇦 ПРИВАТ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">💎 КОПИЛКА</option>
+                    <option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">💎 КОПИЛКА</option>
                 </select>
                 <select id="cat" class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 uppercase">
                     <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>💰 Доход</option>
@@ -103,10 +103,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbx_ip8r-xJ21b3-sIvqYLTt
 const LIMITS = { "🍎 Продукты / Быт": 330, "🏠 Жилье / Связь": 50, "🚬 Табак": 30, "🍷 Алкоголь": 30, "☕️ Кафе / Отдых": 10, "💊 Здоровье / Красота": 105, "🚗 Транспорт": 77, "🏦 Банк / Комиссии": 10, "💰 Доход": 250 };
 let walletData = {}, categorySpent = {}, subCatStats = {}, allRows = [];
 const MARKERS = { 
-    UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], 
-    OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА'] 
+    UAH: ['ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], 
+    OPERATIVE: ['ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА'] 
 };
-const LEFT_ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПРИВАТ', 'ВАЛЕРА', 'КОПИЛКА'];
+const LEFT_ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'КОПИЛКА'];
 const RIGHT_ORDER = ['КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'КОНВЕРТ', 'СВИНКА'];
 
 function getCycleDates() {
@@ -140,7 +140,7 @@ function getMarker(name) {
     if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ';
     if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА';
     if(n.includes('ВАЛЕРА') && n.includes('SPARKASSE')) return 'SPARKASSE ВАЛЕРА';
-    if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('ПРИВАТ')) return 'ПРИВАТ'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ';
+    if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('ПРИВАТ ОЛЯ')) return 'ПРИВАТ ОЛЯ'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ';
     return n;
 }
 
