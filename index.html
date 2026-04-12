@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.3</title>
+<title>SmartWallet v45.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -11,7 +11,7 @@
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.3</span>
+<span class="opacity-100 text-blue-500">v45.5</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">€ 0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
@@ -27,20 +27,21 @@
 <form onsubmit="save(event)" class="space-y-2">
 <input type="hidden" id="txType"><input type="hidden" id="editRowId">
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
-<input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
+<input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="bg-slate-50 p-2 rounded-lg border uppercase italic"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select><select id="tTo" class="bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
 <div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="bg-slate-50 p-2 rounded-lg border uppercase"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option></select><select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase"><option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>🍯 КОПИЛКА</option><option>💰 Доход</option></select></div>
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div><script>
-const API_URL = "https://script.google.com/macros/s/AKfycbx_ip8r-xJ21b3-sIvqYLTtOTZyN_mnYfGWtIieBDO4Skvi9crR9TWNhjWsbq1PrEq0/exec";
+// ОБНОВЛЕННАЯ ССЫЛКА
+const API_URL = "https://script.google.com/macros/s/AKfycbzJ3cUykhtPg0HBMHonaFbYNx2K4Ju_xQt7XTuuRlr5j5KcB4dBpvaS97IZydq-fbNU/exec";
 let walletData = {}, allRows = [];
 const ACC_EMOJIS = { "SPARKASSE ВАЛЕРА": "🏦👤", "SPARKASSE": "🏦", "ПРИВАТ ОЛЯ": "🇺🇦💃", "ВАЛЕРА": "👤", "НАЛИЧНЫЕ": "💵", "СВИНКА": "🐷", "КОПИЛКА": "🍯", "КОНВЕРТ": "✉️", "КРЕДИТКА ОЛЯ": "💳🎀", "КРЕДИТКА ВАЛЕРА": "💳👤" };
 const LEFT_ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ'];
 const RIGHT_ORDER = ['ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'КОПИЛКА', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'СВИНКА', 'КОНВЕРТ'];
 const MARKERS = { UAH: ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'], OPERATIVE: ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА'] };
 
-function parseNum(val) { if(!val) return 0; return parseFloat(String(val).replace(/\s/g, '').replace(',', '.')) || 0; }
+function parseNum(val) { if(!val || val === "") return 0; return parseFloat(String(val).replace(/\s/g, '').replace(',', '.')) || 0; }
 function isUahMarker(m) { const n = String(m || "").toUpperCase(); return MARKERS.UAH.some(key => n.includes(key)) && !n.includes('КОПИЛКА'); }
 function getMarker(name) { if(!name) return "ОСТАЛЬНОЕ"; let n = name.toUpperCase(); if(n.includes('КОПИЛКА')) return 'КОПИЛКА'; if(n.includes('КРЕДИТКА ОЛЯ')) return 'КРЕДИТКА ОЛЯ'; if(n.includes('КРЕДИТКА ВАЛЕРА')) return 'КРЕДИТКА ВАЛЕРА'; if(n.includes('ПРИВАТ')) return 'ПРИВАТ ОЛЯ'; if(n.includes('ВАЛЕРА') && n.includes('SPARKASSE')) return 'SPARKASSE ВАЛЕРА'; if(n.includes('SPARKASSE')) return 'SPARKASSE'; if(n.includes('ВАЛЕРА')) return 'ВАЛЕРА'; if(n.includes('НАЛИЧНЫЕ')) return 'НАЛИЧНЫЕ'; if(n.includes('СВИНКА')) return 'СВИНКА'; if(n.includes('КОНВЕРТ')) return 'КОНВЕРТ'; return n; }
 function syncRate(val) { if (!val) return; localStorage.setItem('wallet_base_rate', val); document.getElementById('baseRate').value = val; document.getElementById('customRate').value = val; drawBalance(); }
@@ -60,7 +61,8 @@ function draw(data) {
     if (!data || !data.rows) return; allRows = data.rows; walletData = {};
     [...LEFT_ORDER, ...RIGHT_ORDER].forEach(m => walletData[m] = { uah: 0, eur: 0 });
     allRows.forEach((row, i) => { 
-        if (i === 0 || !row[5]) return; 
+        // ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ: Жесткая фильтрация пустых строк
+        if (i === 0 || !row[0] || row[0] === "" || !row[5] || row[5] === "") return; 
         const m = getMarker(row[5]); 
         if (walletData[m]) {
             walletData[m].eur += parseNum(row[8]);
@@ -69,6 +71,7 @@ function draw(data) {
     });
     const hist = document.getElementById('history'); hist.innerHTML = ""; let lastDateStr = "";
     allRows.slice(1, 150).forEach(r => { 
+        if (!r[0] || r[0] === "" || !r[5]) return;
         const m = getMarker(r[5]), valU = parseNum(r[10]), valE = parseNum(r[8]), id = r[r.length-1];
         if (valU === 0 && valE === 0) return;
         const rd = new Date(r[0]), ds = rd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
@@ -86,6 +89,7 @@ async function save(event) { event.preventDefault(); const btn = document.getEle
 
 function openModal(t) { document.getElementById('txType').value = t; document.getElementById('editRowId').value = ""; document.getElementById('modal').classList.remove('hidden'); ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden')); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('customRate').value = document.getElementById('baseRate').value; document.getElementById('date').valueAsDate = new Date(); }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function filterHistory() { draw({ rows: allRows }); }
 async function deleteRow(id) { if(confirm('Удалить?')) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); } }
 
 window.onload = () => { 
