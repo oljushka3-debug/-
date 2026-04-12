@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.0</title>
+<title>SmartWallet v45.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -11,7 +11,7 @@
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.0</span>
+<span class="opacity-100 text-blue-500">v45.1</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">€ 0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
@@ -26,30 +26,13 @@
 <h2 id="modalTitle" class="text-sm text-slate-800 mb-3 uppercase text-center font-black">ЗАПИСЬ</h2>
 <form onsubmit="save(event)" class="space-y-2">
 <input type="hidden" id="txType"><input type="hidden" id="editRowId">
-<div class="grid grid-cols-2 gap-2">
-<input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black">
-<input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black">
-</div><input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
-<div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase">Группа: ...</div>
-<div id="expenseSection" class="hidden space-y-2">
-<div id="itemsList" class="space-y-1"></div>
-<button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button>
-</div><div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center">
-<div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div>
-<div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div>
-</div><div id="transferSection" class="hidden space-y-2">
-<div class="grid grid-cols-2 gap-1 text-[8px] font-black">
-<select id="tFrom" class="bg-slate-50 p-2 rounded-lg border uppercase italic"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select>
-<select id="tTo" class="bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select>
-</div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center">
-<input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black">
-</div></div><div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic">
-<select id="acc" class="bg-slate-50 p-2 rounded-lg border uppercase"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option></select>
-<select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase"><option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>🍯 КОПИЛКА</option><option>💰 Доход</option></select>
-</div><div class="flex gap-2 pt-1">
-<button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button>
-<button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button>
-</div></form></div></div><script>
+<div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
+<input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black"><div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase">Группа: ...</div>
+<div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
+<div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
+<div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="bg-slate-50 p-2 rounded-lg border uppercase italic"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select><select id="tTo" class="bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
+<div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="bg-slate-50 p-2 rounded-lg border uppercase"><option value="Sparkasse">🏦 Sparkasse</option><option value="Sparkasse ВАЛЕРА">🏦👤 Sparkasse ВАЛЕРА</option><option value="ПРИВАТ ОЛЯ">🇺🇦💃 ПРИВАТ ОЛЯ</option><option value="ВАЛЕРА">👤 ВАЛЕРА</option><option value="НАЛИЧНЫЕ">💵 НАЛИЧНЫЕ</option><option value="КРЕДИТКА ОЛЯ">💳🎀 КРЕДИТКА ОЛЯ</option><option value="КРЕДИТКА ВАЛЕРА">💳👤 КРЕДИТКА ВАЛЕРА</option><option value="СВИНКА">🐷 СВИНКА</option><option value="КОПИЛКА">🍯 КОПИЛКА</option><option value="КОНВЕРТ">✉️ КОНВЕРТ</option></select><select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase"><option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>🍯 КОПИЛКА</option><option>💰 Доход</option></select></div>
+<div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div><script>
 const API_URL = "https://script.google.com/macros/s/AKfycbx_ip8r-xJ21b3-sIvqYLTtOTZyN_mnYfGWtIieBDO4Skvi9crR9TWNhjWsbq1PrEq0/exec";
 let walletData = {}, allRows = [];
 const ACC_EMOJIS = { "SPARKASSE ВАЛЕРА": "🏦👤", "SPARKASSE": "🏦", "ПРИВАТ ОЛЯ": "🇺🇦💃", "ВАЛЕРА": "👤", "НАЛИЧНЫЕ": "💵", "СВИНКА": "🐷", "КОПИЛКА": "🍯", "КОНВЕРТ": "✉️", "КРЕДИТКА ОЛЯ": "💳🎀", "КРЕДИТКА ВАЛЕРА": "💳👤" };
@@ -75,15 +58,16 @@ ${isU ? `<div class="text-[5px] text-blue-500">€${Math.round(eqEur)}</div>` : 
 }); document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 1});
 }function draw(data) {
 if (!data || !data.rows) return; allRows = data.rows; walletData = {};
+[...LEFT_ORDER, ...RIGHT_ORDER].forEach(m => walletData[m] = { uah: 0, eur: 0 });
 allRows.forEach((row, i) => {
 if (i === 0 || !row[5]) return;
 const m = getMarker(row[5]);
-if (!walletData[m]) walletData[m] = { uah: 0, eur: 0 };
-walletData[m].eur += (parseFloat(row[8]) || 0);
-walletData[m].uah += (parseFloat(row[10]) || 0);
-}); const hist = document.getElementById('history'); hist.innerHTML = ""; let lastDateStr = "";
-allRows.slice(1, 100).forEach(r => {
-const m = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
+if (walletData[m]) {
+walletData[m].eur += (parseFloat(String(row[8]).replace(',','.')) || 0);
+walletData[m].uah += (parseFloat(String(row[10]).replace(',','.')) || 0);
+}}); const hist = document.getElementById('history'); hist.innerHTML = ""; let lastDateStr = "";
+allRows.slice(1, 150).forEach(r => {
+const m = getMarker(r[5]), valU = parseFloat(String(r[10]).replace(',','.')) || 0, valE = parseFloat(String(r[8]).replace(',','.')) || 0, id = r[r.length-1];
 if (valU === 0 && valE === 0) return;
 const rd = new Date(r[0]), ds = rd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 if (ds !== lastDateStr) { hist.innerHTML += `<div class="text-[6px] text-slate-300 mt-2 mb-1 ml-2 uppercase">${ds}</div>`; lastDateStr = ds; }
@@ -98,7 +82,6 @@ function addItemRow() { const id = Date.now(); document.getElementById('itemsLis
 function calcRow(el, s) { const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value) || 51.55, q = parseFloat(row.querySelector('.qty').value) || 1, pu = row.querySelector('.priceUnit'), tu = row.querySelector('.totalUah'); if (s === 'eur') tu.value = ((parseFloat(pu.value) || 0) * q * r).toFixed(0); else pu.value = ((parseFloat(tu.value) || 0) / r / q).toFixed(2); }
 function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value) || 51.55; if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(0); }
 async function save(event) { event.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "..."; const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value; let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId, action: t }; if(t === 'expense') { p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; const rows = document.querySelectorAll('.item-row'); if (!rowId && rows.length > 1) p.items = Array.from(rows).map(row => ({ nameRU: row.querySelector('.nameRU').value, qty: parseFloat(row.querySelector('.qty').value)||1, priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0, totalUah: parseFloat(row.querySelector('.totalUah').value)||0 })); else { const f = rows[0]; p.nameRU = f.querySelector('.nameRU').value; p.qty = parseFloat(f.querySelector('.qty').value)||1; p.priceUnit = parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah = parseFloat(f.querySelector('.totalUah').value)||0; } } else if (t === 'transfer') { p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; } else if (t === 'income') { p.account = document.getElementById('acc').value; p.category = "💰 Доход"; p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; } try { await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); location.reload(); } catch(err) { alert("Ошибка!"); btn.disabled = false; btn.innerText = "ЗАПИСАТЬ"; } }
-function liveClassify(text) { const preview = document.getElementById('subCatPreview'); if (!text || text.length < 2) { preview.classList.add('hidden'); return; } let low = text.toLowerCase(); let sc = "РАЗНОЕ"; if (/вино|пиво|bier|wein|водка/.test(low)) sc = "🍷 АЛКОГОЛЬ"; else if (/табак|сигарет|tabak/.test(low)) sc = "🚬 ТАБАК"; else if (/pfand|залог|leergut/.test(low)) sc = "♻️ ЗАЛОГ (PFAND)"; preview.innerText = "Группа: " + sc; preview.classList.remove('hidden'); }
 function filterHistory() { draw({ rows: allRows }); }
 function openModal(t) { document.getElementById('txType').value = t; document.getElementById('editRowId').value = ""; document.getElementById('modal').classList.remove('hidden'); ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden')); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('customRate').value = document.getElementById('baseRate').value; document.getElementById('date').valueAsDate = new Date(); }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
