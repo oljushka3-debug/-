@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v44.8</title>
+<title>SmartWallet v44.9</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -11,7 +11,7 @@
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v44.8</span>
+<span class="opacity-100 text-blue-500">v44.9</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">ЗАГРУЗКА...</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
@@ -28,37 +28,41 @@
 <input type="hidden" id="txType"><input type="hidden" id="editRowId">
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
-<div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase">Группа: ...</div>
+<div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase">Отдел: ...</div>
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
 <div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select><select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase"><option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>🍯 КОПИЛКА</option><option>💰 Доход</option></select></div>
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div><script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9LmGMq1aLDx-Eh87mSYBJsqRWUIV5kfaFWDlfYcO3FUojZz3IZCg5Fpo1URkNbEe4/exec";
-const ACC_EMOJIS = { 
-    "SPARKASSE": "🏦 SPARKASSE", 
-    "SPARKASSE ВАЛЕРА": "🏦👤 SPARKASSE ВАЛЕРА", 
-    "ПРИВАТ ОЛЯ": "🇺🇦💃 ПРИВАТ ОЛЯ", 
-    "ВАЛЕРА": "👤 ВАЛЕРА", 
-    "НАЛИЧНЫЕ": "💵 НАЛИЧНЫЕ", 
-    "СВИНКА": "🐷 СВИНКА", 
-    "КОПИЛКА": "🍯 КОПИЛКА", 
-    "КОНВЕРТ": "✉️ КОНВЕРТ", 
-    "КРЕДИТКА ОЛЯ": "💳🎀 КРЕДИТКА ОЛЯ", 
-    "КРЕДИТКА ВАЛЕРА": "💳👤 КРЕДИТКА ВАЛЕРА" 
-};
+const ACC_EMOJIS = { "SPARKASSE": "🏦 SPARKASSE", "SPARKASSE ВАЛЕРА": "🏦👤 SPARKASSE ВАЛЕРА", "ПРИВАТ ОЛЯ": "🇺🇦💃 ПРИВАТ ОЛЯ", "ВАЛЕРА": "👤 ВАЛЕРА", "НАЛИЧНЫЕ": "💵 НАЛИЧНЫЕ", "СВИНКА": "🐷 СВИНКА", "КОПИЛКА": "🍯 КОПИЛКА", "КОНВЕРТ": "✉️ КОНВЕРТ", "КРЕДИТКА ОЛЯ": "💳🎀 КРЕДИТКА ОЛЯ", "КРЕДИТКА ВАЛЕРА": "💳👤 КРЕДИТКА ВАЛЕРА" };
 const ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'КОПИЛКА', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'СВИНКА', 'КОНВЕРТ'];
 const UAH_WALLETS = ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
-let walletData = {}, allRows = [];
+// База соответствий (Отделы из колонки N)
+const KNOWLEDGE_BASE = [
+    { key: /funk|internet|t-mobile|icloud|scribd/i, dept: "Связь и IT 🌐" },
+    { key: /pfand|leergut/i, dept: "Залог (Pfand) ♻️" },
+    { key: /bier|wein|vodka|spritz|pils|koelsch/i, dept: "Алкоголь 🍷" },
+    { key: /tabak|paramount|сигарет/i, dept: "Табак 🚬" },
+    { key: /rabatt|preisvorteil|скидка/i, dept: "Скидка 🏷️" },
+    { key: /g&g|herz|bio e|landl|oetk/i, dept: "Бакалея и Консервы 🥫" },
+    { key: /frikadellen|salami|wurst|fleisch/i, dept: "Колбасы / Фрикадели 🌭" },
+    { key: /joghurt|skyr|quark|brie|cheese|kaese|edamer|chedd|milch/i, dept: "Молочка и Сыры 🧀" },
+    { key: /brot|buns|broetchen|toast|gugelhupf/i, dept: "Хлебобулочные 🥖" },
+    { key: /piccolinis|pizza|gemuese|iglo/i, dept: "Заморозка 🧊" },
+    { key: /deo|shampoo|duschgel|loreal|niv|elvital|watte|zahne/i, dept: "Гигиена 🛀" },
+    { key: /mandel|erdnue|schoko|sweets|сладости|keks/i, dept: "Сладости 🍫" },
+    { key: /sauerkraut|erdbeeren|apfel|gurken|salat|zwiebeln|paprika/i, dept: "Овощи и Фрукты 🥗" },
+    { key: /benzin|bensin|park/i, dept: "Авто 🚗" },
+    { key: /union|kranken|b12|pill/i, dept: "Здоровье 💊" },
+    { key: /на карту|с карты|свинк|конверт|перевод/i, dept: "Финансы 🏦" }
+];
 
+let walletData = {}, allRows = [];
 function isUah(m) { const n = m.toUpperCase(); return UAH_WALLETS.some(k => n.includes(k)) && !n.includes('КОПИЛКА'); }
-function getMarker(name) {
-    if(!name) return "ОСТАЛЬНОЕ"; let n = name.toUpperCase();
-    for (let key in ACC_EMOJIS) { if (n.includes(key)) return key; }
-    return n;
-}
+function getMarker(name) { if(!name) return "ОСТАЛЬНОЕ"; let n = name.toUpperCase(); for (let key in ACC_EMOJIS) { if (n.includes(key)) return key; } return n; }
 
 function syncRate(val) { if (!val) return; localStorage.setItem('wallet_base_rate', val); document.getElementById('baseRate').value = val; document.getElementById('customRate').value = val; drawBalance(); }
 
@@ -103,10 +107,7 @@ function draw(data) {
 
 function initSelects() {
     const selects = document.querySelectorAll('.wallet-select');
-    selects.forEach(s => {
-        s.innerHTML = "";
-        ORDER.forEach(m => { s.innerHTML += `<option value="${m}">${ACC_EMOJIS[m]}</option>`; });
-    });
+    selects.forEach(s => { s.innerHTML = ""; ORDER.forEach(m => { s.innerHTML += `<option value="${m}">${ACC_EMOJIS[m]}</option>`; }); });
 }
 
 function addItemRow() {
@@ -119,7 +120,8 @@ function calcSimple(s) { const r = parseFloat(document.getElementById('customRat
 async function save(event) {
     event.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "...";
     const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value), rowId = document.getElementById('editRowId').value;
-    let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId, action: t };
+    const deptText = document.getElementById('subCatPreview').innerText.replace("Отдел: ", "");
+    let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, rowId: rowId, action: t, dept: deptText };
     if(t === 'expense') {
         p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value; const rows = document.querySelectorAll('.item-row');
         if (!rowId && rows.length > 1) p.items = Array.from(rows).map(row => ({ nameRU: row.querySelector('.nameRU').value, qty: parseFloat(row.querySelector('.qty').value)||1, priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0, totalUah: parseFloat(row.querySelector('.totalUah').value)||0 }));
@@ -132,9 +134,8 @@ async function save(event) {
 function liveClassify(text) {
     const preview = document.getElementById('subCatPreview'); if (!text || text.length < 2) { preview.classList.add('hidden'); return; }
     let low = text.toLowerCase(); let sc = "РАЗНОЕ";
-    if (/вино|пиво|bier|wein|водка/.test(low)) sc = "🍷 АЛКОГОЛЬ";
-    else if (/табак|сигарет|tabak/.test(low)) sc = "🚬 ТАБАК";
-    preview.innerText = "Группа: " + sc; preview.classList.remove('hidden');
+    for (let item of KNOWLEDGE_BASE) { if (item.key.test(low)) { sc = item.dept; break; } }
+    preview.innerText = "Отдел: " + sc; preview.classList.remove('hidden');
 }
 
 function filterHistory() { draw({ rows: allRows }); }
@@ -155,8 +156,6 @@ window.onload = () => {
     const savedRate = localStorage.getItem('wallet_base_rate') || "51.55";
     document.getElementById('baseRate').value = savedRate; document.getElementById('customRate').value = savedRate;
     initSelects();
-    const s = document.createElement('script');
-    s.src = API_URL + "?callback=draw&_t=" + Date.now();
-    document.body.appendChild(s);
+    const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + Date.now(); document.body.appendChild(s);
 };
 </script></body></html>
