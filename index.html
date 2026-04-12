@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet Gold v46.2</title>
+<title>SmartWallet v44.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -11,8 +11,8 @@
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.2 GOLD</span>
-</div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">ЗАГРУЗКА...</h1>
+<span class="opacity-100 text-blue-500">v44.6</span>
+</div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">€ 0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
 <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Расход</button>
@@ -45,7 +45,7 @@ function getMarker(name) { if(!name) return "ОСТАЛЬНОЕ"; let n = name.t
 function syncRate(val) { if (!val) return; localStorage.setItem('wallet_base_rate', val); document.getElementById('baseRate').value = val; document.getElementById('customRate').value = val; drawBalance(); }
 
 function drawBalance() {
-    const r = parseFloat(document.getElementById('baseRate').value) || 50.75; let totalOpEur = 0;
+    const r = parseFloat(document.getElementById('baseRate').value) || 51.55; let totalOpEur = 0;
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     [...LEFT_ORDER, ...RIGHT_ORDER].forEach(m => {
         const val = walletData[m] || { uah: 0, eur: 0 }, isU = isUahMarker(m);
@@ -59,19 +59,15 @@ function drawBalance() {
 }
 
 function draw(data) {
-    if (!data || !data.rows) { document.getElementById('mainBalance').innerText = "ОШИБКА ДАННЫХ"; return; }
-    allRows = data.rows; walletData = {};
+    if (!data || !data.rows) return; allRows = data.rows; walletData = {};
     const query = (document.getElementById('searchInput').value || "").toUpperCase();
     const hist = document.getElementById('history'); hist.innerHTML = ""; let lastDateStr = "";
-    
     allRows.forEach((row, i) => {
         if (i === 0 || !row[5] || row[0] === "") return;
         const m = getMarker(row[5]); if (!walletData[m]) walletData[m] = { uah: 0, eur: 0 };
         walletData[m].eur += parseFloat(row[8]) || 0; walletData[m].uah += parseFloat(row[10]) || 0;
     });
-
-    allRows.slice(1, 150).forEach(r => {
-        if (!r[0] || r[0] === "") return;
+    allRows.slice(1, 100).forEach(r => {
         const m = getMarker(r[5]), nRU = String(r[4] || "").toUpperCase();
         if (query && !m.includes(query) && !nRU.includes(query)) return;
         const valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
@@ -91,8 +87,8 @@ function addItemRow() {
     const id = Date.now();
     document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div id="item-${id}" class="item-row bg-slate-50 p-2 rounded-lg relative mb-1 border border-slate-100"><button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-white text-rose-500 w-3 h-3 rounded-full flex items-center justify-center text-[6px] border shadow-sm font-black">X</button><div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] font-black text-center" oninput="calcRow(this, 'eur')"></div><div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this, 'uah')"></div></div>`);
 }
-function calcRow(el, s) { const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value) || 50.75, q = parseFloat(row.querySelector('.qty').value) || 1, pu = row.querySelector('.priceUnit'), tu = row.querySelector('.totalUah'); if (s === 'eur') tu.value = ((parseFloat(pu.value) || 0) * q * r).toFixed(0); else pu.value = ((parseFloat(tu.value) || 0) / r / q).toFixed(2); }
-function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value) || 50.75; if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(0); }
+function calcRow(el, s) { const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value) || 51.55, q = parseFloat(row.querySelector('.qty').value) || 1, pu = row.querySelector('.priceUnit'), tu = row.querySelector('.totalUah'); if (s === 'eur') tu.value = ((parseFloat(pu.value) || 0) * q * r).toFixed(0); else pu.value = ((parseFloat(tu.value) || 0) / r / q).toFixed(2); }
+function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value) || 51.55; if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(0); }
 
 async function save(event) {
     event.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "...";
@@ -128,7 +124,7 @@ function closeModal() { document.getElementById('modal').classList.add('hidden')
 async function deleteRow(id) { if(confirm('Удалить?')) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({action: 'delete', rowId: id}) }); location.reload(); } }
 
 window.onload = () => {
-    const savedRate = localStorage.getItem('wallet_base_rate') || "50.75";
+    const savedRate = localStorage.getItem('wallet_base_rate') || "51.55";
     document.getElementById('baseRate').value = savedRate; document.getElementById('customRate').value = savedRate;
     const s = document.createElement('script');
     s.src = API_URL + "?callback=draw&_t=" + Date.now();
