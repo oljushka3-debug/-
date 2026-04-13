@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.0</title>
+<title>SmartWallet v45.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -11,15 +11,14 @@
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.0</span>
+<span class="opacity-100 text-blue-500">v45.1</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">ЗАГРУЗКА...</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
 <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Расход</button>
 <button onclick="openModal('transfer')" class="flex-1 bg-slate-100 py-3 rounded-xl text-[9px] text-slate-600 uppercase shadow-sm">Перевод</button>
 <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Доход</button>
-</div><div class="mb-2"><input type="text" id="searchInput" oninput="filterHistory()" placeholder="ПОИСК..." class="w-full bg-white border py-2 px-3 rounded-xl text-[9px] outline-none uppercase italic font-bold shadow-sm"></div>
-<div id="history" class="space-y-1 text-xs font-black"></div>
+</div><div id="history" class="space-y-1 text-xs font-black"></div>
 
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 z-50 font-bold">
 <div class="bg-white w-full max-w-sm rounded-[30px] p-4 shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -28,7 +27,7 @@
 <input type="hidden" id="txType"><input type="hidden" id="editRowId">
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
-<div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase">Отдел: ...</div>
+<div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase font-black">Отдел: ...</div>
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
@@ -42,117 +41,102 @@ const ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПР�
 const UAH_WALLETS = ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
-// База соответствий отделов (Колонка N) согласно вашему списку
+// База соответствий (Приоритет: Масло и Хлеб теперь ищутся первыми)
 const DEPT_MAP = [
-    { keywords: [/funk|internet|t-mobile|icloud|scribd/i], dept: "Связь и IT 🌐" },
-    { keywords: [/pfand|leergut|залог|возврат тары|депозит/i], dept: "Залог (Pfand) ♻️" },
-    { keywords: [/bier|wein|vodka|pils|koelsch|spritz|пиво|вино|водка|ахматова|гриджио/i], dept: "Алкоголь 🍷" },
-    { keywords: [/rabatt|preisvorteil|скидка/i], dept: "Скидка 🏷️" },
-    { keywords: [/g&g|herz|bio e|бакалея|чечевица|фасоль|миндаль|арахис|масло|специи/i], dept: "Бакалея и Консервы 🥫" },
-    { keywords: [/frikadellen|salami|wurst|колбаса|фрикадели|шпик/i], dept: "Колбасы / Фрикадели 🌭" },
-    { keywords: [/joghurt|skyr|quark|kaese|milch|сыр|йогурт|творог|молоко|бри|чеддер/i], dept: "Молочка и Сыры 🧀" },
-    { keywords: [/brot|broetchen|toast|булочки|хлеб/i], dept: "Хлебобулочные 🥖" },
-    { keywords: [/pizza|piccolinis|gemuese|iglo|заморож/i], dept: "Заморозка 🧊" },
-    { keywords: [/deo|shampoo|loreal|niv|elvital|zahne|гигиена|мытье|палочки|диски/i], dept: "Гигиена 🛀" },
-    { keywords: [/schoko|сладости|конфеты|печенье|кексы|гугельхупф/i], dept: "Сладости 🍫" },
-    { keywords: [/sauerkraut|erdbeeren|apfel|gurken|salat|фрукты|овощи|капуста|клубника|яблоки/i], dept: "Овощи и Фрукты 🥗" },
-    { keywords: [/benzin|bensin|park|авто|бензин|парковка/i], dept: "Авто 🚗" },
-    { keywords: [/union|b12|health|здоровье|страховка|итцехоер/i], dept: "Здоровье 💊" },
-    { keywords: [/на карту|с карты|свинк|конверт|перевод|стипендия|займ/i], dept: "Финансы 🏦" },
-    { keywords: [/hackfleisch|мясо|фарш|шея/i], dept: "Мясо, Фарш 🥩" },
-    { keywords: [/toilet|быт|пакеты|крючки|дозе/i], dept: "Дом и Быт 🏠" }
+    { key: /butter|масло/i, dept: "Бакалея и Консервы 🥫" },
+    { key: /brot|broetchen|toast|хлеб|булочк/i, dept: "Хлебобулочные 🥖" },
+    { key: /funk|internet|icloud|t-mobile/i, dept: "Связь и IT 🌐" },
+    { key: /pfand|leergut|залог|депозит|возврат/i, dept: "Залог (Pfand) ♻️" },
+    { key: /bier|wein|vodka|пиво|вино|водка/i, dept: "Алкоголь 🍷" },
+    { key: /rabatt|скидка|preisvort/i, dept: "Скидка 🏷️" },
+    { key: /g&g|herz|bio e|чечевиц|бакалея/i, dept: "Бакалея и Консервы 🥫" },
+    { key: /frikadel|salami|wurst|колбас/i, dept: "Колбасы / Фрикадели 🌭" },
+    { key: /joghurt|skyr|quark|cheese|kaese|milch|йогурт|сыр|творог|молоко/i, dept: "Молочка и Сыры 🧀" },
+    { key: /pizza|piccolin|заморож/i, dept: "Заморозка 🧊" },
+    { key: /deo|shamp|loreal|niv|zahne|гигиен/i, dept: "Гигиена 🛀" },
+    { key: /schoko|сладост|конфет|печен|кекс/i, dept: "Сладости 🍫" },
+    { key: /sauerkr|apfel|gurk|salat|капуст|овощ|фрукт/i, dept: "Овощи и Фрукты 🥗" },
+    { key: /benzin|bensin|park|авто/i, dept: "Авто 🚗" },
+    { key: /union|здоров|страхов/i, dept: "Здоровье 💊" },
+    { key: /на карту|с карты|конверт|стипенд/i, dept: "Финансы 🏦" }
 ];
 
 let walletData = {}, allRows = [];
-function syncRate(val) { if (!val) return; localStorage.setItem('wallet_base_rate', val); document.getElementById('baseRate').value = val; document.getElementById('customRate').value = val; drawBalance(); }
-function isUah(m) { const n = m.toUpperCase(); return UAH_WALLETS.some(k => n.includes(k)) && !n.includes('КОПИЛКА'); }
-function getMarker(name) { if(!name) return "ОСТАЛЬНОЕ"; let n = name.toUpperCase(); for (let key in ACC_EMOJIS) { if (n.includes(key)) return key; } return n; }
+function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate',v); document.getElementById('baseRate').value=v; document.getElementById('customRate').value=v; drawBalance(); }
+function isUah(m) { return UAH_WALLETS.some(k => m.toUpperCase().includes(k)) && !m.toUpperCase().includes('КОПИЛКА'); }
+function getMarker(n) { if(!n) return "ОСТАЛЬНОЕ"; let u = n.toUpperCase(); for(let k in ACC_EMOJIS) if(u.includes(k)) return k; return u; }
 
 function liveClassify(text) {
-    const preview = document.getElementById('subCatPreview'); 
+    const preview = document.getElementById('subCatPreview');
     if (!text || text.length < 2) { preview.classList.add('hidden'); return; }
-    let low = text.toLowerCase(); let detected = "Разное";
-    for (let item of DEPT_MAP) {
-        if (item.keywords.some(rx => rx.test(low))) { detected = item.dept; break; }
-    }
-    preview.innerText = "Отдел: " + detected; preview.classList.remove('hidden');
+    let low = text.toLowerCase(); let d = "Разное";
+    for (let item of DEPT_MAP) { if (item.key.test(low)) { d = item.dept; break; } }
+    preview.innerText = "Отдел: " + d; preview.classList.remove('hidden');
 }
 
 function drawBalance() {
-    const r = parseFloat(document.getElementById('baseRate').value) || 51.55; let totalOpEur = 0;
+    const r = parseFloat(document.getElementById('baseRate').value)||51.55; let total = 0;
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     ORDER.forEach(m => {
-        const val = walletData[m] || { uah: 0, eur: 0 }, isU = isUah(m);
-        const eqEur = m === 'КОПИЛКА' ? val.eur : (isU ? (val.uah / r) : val.eur);
-        if (OPERATIVE.some(k => m.includes(k))) totalOpEur += eqEur;
-        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border border-slate-100 flex flex-col items-center">
-        <div class="text-[7px] text-slate-400 leading-tight mb-0.5 text-center">${ACC_EMOJIS[m].split(' ')[0]} ${m}</div>
-        <div class="text-[8px] font-black">${isU ? '₴'+Math.round(val.uah) : '€'+val.eur.toFixed(0)}</div></div>`;
-    }); document.getElementById('mainBalance').innerText = '€ ' + totalOpEur.toLocaleString('de-DE', {minimumFractionDigits: 1});
+        const v = walletData[m]||{uah:0,eur:0}, isU = isUah(m);
+        const eq = m==='КОПИЛКА'?v.eur:(isU?v.uah/r:v.eur);
+        if(OPERATIVE.some(k=>m.includes(k))) total+=eq;
+        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center">
+        <div class="text-[7px] text-slate-400 text-center">${ACC_EMOJIS[m].split(' ')[0]} ${m}</div>
+        <div class="text-[8px] font-black">${isU?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(0)}</div></div>`;
+    }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:1});
 }
 
 function draw(data) {
-    if (!data || !data.rows) return; allRows = data.rows; walletData = {};
+    if(!data||!data.rows) return; allRows = data.rows; walletData = {};
     const hist = document.getElementById('history'); hist.innerHTML = "";
     allRows.forEach((row, i) => {
-        if (i === 0 || !row[5]) return;
-        const m = getMarker(row[5]), valE = parseFloat(row[8]) || 0, valU = parseFloat(row[10]) || 0;
-        if (!walletData[m]) walletData[m] = { uah: 0, eur: 0 };
-        walletData[m].eur += valE; walletData[m].uah += valU;
+        if(i===0||!row[5]) return; const m = getMarker(row[5]);
+        if(!walletData[m]) walletData[m]={uah:0,eur:0};
+        walletData[m].eur += parseFloat(row[8])||0; walletData[m].uah += parseFloat(row[10])||0;
     });
-    allRows.slice(1, 50).forEach(r => {
-        const m = getMarker(r[5]), valU = parseFloat(r[10]) || 0, valE = parseFloat(r[8]) || 0, id = r[r.length-1];
-        if (valU === 0 && valE === 0) return;
-        const isU_row = isUah(m), amt = isU_row ? valU : valE;
+    allRows.slice(1,30).forEach(r => {
+        const m = getMarker(r[5]), vE=parseFloat(r[8])||0, vU=parseFloat(r[10])||0;
+        if(vE===0 && vU===0) return; const isU=isUah(m), amt=isU?vU:vE;
         hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
-        <div><p class="text-[9px] text-slate-700 leading-tight font-black uppercase">${r[4]||r[2]}</p>
-        <p class="text-[5px] opacity-30 font-black">${ACC_EMOJIS[m] || m} • ${r[13] || 'ОТДЕЛ'}</p></div>
-        <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(isU_row?0:1)}${isU_row?'₴':'€'}</div></div>`;
+        <div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p>
+        <p class="text-[5px] opacity-30 font-black">${ACC_EMOJIS[m]} • ${r[13]||'ОТДЕЛ'}</p></div>
+        <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(isU?0:1)}${isU?'₴':'€'}</div></div>`;
     }); drawBalance();
 }
 
-async function save(event) {
-    event.preventDefault(); const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "...";
-    const t = document.getElementById('txType').value, r = parseFloat(document.getElementById('customRate').value);
-    const deptValue = document.getElementById('subCatPreview').innerText.replace("Отдел: ", "");
-    let p = { date: document.getElementById('date').value, rate: r, merchant: document.getElementById('merchant').value, action: t, dept: deptValue };
-    
-    if(t === 'expense') {
-        p.account = document.getElementById('acc').value; p.category = document.getElementById('cat').value;
-        const rows = document.querySelectorAll('.item-row');
-        if (rows.length > 1) p.items = Array.from(rows).map(row => ({ nameRU: row.querySelector('.nameRU').value, qty: parseFloat(row.querySelector('.qty').value)||1, priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0, totalUah: parseFloat(row.querySelector('.totalUah').value)||0 }));
-        else { const f = rows[0]; p.nameRU = f.querySelector('.nameRU').value; p.qty = parseFloat(f.querySelector('.qty').value)||1; p.priceUnit = parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah = parseFloat(f.querySelector('.totalUah').value)||0; }
-    } else if (t === 'transfer') { 
-        p.from = document.getElementById('tFrom').value; p.to = document.getElementById('tTo').value; 
-        p.eur = parseFloat(document.getElementById('trEur').value)||0; p.uah = parseFloat(document.getElementById('trUah').value)||0; 
-    } else if (t === 'income') { 
-        p.account = document.getElementById('acc').value; p.category = "💰 Доход"; 
-        p.totalEur = parseFloat(document.getElementById('valEur').value)||0; p.totalUah = parseFloat(document.getElementById('valUah').value)||0; 
-    }
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); location.reload();
+async function save(e) {
+    e.preventDefault(); const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.innerText="...";
+    const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value);
+    const dept = document.getElementById('subCatPreview').innerText.replace("Отдел: ","");
+    let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t, dept:dept };
+    if(t==='expense') {
+        p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value;
+        const rows=document.querySelectorAll('.item-row');
+        if(rows.length>1) p.items=Array.from(rows).map(row=>({nameRU:row.querySelector('.nameRU').value,qty:parseFloat(row.querySelector('.qty').value)||1,priceUnit:parseFloat(row.querySelector('.priceUnit').value)||0,totalUah:parseFloat(row.querySelector('.totalUah').value)||0}));
+        else { const f=rows[0]; p.nameRU=f.querySelector('.nameRU').value; p.qty=parseFloat(f.querySelector('.qty').value)||1; p.priceUnit=parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah=parseFloat(f.querySelector('.totalUah').value)||0; }
+    } else if(t==='transfer') { p.from=document.getElementById('tFrom').value; p.to=document.getElementById('tTo').value; p.eur=parseFloat(document.getElementById('trEur').value)||0; p.uah=parseFloat(document.getElementById('trUah').value)||0; }
+    else if(t==='income') { p.account=document.getElementById('acc').value; p.category="💰 Доход"; p.totalEur=parseFloat(document.getElementById('valEur').value)||0; p.totalUah=parseFloat(document.getElementById('valUah').value)||0; }
+    await fetch(API_URL,{method:'POST',body:JSON.stringify(p)}); location.reload();
 }
 
 function addItemRow() {
-    const id = Date.now();
-    document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div id="item-${id}" class="item-row bg-slate-50 p-2 rounded-lg relative border border-slate-100 mb-1">
-    <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] font-black text-center" oninput="calcRow(this, 'eur')"></div>
-    <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this, 'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this, 'uah')"></div></div>`);
+    const id=Date.now(); document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1">
+    <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" oninput="liveClassify(this.value)" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div>
+    <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`);
 }
-function calcRow(el, s) { const row = el.closest('.item-row'), r = parseFloat(document.getElementById('customRate').value), q = parseFloat(row.querySelector('.qty').value)||1, pu = row.querySelector('.priceUnit'), tu = row.querySelector('.totalUah'); if (s === 'eur') tu.value = ((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value = ((parseFloat(tu.value)||0)/r/q).toFixed(2); }
-function calcSimple(s) { const r = parseFloat(document.getElementById('customRate').value); if(s === 'UAH') document.getElementById('valEur').value = (document.getElementById('valUah').value / r).toFixed(2); else document.getElementById('valUah').value = (document.getElementById('valEur').value * r).toFixed(0); }
+function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
+function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
 
-function openModal(t) {
-    document.getElementById('txType').value = t; document.getElementById('modal').classList.remove('hidden');
-    ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id => document.getElementById(id).classList.add('hidden'));
-    const selects = document.querySelectorAll('.wallet-select'); selects.forEach(s => { s.innerHTML = ""; ORDER.forEach(m => { s.innerHTML += `<option value="${m}">${ACC_EMOJIS[m]}</option>`; }); });
-    if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML = ""; addItemRow(); }
+function openModal(t){
+    document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden');
+    ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${ACC_EMOJIS[m]}</option>`; }); });
+    if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); }
     else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); }
     else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); }
-    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('date').valueAsDate=new Date();
 }
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-window.onload = () => { 
-    const r = localStorage.getItem('wallet_base_rate') || "51.55"; document.getElementById('baseRate').value = r;
-    const s = document.createElement('script'); s.src = API_URL + "?callback=draw&_t=" + Date.now(); document.body.appendChild(s); 
-};
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"51.55"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
 </script></body></html>
