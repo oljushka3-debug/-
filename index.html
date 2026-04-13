@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.3</title>
+<title>SmartWallet v45.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -10,8 +10,8 @@
 <i class="fa-solid fa-rotate text-blue-500 text-[10px]"></i>
 </button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
-<span>Курс: <input type="number" id="baseRate" step="0.01" oninput="syncRate(this.value)" class="w-10 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.3</span>
+<span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
+<span class="opacity-100 text-blue-500">v45.4</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">ЗАГРУЗКА...</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div><div class="flex gap-1 mb-2 font-black">
@@ -25,7 +25,7 @@
 <h2 id="modalTitle" class="text-sm text-slate-800 mb-3 uppercase text-center font-black">ЗАПИСЬ</h2>
 <form onsubmit="save(event)" class="space-y-2">
 <input type="hidden" id="txType"><input type="hidden" id="editRowId">
-<div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.01" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
+<div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
 <input type="text" id="merchant" oninput="liveClassify(this.value)" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
 <div id="subCatPreview" class="hidden text-[7px] text-blue-500 ml-2 uppercase font-black">Отдел: ...</div>
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
@@ -61,7 +61,7 @@ const DEPT_MAP = [
 ];
 
 let walletData = {}, allRows = [];
-// Синхронизация и сохранение курса
+
 function syncRate(v) { 
     if(!v) return; 
     localStorage.setItem('wallet_base_rate', v); 
@@ -138,7 +138,6 @@ function calcSimple(s){ const r=parseFloat(document.getElementById('customRate')
 
 function openModal(t){
     document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden');
-    // Установка последнего сохраненного курса в поле модального окна
     document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "51.55";
     
     ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden'));
