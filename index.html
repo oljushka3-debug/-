@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.8</title>
+<title>SmartWallet v45.9</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.8</span>
+<span class="opacity-100 text-blue-500">v45.9</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -41,14 +41,15 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9LmGMq1aLDx-Eh87mSYBJsqRWUIV5kfaFWDlfYcO3FUojZz3IZCg5Fpo1URkNbEe4/exec";
-const ACC_EMOJIS = { "SPARKASSE": "🏦 SPARKASSE", "SPARKASSE ВАЛЕРА": "🏦👤 SPARKASSE ВАЛЕРА", "ПРИВАТ ОЛЯ": "🇺🇦💃 ПРИВАТ ОЛЯ", "ВАЛЕРА": "👤 ВАЛЕРА", "НАЛИЧНЫЕ": "💵 НАЛИЧНЫЕ", "СВИНКА": "🐷 СВИНКА", "КОПИЛКА": "🍯 КОПИЛКА", "КОНВЕРТ": "✉️ КОНВЕРТ", "КРЕДИТКА ОЛЯ": "💳🎀 КРЕДИТКА ОЛЯ", "КРЕДИТКА ВАЛЕРА": "💳👤 КРЕДИТКА ВАЛЕРА" };
-const ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПРИВАТ ОЛЯ', 'ВАЛЕРА', 'КОПИЛКА', 'КРЕДИТКА ОЛЯ', 'КРЕДИТКА ВАЛЕРА', 'СВИНКА', 'КОНВЕРТ'];
+// Имена кошельков в ключе должны строго совпадать с тем, что в Google Таблице (столбец F)
+const ACC_EMOJIS = { "🏦 SPARKASSE": "🏦 SPARKASSE", "🏦👤 SPARKASSE ВАЛЕРА": "🏦👤 SPARKASSE ВАЛЕРА", "🇺🇦💃 ПРИВАТ ОЛЯ": "🇺🇦💃 ПРИВАТ ОЛЯ", "👤 ВАЛЕРА": "👤 ВАЛЕРА", "💵 НАЛИЧНЫЕ": "💵 НАЛИЧНЫЕ", "🐷 СВИНКА": "🐷 СВИНКА", "🍯 КОПИЛКА": "🍯 КОПИЛКА", "✉️ КОНВЕРТ": "✉️ КОНВЕРТ", "💳🎀 КРЕДИТКА ОЛЯ": "💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА": "💳👤 КРЕДИТКА ВАЛЕРА" };
+const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
 const UAH_WALLETS = ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
 let walletData = {};
 
-function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; if(document.getElementById('customRate')) document.getElementById('customRate').value = v; drawBalance(); }
+function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; drawBalance(); }
 function isUah(m) { return UAH_WALLETS.some(k => m.toUpperCase().includes(k)) && !m.toUpperCase().includes('КОПИЛКА'); }
 
 function drawBalance() {
@@ -56,11 +57,11 @@ function drawBalance() {
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     ORDER.forEach(m => {
         const v = walletData[m]||{uah:0,eur:0}, isU = isUah(m);
-        const eq = m==='КОПИЛКА'?v.eur:(isU?v.uah/r:v.eur);
+        const eq = m==='🍯 КОПИЛКА'?v.eur:(isU?v.uah/r:v.eur);
         if(OPERATIVE.some(k=>m.includes(k))) total+=eq;
         grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center">
-        <div class="text-[7px] text-slate-400 text-center">${ACC_EMOJIS[m].split(' ')[0]} ${m}</div>
-        <div class="text-[8px] font-black ${m==='SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${isU?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
+        <div class="text-[6px] text-slate-400 text-center leading-tight">${m}</div>
+        <div class="text-[8px] font-black ${m==='🏦 SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${isU?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
     }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
@@ -71,40 +72,33 @@ function draw(data) {
     
     data.rows.forEach((row, i) => {
         if(i === 0) return;
-        let cellF = String(row[5] || "").trim().toUpperCase();
+        let cellF = String(row[5] || "").trim(); // Берем название кошелька как есть (с эмодзи)
         if(!cellF) return;
 
-        // СТРОГОЕ СОВПАДЕНИЕ: Проверяем, есть ли такое название кошелька в нашем списке
-        let foundKey = ORDER.find(k => k === cellF);
-        if(!foundKey) return; 
-
-        if(!walletData[foundKey]) walletData[foundKey]={uah:0,eur:0};
+        if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
         
         let valEur = parseFloat(String(row[8] || "0").replace(',','.')) || 0;
         let valUah = parseFloat(String(row[10] || "0").replace(',','.')) || 0;
         
-        walletData[foundKey].eur += valEur;
-        walletData[foundKey].uah += valUah;
+        walletData[cellF].eur += valEur;
+        walletData[cellF].uah += valUah;
     });
 
     data.rows.slice(1,20).forEach(r => {
-        let cellF = String(r[5] || "").trim().toUpperCase();
-        let foundKey = ORDER.find(k => k === cellF);
-        if(!foundKey) return;
-
+        let cellF = String(r[5] || "").trim();
+        if(!ACC_EMOJIS[cellF]) return;
         const vE=parseFloat(String(r[8] || "0").replace(',','.'))||0, vU=parseFloat(String(r[10] || "0").replace(',','.'))||0;
-        if(vE===0 && vU===0) return; const isU=isUah(foundKey), amt=isU?vU:vE;
+        if(vE===0 && vU===0) return; const isU=isUah(cellF), amt=isU?vU:vE;
         hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
         <div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p>
-        <p class="text-[5px] opacity-30 font-black">${ACC_EMOJIS[foundKey]} • ${r[13]||'ОТДЕЛ'}</p></div>
+        <p class="text-[5px] opacity-30 font-black">${cellF} • ${r[13]||'ОТДЕЛ'}</p></div>
         <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(isU?0:2)}${isU?'₴':'€'}</div></div>`;
     }); 
     drawBalance();
 }
 
-// Функции save, openModal, addItemRow, calcRow, calcSimple, closeModal без изменений логики
 async function save(e) { e.preventDefault(); const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.innerText="..."; const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value); let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t }; if(t==='expense') { p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value; const rows=document.querySelectorAll('.item-row'); if(rows.length>1) p.items=Array.from(rows).map(row=>({nameRU:row.querySelector('.nameRU').value,qty:parseFloat(row.querySelector('.qty').value)||1,priceUnit:parseFloat(row.querySelector('.priceUnit').value)||0,totalUah:parseFloat(row.querySelector('.totalUah').value)||0})); else { const f=rows[0]; p.nameRU=f.querySelector('.nameRU').value; p.qty=parseFloat(f.querySelector('.qty').value)||1; p.priceUnit=parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah=parseFloat(f.querySelector('.totalUah').value)||0; } } else if(t==='transfer') { p.from=document.getElementById('tFrom').value; p.to=document.getElementById('tTo').value; p.eur=parseFloat(document.getElementById('trEur').value)||0; p.uah=parseFloat(document.getElementById('trUah').value)||0; } else if(t==='income') { p.account=document.getElementById('acc').value; p.category="💰 Доход"; p.totalEur=parseFloat(document.getElementById('valEur').value)||0; p.totalUah=parseFloat(document.getElementById('valUah').value)||0; } await fetch(API_URL,{method:'POST',body:JSON.stringify(p)}); location.reload(); }
-function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "51.2828"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${ACC_EMOJIS[m]}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
+function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "51.2828"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
 function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
 function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
 function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
