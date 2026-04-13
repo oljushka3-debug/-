@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.2</title>
+<title>SmartWallet v46.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.2</span>
+<span class="opacity-100 text-blue-500">v46.3</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -42,24 +42,32 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9LmGMq1aLDx-Eh87mSYBJsqRWUIV5kfaFWDlfYcO3FUojZz3IZCg5Fpo1URkNbEe4/exec";
 const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
-const UAH_WALLETS = ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
+const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ']; // Уточнили имя для гривневого кошелька
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
 let walletData = {};
 
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; drawBalance(); }
-function isUah(m) { return UAH_WALLETS.some(k => m.toUpperCase().includes(k)) && !m.toUpperCase().includes('КОПИЛКА'); }
+
+// ИСПРАВЛЕННАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ ВАЛЮТЫ
+function getWalletCurrency(m) {
+    if (m === '🏦👤 SPARKASSE ВАЛЕРА') return 'EUR';
+    if (m === '👤 ВАЛЕРА') return 'UAH';
+    if (m === '🍯 КОПИЛКА') return 'EUR';
+    return UAH_WALLETS.some(k => m.includes(k)) ? 'UAH' : 'EUR';
+}
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value)||51.2828; let total = 0;
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     ORDER.forEach(m => {
-        const v = walletData[m]||{uah:0,eur:0}, isU = isUah(m);
-        const eq = m==='🍯 КОПИЛКА'?v.eur:(isU?v.uah/r:v.eur);
+        const v = walletData[m]||{uah:0,eur:0};
+        const curr = getWalletCurrency(m);
+        const eq = curr === 'EUR' ? v.eur : v.uah/r;
         if(OPERATIVE.some(k=>m.includes(k))) total+=eq;
         grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center">
         <div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div>
-        <div class="text-[8px] font-black ${m==='🏦 SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${isU?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
+        <div class="text-[8px] font-black ${m==='🏦 SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
     }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
@@ -71,25 +79,29 @@ function draw(data) {
     data.rows.forEach((row, i) => {
         if(i === 0) return;
         let cellF = String(row[5] || "").trim();
-        if(!cellF) return;
+        if(!cellF || !ORDER.includes(cellF)) return;
 
-        // ЖЕСТКАЯ ПРОВЕРКА: только если ячейка F СТРОГО равна имени кошелька
-        if(ORDER.includes(cellF)) {
-            if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
-            walletData[cellF].eur += parseFloat(String(row[8] || "0").replace(',','.')) || 0;
-            walletData[cellF].uah += parseFloat(String(row[10] || "0").replace(',','.')) || 0;
-        }
+        if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
+        
+        // Прямое сопоставление колонок
+        const valE = parseFloat(String(row[8] || "0").replace(',','.')) || 0;
+        const valU = parseFloat(String(row[10] || "0").replace(',','.')) || 0;
+        
+        walletData[cellF].eur += valE;
+        walletData[cellF].uah += valU;
     });
 
-    data.rows.slice(1,20).forEach(r => {
+    data.rows.slice(1,25).forEach(r => {
         let cellF = String(r[5] || "").trim();
         if(!ORDER.includes(cellF)) return;
+        const curr = getWalletCurrency(cellF);
         const vE=parseFloat(String(r[8] || "0").replace(',','.'))||0, vU=parseFloat(String(r[10] || "0").replace(',','.'))||0;
-        if(vE===0 && vU===0) return; const isU=isUah(cellF), amt=isU?vU:vE;
+        if(vE===0 && vU===0) return;
+        const amt = curr === 'UAH' ? vU : vE;
         hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
         <div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p>
         <p class="text-[5px] opacity-30 font-black">${cellF} • ${r[13]||'ОТДЕЛ'}</p></div>
-        <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(isU?0:2)}${isU?'₴':'€'}</div></div>`;
+        <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(curr==='UAH'?0:2)}${curr==='UAH'?'₴':'€'}</div></div>`;
     }); drawBalance();
 }
 
