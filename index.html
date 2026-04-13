@@ -2,29 +2,35 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v45.6</title>
+<title>SmartWallet v45.7</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
 <button onclick="location.reload()" class="fixed top-3 right-3 z-50 bg-white/80 w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center shadow-sm">
 <i class="fa-solid fa-rotate text-blue-500 text-[10px]"></i>
-</button><div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
+</button>
+
+<div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v45.6</span>
-</div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">ЗАГРУЗКА...</h1>
+<span class="opacity-100 text-blue-500">v45.7</span>
+</div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
-</div><div class="flex gap-1 mb-2 font-black">
+</div>
+
+<div class="flex gap-1 mb-2 font-black">
 <button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Расход</button>
 <button onclick="openModal('transfer')" class="flex-1 bg-slate-100 py-3 rounded-xl text-[9px] text-slate-600 uppercase shadow-sm">Перевод</button>
 <button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Доход</button>
-</div><div id="history" class="space-y-1 text-xs font-black"></div>
+</div>
+
+<div id="history" class="space-y-1 text-xs font-black"></div>
 
 <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 z-50 font-bold">
 <div class="bg-white w-full max-w-sm rounded-[30px] p-4 shadow-2xl overflow-y-auto max-h-[90vh]">
 <h2 id="modalTitle" class="text-sm text-slate-800 mb-3 uppercase text-center font-black">ЗАПИСЬ</h2>
 <form onsubmit="save(event)" class="space-y-2">
-<input type="hidden" id="txType"><input type="hidden" id="editRowId">
+<input type="hidden" id="txType">
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
 <input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
@@ -40,9 +46,9 @@ const ORDER = ['SPARKASSE', 'SPARKASSE ВАЛЕРА', 'НАЛИЧНЫЕ', 'ПР�
 const UAH_WALLETS = ['ПРИВАТ', 'ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
-let walletData = {}, allRows = [];
+let walletData = {};
 
-function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; const cr = document.getElementById('customRate'); if(cr) cr.value = v; drawBalance(); }
+function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; if(document.getElementById('customRate')) document.getElementById('customRate').value = v; drawBalance(); }
 function isUah(m) { return UAH_WALLETS.some(k => m.toUpperCase().includes(k)) && !m.toUpperCase().includes('КОПИЛКА'); }
 function getMarker(n) { if(!n) return "ОСТАЛЬНОЕ"; let u = n.toUpperCase(); for(let k in ACC_EMOJIS) if(u.includes(k)) return k; return u; }
 
@@ -60,23 +66,34 @@ function drawBalance() {
 }
 
 function draw(data) {
-    if(!data||!data.rows) return; allRows = data.rows; walletData = {};
+    if(!data||!data.rows) return; 
+    walletData = {}; // Сброс
     const hist = document.getElementById('history'); hist.innerHTML = "";
-    allRows.forEach((row, i) => {
-        if(i===0 || !row[5]) return; 
+    
+    // ФИЛЬТР: Считаем только строки, где есть кошелек (столбец F)
+    data.rows.forEach((row, i) => {
+        if(i === 0) return; // Пропуск шапки
         const m = getMarker(row[5]);
+        if(!ACC_EMOJIS[m]) return; // Игнорируем пустые строки
+        
         if(!walletData[m]) walletData[m]={uah:0,eur:0};
-        walletData[m].eur += parseFloat(String(row[8]).replace(',','.')) || 0;
-        walletData[m].uah += parseFloat(String(row[10]).replace(',','.')) || 0;
+        
+        let valEur = parseFloat(String(row[8]).replace(',','.')) || 0;
+        let valUah = parseFloat(String(row[10]).replace(',','.')) || 0;
+        
+        walletData[m].eur += valEur;
+        walletData[m].uah += valUah;
     });
-    allRows.slice(1,25).forEach(r => {
+
+    data.rows.slice(1,25).forEach(r => {
         const m = getMarker(r[5]), vE=parseFloat(String(r[8]).replace(',','.'))||0, vU=parseFloat(String(r[10]).replace(',','.'))||0;
         if(vE===0 && vU===0) return; const isU=isUah(m), amt=isU?vU:vE;
         hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
         <div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p>
         <p class="text-[5px] opacity-30 font-black">${ACC_EMOJIS[m]} • ${r[13]||'ОТДЕЛ'}</p></div>
         <div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(isU?0:2)}${isU?'₴':'€'}</div></div>`;
-    }); drawBalance();
+    }); 
+    drawBalance();
 }
 
 async function save(e) {
