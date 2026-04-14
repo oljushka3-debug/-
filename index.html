@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.3</title>
+<title>SmartWallet v46.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.3</span>
+<span class="opacity-100 text-blue-500">v46.4</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -36,20 +36,51 @@
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
-<div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select><select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase"><option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🛍 Остальное / Шопинг</option><option>💰 Доход</option></select></div>
+<div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select>
+<select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase">
+  <option>🍎 Продукты / Быт</option>
+  <option>💰 Доход</option>
+  <option>💊 Здоровье</option>
+  <option>🌐 Связь и IT</option>
+  <option>🏠 Дом и Быт</option>
+  <option>🍫 Сладости</option>
+  <option>🥫 Бакалея и Консервы</option>
+  <option>🧊 Заморозка</option>
+  <option>🧀 Молочка и Сыры</option>
+  <option>♻️ Залог (Pfand)</option>
+  <option>🛀 Гигиена</option>
+  <option>🥖 Хлебобулочные</option>
+  <option>🏷️ Скидка</option>
+  <option>🚗 Авто</option>
+  <option>🍷 Алкоголь</option>
+  <option>🚬 Табак</option>
+  <option>🥩 Мясо, Фарш</option>
+  <option>🥗 Овощи / Фрукты</option>
+  <option>🌭 Колбасы / Фрикадели</option>
+  <option>🍜 Макароныые изделия</option>
+  <option>🧃 Напитки</option>
+  <option>🫙 Возврат тары</option>
+  <option>🌭 Колбасы</option>
+  <option>☕️ 🌭 Перекус</option>
+  <option>☕️ Кафе / Отдых</option>
+  <option>🩲 Одежда</option>
+  <option>🍵☕️ Чай / Кофе</option>
+  <option>🎁 Подарок</option>
+  <option>🏦 Финансы</option>
+  <option>🛍 Разное</option>
+</select></div>
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9LmGMq1aLDx-Eh87mSYBJsqRWUIV5kfaFWDlfYcO3FUojZz3IZCg5Fpo1URkNbEe4/exec";
 const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
-const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ']; // Уточнили имя для гривневого кошелька
+const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
 let walletData = {};
 
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; drawBalance(); }
 
-// ИСПРАВЛЕННАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ ВАЛЮТЫ
 function getWalletCurrency(m) {
     if (m === '🏦👤 SPARKASSE ВАЛЕРА') return 'EUR';
     if (m === '👤 ВАЛЕРА') return 'UAH';
@@ -82,11 +113,8 @@ function draw(data) {
         if(!cellF || !ORDER.includes(cellF)) return;
 
         if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
-        
-        // Прямое сопоставление колонок
         const valE = parseFloat(String(row[8] || "0").replace(',','.')) || 0;
         const valU = parseFloat(String(row[10] || "0").replace(',','.')) || 0;
-        
         walletData[cellF].eur += valE;
         walletData[cellF].uah += valU;
     });
