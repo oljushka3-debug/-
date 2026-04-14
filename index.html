@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.4</title>
+<title>SmartWallet v46.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.4</span>
+<span class="opacity-100 text-blue-500">v46.5</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -32,7 +32,35 @@
 <form onsubmit="save(event)" class="space-y-2">
 <input type="hidden" id="txType">
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
-<input type="text" id="merchant" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
+
+<input type="text" id="merchant" list="shopList" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
+<datalist id="shopList">
+  <option value="EDEKA">
+  <option value="Lidl">
+  <option value="Kaufland">
+  <option value="Netto">
+  <option value="Rossman">
+  <option value="dm">
+  <option value="PayPal">
+  <option value="Tankstelle">
+  <option value="Woolworth">
+  <option value="Aldi">
+  <option value="Apple">
+  <option value="Scribd">
+  <option value="Post">
+  <option value="Telekom">
+  <option value="Health AG (Dentarra)">
+  <option value="Galeria">
+  <option value="Teddi">
+  <option value="Sekond Hand">
+  <option value="Перевод (Вход)">
+  <option value="Перевод (Выход)">
+  <option value="Стипендия">
+  <option value="Страховка">
+  <option value="Кафе">
+  <option value="Стоянка">
+</datalist>
+
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
