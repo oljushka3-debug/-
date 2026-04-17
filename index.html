@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v55.1</title>
+    <title>SmartWallet v55.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
     <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
         <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-        <span class="opacity-100 text-blue-500">v55.1</span>
+        <span class="opacity-100 text-blue-500">v55.2</span>
     </div>
     <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -47,6 +47,7 @@
 
             <div id="expenseSection" class="hidden space-y-2">
                 <div id="itemsList" class="space-y-1"></div>
+                <button type="button" onclick="addItemRow()" class="w-full py-1 border-2 border-dashed border-rose-200 rounded-lg text-rose-400 text-[8px] uppercase font-black">+ Добавить товар</button>
             </div>
 
             <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center">
@@ -68,7 +69,7 @@
             <div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic">
                 <select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select>
                 <select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase">
-                    <option>🍎 Продукты / Быт</option><option>💰 Доход</option><option>💊 Здоровье</option><option>🚗 Авто</option><option>🛍 Разное</option>
+                    <option>🍎 Продукты / Быт</option><option>💰 Доход</option><option>🍷 Алкоголь</option><option>🚬 Табак</option><option>💊 Здоровье</option><option>🚗 Авто</option><option>🛍 Разное</option>
                 </select>
             </div>
 
@@ -142,38 +143,45 @@ async function save(event) {
     
     const t = document.getElementById('txType').value;
     const r = parseFloat(document.getElementById('customRate').value); 
-    let p = { 
+    const commonData = { 
         date: document.getElementById('date').value, 
         rate: r, 
         merchant: document.getElementById('merchant').value, 
         action: t 
     }; 
 
+    btn.disabled = true; btn.innerText = "...";
+
     if (t === 'expense') { 
-        p.account = document.getElementById('acc').value; 
-        p.category = document.getElementById('cat').value; 
-        const row = document.querySelector('.item-row'); 
-        p.nameRU = row.querySelector('.nameRU').value; 
-        p.qty = parseFloat(row.querySelector('.qty').value) || 1; 
-        p.priceUnit = parseFloat(row.querySelector('.priceUnit').value) || 0; 
-        p.totalUah = parseFloat(row.querySelector('.totalUah').value) || 0; 
-        if (!p.priceUnit && !p.merchant) return; // Защита от призрака
+        const rows = document.querySelectorAll('.item-row');
+        for (let row of rows) {
+            let p = {...commonData};
+            p.account = document.getElementById('acc').value; 
+            p.category = document.getElementById('cat').value; 
+            p.nameRU = row.querySelector('.nameRU').value; 
+            p.qty = parseFloat(row.querySelector('.qty').value) || 1; 
+            p.priceUnit = parseFloat(row.querySelector('.priceUnit').value) || 0; 
+            p.totalUah = parseFloat(row.querySelector('.totalUah').value) || 0; 
+            if (p.priceUnit || p.totalUah) {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
+            }
+        }
     } else if (t === 'transfer') { 
+        let p = {...commonData};
         p.from = document.getElementById('tFrom').value; 
         p.to = document.getElementById('tTo').value; 
         p.eur = parseFloat(document.getElementById('trEur').value) || 0; 
         p.uah = parseFloat(document.getElementById('trUah').value) || 0; 
-        if (!p.eur && !p.uah) return;
+        if (p.eur || p.uah) await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     } else if (t === 'income') { 
+        let p = {...commonData};
         p.account = document.getElementById('acc').value; 
         p.category = "💰 Доход"; 
         p.priceUnit = parseFloat(document.getElementById('valEur').value) || 0; 
         p.totalUah = parseFloat(document.getElementById('valUah').value) || 0; 
-        if (!p.priceUnit && !p.totalUah) return;
+        if (p.priceUnit || p.totalUah) await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     } 
 
-    btn.disabled = true; btn.innerText = "..."; 
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
     setTimeout(() => { location.reload(); }, 600);
 }
 
@@ -191,7 +199,7 @@ function openModal(t){
 }
 
 function addItemRow() { 
-    document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> 
+    document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1 relative"> 
     <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> 
     <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); 
 }
