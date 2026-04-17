@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v55.0</title>
+    <title>SmartWallet v55.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
     <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
         <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-        <span class="opacity-100 text-blue-500">v55.0</span>
+        <span class="opacity-100 text-blue-500">v55.1</span>
     </div>
     <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -40,17 +40,13 @@
                 <input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black">
             </div>
 
-            <input type="text" id="merchant" list="shopList" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
+            <input type="text" id="merchant" list="shopList" placeholder="Магазин / Описание" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
             <datalist id="shopList">
-                <option value="EDEKA"><option value="Lidl"><option value="Kaufland"><option value="Netto"><option value="Rossman">
-                <option value="dm"><option value="PayPal"><option value="Tankstelle"><option value="Woolworth"><option value="Aldi">
-                <option value="Apple"><option value="Scribd"><option value="Post"><option value="Telekom">
-                <option value="Health AG (Dentarra)"><option value="Galeria"><option value="Teddi"><option value="Sekond Hand">
+                <option value="Lidl"><option value="Kaufland"><option value="EDEKA"><option value="Netto"><option value="Rossman"><option value="dm">
             </datalist>
 
             <div id="expenseSection" class="hidden space-y-2">
                 <div id="itemsList" class="space-y-1"></div>
-                <button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button>
             </div>
 
             <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center">
@@ -72,19 +68,13 @@
             <div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic">
                 <select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select>
                 <select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase">
-                    <option>🍎 Продукты / Быт</option><option>💰 Доход</option><option>💊 Здоровье</option>
-                    <option>🌐 Связь и IT</option><option>🏠 Дом и Быт</option><option>🍫 Сладости</option>
-                    <option>🥫 Бакалея и Консервы</option><option>🧊 Заморозка</option><option>🧀 Молочка и Сыры</option>
-                    <option>♻️ Залог (Pfand)</option><option>🛀 Гигиена</option><option>🥖 Хлебобулочные</option>
-                    <option>🏷️ Скидка</option><option>🚗 Авто</option><option>🍷 Алкоголь</option>
-                    <option>🚬 Табак</option><option>🥩 Мясо, Фарш</option><option>🥗 Овощи / Фрукты</option>
-                    <option>🌭 Колбасы</option><option>🛍 Разное</option>
+                    <option>🍎 Продукты / Быт</option><option>💰 Доход</option><option>💊 Здоровье</option><option>🚗 Авто</option><option>🛍 Разное</option>
                 </select>
             </div>
 
             <div class="flex gap-2 pt-1">
                 <button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button>
-                <button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button>
+                <button type="submit" id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button>
             </div>
         </form>
     </div>
@@ -146,10 +136,9 @@ function draw(data) {
 }
 
 async function save(event) { 
-    event.preventDefault(); 
+    if (event) event.preventDefault(); 
     const btn = document.getElementById('saveBtn'); 
-    btn.disabled = true; 
-    btn.innerText = "..."; 
+    if (btn.disabled) return;
     
     const t = document.getElementById('txType').value;
     const r = parseFloat(document.getElementById('customRate').value); 
@@ -168,18 +157,22 @@ async function save(event) {
         p.qty = parseFloat(row.querySelector('.qty').value) || 1; 
         p.priceUnit = parseFloat(row.querySelector('.priceUnit').value) || 0; 
         p.totalUah = parseFloat(row.querySelector('.totalUah').value) || 0; 
+        if (!p.priceUnit && !p.merchant) return; // Защита от призрака
     } else if (t === 'transfer') { 
         p.from = document.getElementById('tFrom').value; 
         p.to = document.getElementById('tTo').value; 
         p.eur = parseFloat(document.getElementById('trEur').value) || 0; 
         p.uah = parseFloat(document.getElementById('trUah').value) || 0; 
+        if (!p.eur && !p.uah) return;
     } else if (t === 'income') { 
         p.account = document.getElementById('acc').value; 
         p.category = "💰 Доход"; 
         p.priceUnit = parseFloat(document.getElementById('valEur').value) || 0; 
         p.totalUah = parseFloat(document.getElementById('valUah').value) || 0; 
+        if (!p.priceUnit && !p.totalUah) return;
     } 
 
+    btn.disabled = true; btn.innerText = "..."; 
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
     setTimeout(() => { location.reload(); }, 600);
 }
