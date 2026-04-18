@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v56.2</title>
+<title>SmartWallet v56.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -20,7 +20,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-20 bg-slate-50 rounded px-1 text-blue-600 outline-none font-bold"></span>
-<span class="opacity-100 text-blue-500">v56.2</span>
+<span class="opacity-100 text-blue-500">v56.3</span>
 </div>
 <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -46,7 +46,7 @@
 </div>
 
 <div id="commonFields">
-<input type="text" id="merchant" list="shopList" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-1">
+<input type="text" id="merchant" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-1">
 <input type="text" id="description" placeholder="ОПИСАНИЕ (КОРРЕКТИРОВКА)" class="w-full bg-slate-50 p-2 rounded-lg border text-[9px] uppercase italic font-black mb-2">
 </div>
 
@@ -79,7 +79,6 @@
       <option value="🔄 Перевод">🔄 Перевод</option>
       <option value="🍷 Алкоголь">🍷 Алкоголь</option>
       <option value="🚬 Табак">🚬 Табак</option>
-      <option value="💊 Здоровье">💊 Здоровье</option>
     </select>
   </div>
 </div>
@@ -148,6 +147,10 @@ function openModal(t) {
     document.getElementById('expenseSection').classList.add('hidden');
     document.getElementById('simpleWallet').classList.remove('hidden');
     document.getElementById('cat').value = "💰 Доход";
+  } else if(t === 'transfer') {
+    document.getElementById('singleAmountSection').classList.remove('hidden');
+    document.getElementById('transferWallets').classList.remove('hidden');
+    document.getElementById('commonFields').classList.add('hidden');
   }
   document.getElementById('date').valueAsDate = new Date();
 }
@@ -160,15 +163,18 @@ async function save(event) {
   const wallet = document.getElementById('acc').value;
   const amount = document.getElementById('singleAmount').value;
   const curr = document.getElementById('incCur').value;
+  const dateStr = document.getElementById('date').value.split('-').reverse().join('.');
   
   let msg = "";
   if(type === 'income') {
-      // Прямая команда для скрипта, чтобы он разложил по I и K
-      msg = `💰 Доход ${merchant} ${desc} ${wallet} ${amount} ${curr}`;
+      // Формат для скрипта: Дата | 💰 Доход | Магазин | Описание | Описание | Кошелек | Сумма | Валюта
+      msg = `ДОХОД_СТРОКА ${dateStr} | 💰 Доход | ${merchant} | ${desc} | ${wallet} | ${amount} | ${curr}`;
   } else if(type === 'expense') {
       document.querySelectorAll('.item-row').forEach(row => {
           msg = `п ${merchant} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value} ${wallet}`;
       });
+  } else if(type === 'transfer') {
+      msg = `Перевод ${document.getElementById('accFrom').value} -> ${document.getElementById('accTo').value} ${amount}`;
   }
 
   await fetch(API_URL, { method: 'POST', body: JSON.stringify({ message: { text: msg, chat: { id: 0 } } }) });
