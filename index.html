@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartWallet v55.2</title>
+    <title>SmartWallet v55.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
     <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
         <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-        <span class="opacity-100 text-blue-500">v55.2</span>
+        <span class="opacity-100 text-blue-500">v55.3</span>
     </div>
     <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
     <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -82,9 +82,25 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzB8hXXbvlSOtVWVN7LeZRvgS5WoJ7tbTc5R7pZgkx8czU1UQFwj264MRuWI3T8zxF7/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyZBLdrbTdPZg6r4fPwqXxXdo1rJUTG0cWaZuv0SK_71J5pG7JlnyivTWdN9V8Foggl/exec";
 const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
 const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
+
+// ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ОТДЕЛА ДЛЯ КОЛОНКИ N
+function getDept(n) {
+    if (!n) return "SmartWallet";
+    const s = n.toLowerCase();
+    if (s.includes("pizza") || s.includes("пицца") || s.includes("pmzza") || s.includes("пмцца") || s.includes("wagner") || s.includes("frikadellen") || s.includes("фрикадельки") || s.includes("заморож")) return "Заморозка 🧊";
+    if (s.includes("internet") || s.includes("funk") || s.includes("icloud") || s.includes("apple")) return "Связь и IT 🌐";
+    if (s.includes("schokolade") || s.includes("шоколад") || s.includes("слад")) return "Сладости 🍫";
+    if (s.includes("butter") || s.includes("масло") || s.includes("сыр") || s.includes("käse") || s.includes("eier") || s.includes("яйца")) return "Молочка и Сыры 🧀";
+    if (s.includes("pfand") || s.includes("залог") || s.includes("leergut")) return "Залог (Pfand) ♻️";
+    if (s.includes("bensin") || s.includes("бензин") || s.includes("park")) return "Авто 🚗";
+    if (s.includes("wein") || s.includes("вино") || s.includes("bier") || s.includes("пиво") || s.includes("водка")) return "Алкоголь 🍷";
+    if (s.includes("tabak") || s.includes("табак")) return "Табак 🚬";
+    if (s.includes("füllungen") || s.includes("пломбы") || s.includes("itzehoer") || s.includes("здоровье")) return "ОтделЗдоровье 💊";
+    return "SmartWallet";
+}
 
 let walletData = {};
 
@@ -113,8 +129,8 @@ function drawBalance() {
 }
 
 function draw(data) {
-    if(!data||!data.rows) return; 
-    walletData = {}; 
+    if(!data||!data.rows) return; 
+    walletData = {}; 
     const hist = document.getElementById('history'); hist.innerHTML = "";
     data.rows.forEach((row, i) => {
         if(i === 0) return;
@@ -162,6 +178,10 @@ async function save(event) {
             p.qty = parseFloat(row.querySelector('.qty').value) || 1; 
             p.priceUnit = parseFloat(row.querySelector('.priceUnit').value) || 0; 
             p.totalUah = parseFloat(row.querySelector('.totalUah').value) || 0; 
+            
+            // ХИРУРГИЧЕСКАЯ ПРАВКА: ОПРЕДЕЛЯЕМ ОТДЕЛ ДЛЯ КОЛОНКИ N
+            p.department = getDept(p.nameRU);
+
             if (p.priceUnit || p.totalUah) {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }); 
             }
@@ -172,6 +192,7 @@ async function save(event) {
         p.to = document.getElementById('tTo').value; 
         p.eur = parseFloat(document.getElementById('trEur').value) || 0; 
         p.uah = parseFloat(document.getElementById('trUah').value) || 0; 
+        p.department = "Перевод";
         if (p.eur || p.uah) await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     } else if (t === 'income') { 
         let p = {...commonData};
@@ -179,6 +200,7 @@ async function save(event) {
         p.category = "💰 Доход"; 
         p.priceUnit = parseFloat(document.getElementById('valEur').value) || 0; 
         p.totalUah = parseFloat(document.getElementById('valUah').value) || 0; 
+        p.department = "Доход 🏦";
         if (p.priceUnit || p.totalUah) await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
     } 
 
