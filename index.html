@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v56.4</title>
+<title>SmartWallet v56.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -20,7 +20,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-20 bg-slate-50 rounded px-1 text-blue-600 outline-none font-bold"></span>
-<span class="opacity-100 text-blue-500">v56.4</span>
+<span class="opacity-100 text-blue-500">v56.6</span>
 </div>
 <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -47,7 +47,7 @@
 
 <div id="commonFields">
 <input type="text" id="merchant" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-1">
-<input type="text" id="description" placeholder="ОПИСАНИЕ (КОРРЕКТИРОВКА)" class="w-full bg-slate-50 p-2 rounded-lg border text-[9px] uppercase italic font-black mb-2">
+<input type="text" id="description" placeholder="ОПИСАНИЕ (РУ)" class="w-full bg-slate-50 p-2 rounded-lg border text-[9px] uppercase italic font-black mb-2">
 </div>
 
 <div id="incomeCurrency" class="hidden grid grid-cols-2 gap-2 mb-2">
@@ -66,16 +66,11 @@
 </div>
 
 <div id="accountSection" class="grid grid-cols-1 gap-1 mt-2">
-  <div id="transferWallets" class="hidden grid grid-cols-2 gap-1">
-    <select id="accFrom" class="wallet-select bg-rose-50 p-2 rounded-lg border text-[8px] uppercase"></select>
-    <select id="accTo" class="wallet-select bg-emerald-50 p-2 rounded-lg border text-[8px] uppercase"></select>
-  </div>
-  
   <div id="simpleWallet" class="grid grid-cols-2 gap-1">
     <select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border text-[8px] uppercase font-bold"></select>
     <select id="cat" class="bg-slate-50 p-2 rounded-lg border text-[8px] uppercase font-bold">
-      <option value="🍎 Продукты / Быт">🍎 Продукты / Быт</option>
       <option value="💰 Доход">💰 Доход</option>
+      <option value="🍎 Продукты / Быт">🍎 Продукты / Быт</option>
       <option value="🔄 Перевод">🔄 Перевод</option>
       <option value="🍷 Алкоголь">🍷 Алкоголь</option>
       <option value="🚬 Табак">🚬 Табак</option>
@@ -132,25 +127,17 @@ function openModal(t) {
   document.getElementById('modal').classList.remove('hidden');
   document.getElementById('txType').value = t;
   document.getElementById('incomeCurrency').classList.add('hidden');
-  
   const selects = document.querySelectorAll('.wallet-select');
   selects.forEach(s => { s.innerHTML = ""; ORDER.forEach(w => { s.innerHTML += `<option value="${w}">${w}</option>`; }); });
 
-  if(t === 'expense') {
-    document.getElementById('expenseSection').classList.remove('hidden');
-    document.getElementById('simpleWallet').classList.remove('hidden');
-    document.getElementById('singleAmountSection').classList.add('hidden');
-    document.getElementById('cat').value = "🍎 Продукты / Быт";
-  } else if(t === 'income') {
+  if(t === 'income') {
     document.getElementById('incomeCurrency').classList.remove('hidden');
     document.getElementById('singleAmountSection').classList.remove('hidden');
     document.getElementById('expenseSection').classList.add('hidden');
-    document.getElementById('simpleWallet').classList.remove('hidden');
     document.getElementById('cat').value = "💰 Доход";
-  } else if(t === 'transfer') {
-    document.getElementById('singleAmountSection').classList.remove('hidden');
-    document.getElementById('transferWallets').classList.remove('hidden');
-    document.getElementById('commonFields').classList.add('hidden');
+  } else {
+    document.getElementById('expenseSection').classList.remove('hidden');
+    document.getElementById('singleAmountSection').classList.add('hidden');
   }
   document.getElementById('date').valueAsDate = new Date();
 }
@@ -158,42 +145,27 @@ function openModal(t) {
 async function save(event) {
   event.preventDefault();
   const type = document.getElementById('txType').value;
-  const merchant = document.getElementById('merchant').value;
-  const desc = document.getElementById('description').value || merchant;
-  const wallet = document.getElementById('acc').value;
-  const amount = document.getElementById('singleAmount').value;
+  const date = document.getElementById('date').value.split('-').reverse().join('.');
+  const cat = document.getElementById('cat').value;
+  const shop = document.getElementById('merchant').value;
+  const desc = document.getElementById('description').value || shop;
+  const card = document.getElementById('acc').value;
+  const amount = document.getElementById('singleAmount').value.replace('.', ',');
   const curr = document.getElementById('incCur').value;
-  const rate = document.getElementById('customRate').value;
-  const dateStr = document.getElementById('date').value.split('-').reverse().join('.');
+  const rate = document.getElementById('customRate').value.replace('.', ',');
   
-  let payload = {};
+  let msg = "";
   if(type === 'income') {
-      // Прямая адресация колонок для доходного скрипта
-      payload = {
-          type: "INCOME_FIX",
-          date: dateStr,      // A
-          cat: "💰 Доход",    // B
-          shop: merchant,     // C
-          desc: desc,         // E (РУ)
-          card: wallet,       // F
-          eur: curr === 'EUR' ? amount : "0", // I
-          uah: curr === 'UAH' ? amount : "0", // K
-          rate: rate          // M
-      };
+      const eur = curr === 'EUR' ? amount : "0,00";
+      const uah = curr === 'UAH' ? amount : "0,00";
+      // СТРОГО ПО КОЛОНКАМ A|B|C|D|E|F|G|H|I|J|K|L|M|N
+      msg = `${date}\t${cat}\t${shop}\t\t${desc}\t${card}\t\t\t${eur}\tEUR\t${uah}\tUAH\t${rate}\tДоход`;
   } else {
-      // Для обычных трат оставляем старую логику, но в одну строку
-      let msg = "";
-      if(type === 'expense') {
-          document.querySelectorAll('.item-row').forEach(row => {
-              msg = `п ${merchant} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value} ${wallet}`;
-          });
-      } else {
-          msg = `Перевод ${document.getElementById('accFrom').value} -> ${document.getElementById('accTo').value} ${amount}`;
-      }
-      payload = { message: { text: msg, chat: { id: 0 } } };
+      // Для расходов оставляем старый формат команды "п Магазин Цена Товар Карта"
+      msg = `п ${shop} ${amount} ${desc} ${card}`;
   }
 
-  await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+  await fetch(API_URL, { method: 'POST', body: JSON.stringify({ message: { text: msg, chat: { id: 0 } } }) });
   location.reload();
 }
 
