@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v55.3</title>
+<title>SmartWallet v55.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v55.3</span>
+<span class="opacity-100 text-blue-500">v55.4</span>
 </div>
 <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -82,6 +82,7 @@
 </div>
 
 <script>
+// ОБНОВЛЕННЫЙ АДРЕС СКРИПТА
 const API_URL = "https://script.google.com/macros/s/AKfycbyZBLdrbTdPZg6r4fPwqXxXdo1rJUTG0cWaZuv0SK_71J5pG7JlnyivTWdN9V8Foggl/exec";
 const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
 const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
@@ -103,7 +104,7 @@ function getDept(name) {
   if (/löffel|teller|ложки|тарелки|trennwand|рассекатель|müllsäcke|пакеты для мусора|tulпен|цветы|aufbewahrungs/.test(n)) return "🏠 Дом и Быт";
   if (/schoko|шоколад|riegel|батончик|savoiardi|печенье|pflaumenm|мусс|edelzartbitter|белый|кекс|gugel|früchte|фрукты|kokos|пирож|конфет|сладости/.test(n)) return "🍫 Сладости";
   if (/mandel|миндаль|erdnue|арахис|kraut|капуста|cornichon|корнишон|kartoffelsalat|салат|linsen|чечевица|sell|сельдерей|schaeltomate|томат|saft|сок|senf|горчица|sauce|соус|zitron|лимон|wuerze|приправа|zwiebel|лук|zucker|сахар|paprika|паприка|kurkuma|куркума|gurken|огурцы|prodomo|кофе/.test(n)) return "🥫 Бакалея и Консервы";
-  if (/pizza|пицца|piccolinis|pfannengemuese|frikadellen|фрикадели|asia|iglo|filet|филе|italien/.test(n)) return "🧊 Заморозка";
+  if (/pizza|pmzza|пицца|пмцца|piccolinis|pfannengemuese|frikadellen|фрикадели|asia|iglo|filet|филе|italien/.test(n)) return "🧊 Заморозка";
   if (/butter|масло|edamer|сыр|joghurt|йогурт|skyr|скир|quark|творог|brie|бри|fraiche|фреш|eier|яйца|philadelphia|öl|milch|молоко|chedd|чеддер|gouda|гауда/.test(n)) return "🧀 Молочка и Сыры";
   if (/pfand|залог|leergut|тара|депозит/.test(n)) return "♻️ Залог (Pfand)";
   if (/toilettenpapier|бумага|tatü|салфетки|elvital|maske|deo|mint|dontodent|watte|диски|urea|fussba|палочки|handtuch|полотенце|краска/.test(n)) return "🛀 Гигиена";
@@ -187,8 +188,7 @@ p.nameRU = row.querySelector('.nameRU').value;
 p.qty = parseFloat(row.querySelector('.qty').value) || 1;
 p.priceUnit = parseFloat(row.querySelector('.priceUnit').value) || 0;
 p.totalUah = parseFloat(row.querySelector('.totalUah').value) || 0;
-// АВТОЗАПОЛНЕНИЕ ОТДЕЛА
-p.dept = getDept(p.nameRU);
+p.dept = getDept(p.nameRU); // Авто-отдел
 if (p.priceUnit || p.totalUah) {
 await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
 }
