@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v56.0</title>
+<title>SmartWallet v56.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -19,8 +19,8 @@
 
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
-<span>Курс: <input type="number" id="baseRate" step="0.1" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v56.0</span>
+<span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-20 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
+<span class="opacity-100 text-blue-500">v56.1</span>
 </div>
 <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -42,11 +42,12 @@
 
 <div class="grid grid-cols-2 gap-2">
 <input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black">
-<input type="number" id="customRate" step="0.1" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black">
+<input type="number" id="customRate" step="0.0001" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black" oninput="syncRate(this.value)">
 </div>
 
 <div id="commonFields">
-<input type="text" id="merchant" list="shopList" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-2">
+<input type="text" id="merchant" list="shopList" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-1">
+<input type="text" id="description" placeholder="ОПИСАНИЕ (КОРРЕКТИРОВКА)" class="w-full bg-slate-50 p-2 rounded-lg border text-[9px] uppercase italic font-black mb-2">
 <datalist id="shopList">
 <option value="LIDL"><option value="KAUFLAND"><option value="EDEKA"><option value="NETTO"><option value="ROSSMANN"><option value="DM"><option value="SPARKASSE">
 </datalist>
@@ -63,14 +64,8 @@
 
 <div id="accountSection" class="grid grid-cols-1 gap-1 mt-2">
   <div id="transferWallets" class="hidden grid grid-cols-2 gap-1">
-    <div class="flex flex-col">
-      <span class="text-[6px] opacity-40 ml-2">ОТКУДА</span>
-      <select id="accFrom" class="wallet-select bg-rose-50 p-2 rounded-lg border text-[8px] uppercase"></select>
-    </div>
-    <div class="flex flex-col">
-      <span class="text-[6px] opacity-40 ml-2">КУДА</span>
-      <select id="accTo" class="wallet-select bg-emerald-50 p-2 rounded-lg border text-[8px] uppercase"></select>
-    </div>
+    <select id="accFrom" class="wallet-select bg-rose-50 p-2 rounded-lg border text-[8px] uppercase"></select>
+    <select id="accTo" class="wallet-select bg-emerald-50 p-2 rounded-lg border text-[8px] uppercase"></select>
   </div>
   
   <div id="simpleWallet" class="grid grid-cols-2 gap-1">
@@ -83,7 +78,7 @@
 
 <div class="flex gap-2 pt-4">
 <button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-3 rounded-xl uppercase text-[8px] text-slate-300">ОТМЕНА</button>
-<button type="submit" id="saveBtn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl uppercase text-[8px] shadow-md font-black italic">ПОДТВЕРДИТЬ</button>
+<button type="submit" id="saveBtn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button>
 </div>
 </form>
 </div>
@@ -95,7 +90,13 @@ const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛ
 
 let walletData = {};
 
-function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('customRate').value = v; drawBalance(); }
+function syncRate(v) { 
+  if(!v) return; 
+  localStorage.setItem('wallet_base_rate', v); 
+  document.getElementById('baseRate').value = v; 
+  document.getElementById('customRate').value = v; 
+  drawBalance(); 
+}
 
 function drawBalance() {
   const r = parseFloat(document.getElementById('baseRate').value) || 50.75;
@@ -140,18 +141,16 @@ function draw(data) {
 }
 
 function openModal(t) {
-  const m = document.getElementById('modal'); m.classList.remove('hidden');
+  document.getElementById('modal').classList.remove('hidden');
   document.getElementById('txType').value = t;
   document.getElementById('modalTitle').innerText = t === 'expense' ? 'РАСХОД' : (t === 'income' ? 'ДОХОД' : 'ПЕРЕВОД');
   
-  // Сброс видимости
   document.getElementById('expenseSection').classList.add('hidden');
   document.getElementById('singleAmountSection').classList.add('hidden');
   document.getElementById('transferWallets').classList.add('hidden');
   document.getElementById('simpleWallet').classList.add('hidden');
   document.getElementById('commonFields').classList.remove('hidden');
 
-  // Настройка по типу
   const selects = document.querySelectorAll('.wallet-select');
   selects.forEach(s => { s.innerHTML = ""; ORDER.forEach(w => { s.innerHTML += `<option value="${w}">${w}</option>`; }); });
 
@@ -168,7 +167,6 @@ function openModal(t) {
     document.getElementById('singleAmountSection').classList.remove('hidden');
     document.getElementById('transferWallets').classList.remove('hidden');
     document.getElementById('commonFields').classList.add('hidden');
-    document.getElementById('merchant').value = "ПЕРЕВОД";
   }
   document.getElementById('date').valueAsDate = new Date();
   document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || 50.75;
@@ -178,17 +176,21 @@ async function save(event) {
   event.preventDefault();
   const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "ЗАПИСЬ...";
   const type = document.getElementById('txType').value;
+  const rate = document.getElementById('customRate').value;
+  const merchant = document.getElementById('merchant').value;
+  const desc = document.getElementById('description').value || merchant;
+  const wallet = document.getElementById('acc').value;
   let messages = [];
 
   if(type === 'expense') {
     document.querySelectorAll('.item-row').forEach(row => {
-      messages.push(`п ${document.getElementById('merchant').value} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value}`);
+      messages.push(`п ${merchant} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value}`);
     });
   } else if(type === 'income') {
-    messages.push(`💰 ${document.getElementById('merchant').value} ${document.getElementById('singleAmount').value} Доход`);
+    // Формат: 💰 Доход [Магазин] [Описание] [Кошелек] [Сумма]
+    messages.push(`💰 Доход ${merchant} ${desc} ${wallet} ${document.getElementById('singleAmount').value}`);
   } else if(type === 'transfer') {
-    // Для перевода можно реализовать логику через скрипт, пока шлем просто текст
-    messages.push(`Перевод: ${document.getElementById('accFrom').value} -> ${document.getElementById('accTo').value} Сумма: ${document.getElementById('singleAmount').value}`);
+    messages.push(`Перевод ${document.getElementById('accFrom').value} -> ${document.getElementById('accTo').value} ${document.getElementById('singleAmount').value}`);
   }
 
   for (let text of messages) {
@@ -209,6 +211,7 @@ function closeModal() { document.getElementById('modal').classList.add('hidden')
 window.onload = () => {
   const r = localStorage.getItem('wallet_base_rate') || "50.75";
   document.getElementById('baseRate').value = r;
+  document.getElementById('customRate').value = r;
   const s = document.createElement('script');
   s.src = API_URL + "?callback=draw&_t=" + Date.now();
   document.body.appendChild(s);
