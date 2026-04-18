@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v56.1</title>
+<title>SmartWallet v56.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -19,8 +19,8 @@
 
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
-<span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-20 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v56.1</span>
+<span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-20 bg-slate-50 rounded px-1 text-blue-600 outline-none font-bold"></span>
+<span class="opacity-100 text-blue-500">v56.2</span>
 </div>
 <h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
@@ -48,9 +48,12 @@
 <div id="commonFields">
 <input type="text" id="merchant" list="shopList" placeholder="МАГАЗИН / ИСТОЧНИК" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black mb-1">
 <input type="text" id="description" placeholder="ОПИСАНИЕ (КОРРЕКТИРОВКА)" class="w-full bg-slate-50 p-2 rounded-lg border text-[9px] uppercase italic font-black mb-2">
-<datalist id="shopList">
-<option value="LIDL"><option value="KAUFLAND"><option value="EDEKA"><option value="NETTO"><option value="ROSSMANN"><option value="DM"><option value="SPARKASSE">
-</datalist>
+</div>
+
+<div id="incomeCurrency" class="hidden grid grid-cols-2 gap-2 mb-2">
+    <button type="button" onclick="setIncCur('EUR')" id="btnEur" class="py-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700 text-[10px]">ЕВРО (€)</button>
+    <button type="button" onclick="setIncCur('UAH')" id="btnUah" class="py-2 rounded-lg border-2 border-slate-100 bg-slate-50 text-slate-400 text-[10px]">ГРИВНА (₴)</button>
+    <input type="hidden" id="incCur" value="EUR">
 </div>
 
 <div id="expenseSection" class="hidden space-y-2">
@@ -69,9 +72,14 @@
   </div>
   
   <div id="simpleWallet" class="grid grid-cols-2 gap-1">
-    <select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border text-[8px] uppercase"></select>
-    <select id="cat" class="bg-slate-50 p-2 rounded-lg border text-[8px] uppercase">
-      <option>🍎 Продукты / Быт</option><option>🍷 Алкоголь</option><option>🚬 Табак</option><option>💊 Здоровье</option><option>🚗 Авто</option><option>🛍 Остальное</option><option>💰 Доход</option><option>🔄 Перевод</option>
+    <select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border text-[8px] uppercase font-bold"></select>
+    <select id="cat" class="bg-slate-50 p-2 rounded-lg border text-[8px] uppercase font-bold">
+      <option value="🍎 Продукты / Быт">🍎 Продукты / Быт</option>
+      <option value="💰 Доход">💰 Доход</option>
+      <option value="🔄 Перевод">🔄 Перевод</option>
+      <option value="🍷 Алкоголь">🍷 Алкоголь</option>
+      <option value="🚬 Табак">🚬 Табак</option>
+      <option value="💊 Здоровье">💊 Здоровье</option>
     </select>
   </div>
 </div>
@@ -98,6 +106,13 @@ function syncRate(v) {
   drawBalance(); 
 }
 
+function setIncCur(curr) {
+    document.getElementById('incCur').value = curr;
+    const isEur = curr === 'EUR';
+    document.getElementById('btnEur').className = isEur ? "py-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700 text-[10px]" : "py-2 rounded-lg border-2 border-slate-100 bg-slate-50 text-slate-400 text-[10px]";
+    document.getElementById('btnUah').className = !isEur ? "py-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700 text-[10px]" : "py-2 rounded-lg border-2 border-slate-100 bg-slate-50 text-slate-400 text-[10px]";
+}
+
 function drawBalance() {
   const r = parseFloat(document.getElementById('baseRate').value) || 50.75;
   let totalEur = 0;
@@ -114,88 +129,49 @@ function drawBalance() {
   document.getElementById('mainBalance').innerText = '€ ' + totalEur.toLocaleString('de-DE', {minimumFractionDigits: 2});
 }
 
-function draw(data) {
-  if(!data || !data.rows) return;
-  walletData = {};
-  const hist = document.getElementById('history'); hist.innerHTML = "";
-  data.rows.forEach((row, i) => {
-    if(i === 0) return;
-    let acc = String(row[5] || "").trim();
-    if(!ORDER.includes(acc)) return;
-    if(!walletData[acc]) walletData[acc] = {uah: 0, eur: 0};
-    walletData[acc].eur += parseFloat(String(row[8]||"0").replace(',','.')) || 0;
-    walletData[acc].uah += parseFloat(String(row[10]||"0").replace(',','.')) || 0;
-  });
-  data.rows.slice(1, 11).forEach(r => {
-    const acc = String(r[5]||"").trim();
-    const valEur = parseFloat(String(r[8]||"0").replace(',','.'));
-    const valUah = parseFloat(String(r[10]||"0").replace(',','.'));
-    const displayVal = valEur !== 0 ? valEur : valUah;
-    const symbol = valEur !== 0 ? '€' : '₴';
-    if(displayVal === 0) return;
-    hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
-      <div class="leading-tight"><p class="text-[9px] text-slate-700 uppercase font-black">${r[4]||r[2]}</p><p class="text-[5px] opacity-30 font-black">${acc}</p></div>
-      <div class="${displayVal < 0 ? 'text-rose-500' : 'text-emerald-500'} text-[10px] font-black italic">${displayVal > 0 ? '+' : ''}${Math.abs(displayVal).toFixed(2)}${symbol}</div></div>`;
-  });
-  drawBalance();
-}
-
 function openModal(t) {
   document.getElementById('modal').classList.remove('hidden');
   document.getElementById('txType').value = t;
-  document.getElementById('modalTitle').innerText = t === 'expense' ? 'РАСХОД' : (t === 'income' ? 'ДОХОД' : 'ПЕРЕВОД');
+  document.getElementById('incomeCurrency').classList.add('hidden');
   
-  document.getElementById('expenseSection').classList.add('hidden');
-  document.getElementById('singleAmountSection').classList.add('hidden');
-  document.getElementById('transferWallets').classList.add('hidden');
-  document.getElementById('simpleWallet').classList.add('hidden');
-  document.getElementById('commonFields').classList.remove('hidden');
-
   const selects = document.querySelectorAll('.wallet-select');
   selects.forEach(s => { s.innerHTML = ""; ORDER.forEach(w => { s.innerHTML += `<option value="${w}">${w}</option>`; }); });
 
   if(t === 'expense') {
     document.getElementById('expenseSection').classList.remove('hidden');
     document.getElementById('simpleWallet').classList.remove('hidden');
+    document.getElementById('singleAmountSection').classList.add('hidden');
     document.getElementById('cat').value = "🍎 Продукты / Быт";
-    document.getElementById('itemsList').innerHTML = ""; addItemRow();
   } else if(t === 'income') {
+    document.getElementById('incomeCurrency').classList.remove('hidden');
     document.getElementById('singleAmountSection').classList.remove('hidden');
+    document.getElementById('expenseSection').classList.add('hidden');
     document.getElementById('simpleWallet').classList.remove('hidden');
     document.getElementById('cat').value = "💰 Доход";
-  } else if(t === 'transfer') {
-    document.getElementById('singleAmountSection').classList.remove('hidden');
-    document.getElementById('transferWallets').classList.remove('hidden');
-    document.getElementById('commonFields').classList.add('hidden');
   }
   document.getElementById('date').valueAsDate = new Date();
-  document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || 50.75;
 }
 
 async function save(event) {
   event.preventDefault();
-  const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerText = "ЗАПИСЬ...";
   const type = document.getElementById('txType').value;
-  const rate = document.getElementById('customRate').value;
   const merchant = document.getElementById('merchant').value;
   const desc = document.getElementById('description').value || merchant;
   const wallet = document.getElementById('acc').value;
-  let messages = [];
-
-  if(type === 'expense') {
-    document.querySelectorAll('.item-row').forEach(row => {
-      messages.push(`п ${merchant} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value}`);
-    });
-  } else if(type === 'income') {
-    // Формат: 💰 Доход [Магазин] [Описание] [Кошелек] [Сумма]
-    messages.push(`💰 Доход ${merchant} ${desc} ${wallet} ${document.getElementById('singleAmount').value}`);
-  } else if(type === 'transfer') {
-    messages.push(`Перевод ${document.getElementById('accFrom').value} -> ${document.getElementById('accTo').value} ${document.getElementById('singleAmount').value}`);
+  const amount = document.getElementById('singleAmount').value;
+  const curr = document.getElementById('incCur').value;
+  
+  let msg = "";
+  if(type === 'income') {
+      // Прямая команда для скрипта, чтобы он разложил по I и K
+      msg = `💰 Доход ${merchant} ${desc} ${wallet} ${amount} ${curr}`;
+  } else if(type === 'expense') {
+      document.querySelectorAll('.item-row').forEach(row => {
+          msg = `п ${merchant} ${row.querySelector('.priceUnit').value} ${row.querySelector('.nameRU').value} ${wallet}`;
+      });
   }
 
-  for (let text of messages) {
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ message: { message_id: Date.now(), text: text, chat: { id: 0 } } }) });
-  }
+  await fetch(API_URL, { method: 'POST', body: JSON.stringify({ message: { text: msg, chat: { id: 0 } } }) });
   location.reload();
 }
 
@@ -216,6 +192,7 @@ window.onload = () => {
   s.src = API_URL + "?callback=draw&_t=" + Date.now();
   document.body.appendChild(s);
 };
+function draw(d) { walletData = {}; d.rows.slice(1).forEach(r => { let a = String(r[5]||"").trim(); if(ORDER.includes(a)) { walletData[a] = walletData[a] || {uah:0, eur:0}; walletData[a].eur += parseFloat(String(r[8]||"0").replace(',','.')); walletData[a].uah += parseFloat(String(r[10]||"0").replace(',','.')); } }); drawBalance(); }
 </script>
 </body>
 </html>
