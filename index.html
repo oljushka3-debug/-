@@ -83,8 +83,8 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby7VcepAyo3binIsky51KQeCV8mTcNUXlHv79dkinMomzZmb8F1gkO6ldolBhDI8z3U/exec";
-const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
-const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
+const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '💃 ПРИВАТ ОЛЯ', '💳👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
+const UAH_WALLETS = ['ПРИВАТ', '💳👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
 
 let walletData = {};
@@ -93,7 +93,7 @@ function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v
 
 function getWalletCurrency(m) {
     if (m === '🏦👤 SPARKASSE ВАЛЕРА') return 'EUR'; // Теперь евровая
-    if (m === '👤 ВАЛЕРА') return 'UAH';
+    if (m === '💳👤 ВАЛЕРА') return 'UAH';
     if (m === '🍯 КОПИЛКА') return 'EUR';
     return UAH_WALLETS.some(k => m.includes(k)) ? 'UAH' : 'EUR';
 }
