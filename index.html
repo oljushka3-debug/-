@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v47.2</title>
+<title>SmartWallet v47.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v47.2</span>
+<span class="opacity-100 text-blue-500">v47.3</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -55,7 +55,8 @@ const ORDER = [
 ];
 
 const UAH_WALLETS = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА'];
-const OPERATIVE = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🏦👤 SPARKASSE ВАЛЕРА', '🏦 SPARKASSE ОЛЯ', '💵 НАЛИЧНЫЕ'];
+// В ГЛАВНЫЙ БАЛАНС ИДУТ ТОЛЬКО ЭТИ ТРИ:
+const EUR_MAIN = ['🏦👤 SPARKASSE ВАЛЕРА', '🏦 SPARKASSE ОЛЯ', '💵 НАЛИЧНЫЕ'];
 
 let walletData = {};
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); drawBalance(); }
@@ -81,15 +82,17 @@ function norm(name) {
 }
 
 function drawBalance() {
-    const r = parseFloat(document.getElementById('baseRate').value)||52.6363; let total = 0;
+    let totalEurOnly = 0;
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     ORDER.forEach(m => {
         const v = walletData[m]||{uah:0,eur:0};
         const curr = getWalletCurrency(m);
-        const eq = curr === 'EUR' ? v.eur : v.uah/r;
-        if(OPERATIVE.includes(m)) total += eq;
+        // Суммируем в главный баланс только EUR счета
+        if(EUR_MAIN.includes(m)) totalEurOnly += v.eur;
+        
         grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m==='🏦 SPARKASSE ОЛЯ' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
-    }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
+    }); 
+    document.getElementById('mainBalance').innerText = '€ ' + totalEurOnly.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
 function draw(data) {
