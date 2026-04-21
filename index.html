@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.9.1</title>
+<title>SmartWallet v46.9.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.9.1</span>
+<span class="opacity-100 text-blue-500">v46.9.2</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -38,10 +38,6 @@
   <option value="EDEKA"><option value="Lidl"><option value="Kaufland"><option value="Netto"><option value="Rossman"><option value="dm"><option value="PayPal"><option value="Tankstelle"><option value="Woolworth"><option value="Aldi"><option value="Apple"><option value="Scribd"><option value="Post"><option value="Telekom"><option value="Health AG (Dentarra)"><option value="Galeria"><option value="Teddi"><option value="Sekond Hand"><option value="Перевод (Вход)"><option value="Перевод (Выход)"><option value="Стипендия"><option value="Страховка"><option value="Кафе"><option value="Стоянка">
 </datalist>
 
-<datalist id="itemList">
-  <option value="Хлеб"><option value="Молоко"><option value="Яйца"><option value="Сыр"><option value="Масло"><option value="Йогурт"><option value="Яблоки"><option value="Бананы"><option value="Картофель"><option value="Лук"><option value="Морковь"><option value="Огурцы"><option value="Томаты"><option value="Курица"><option value="Фарш"><option value="Колбаса"><option value="Вода"><option value="Кофе"><option value="Чай"><option value="Шоколад"><option value="Печенье"><option value="Туалетная бумага"><option value="Шампунь"><option value="Мыло">
-</datalist>
-
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
@@ -53,14 +49,41 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby7VcepAyo3binIsky51KQeCV8mTcNUXlHv79dkinMomzZmb8F1gkO6ldolBhDI8z3U/exec";
-// ТОЧЕЧНАЯ ПРАВКА: замена названия на 💳👤 Валера
-const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '💃 ПРИВАТ ОЛЯ', '💳👤 Валера', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
-const UAH_WALLETS = ['ПРИВАТ', '💳👤 Валера', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
-const OPERATIVE = ['💃 ПРИВАТ ОЛЯ', '💳👤 Валера', '💵 НАЛИЧНЫЕ', '🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА'];
+
+// ЭТАЛОННЫЕ СПИСКИ КОШЕЛЬКОВ
+const ORDER = [
+  '🏦 SPARKASSE ОЛЯ', 
+  '🏦👤 SPARKASSE ВАЛЕРА', 
+  '💵 НАЛИЧНЫЕ', 
+  '💃 ПРИВАТ ОЛЯ', 
+  '💳👤 Валера', 
+  '🍯 КОПИЛКА', 
+  '💳🎀 КРЕДИТКА ОЛЯ', 
+  '💳👤 КРЕДИТКА ВАЛЕРА', 
+  '🐷 СВИНКА', 
+  '✉️ КОНВЕРТ'
+];
+
+const UAH_WALLETS = [
+  '💃 ПРИВАТ ОЛЯ', 
+  '💳👤 Валера', 
+  '💳🎀 КРЕДИТКА ОЛЯ', 
+  '💳👤 КРЕДИТКА ВАЛЕРА', 
+  '🐷 СВИНКА', 
+  '✉️ КОНВЕРТ'
+];
+
+const OPERATIVE = [
+  '💃 ПРИВАТ ОЛЯ', 
+  '💳👤 Валера', 
+  '💵 НАЛИЧНЫЕ', 
+  '🏦 SPARKASSE ОЛЯ', 
+  '🏦👤 SPARKASSE ВАЛЕРА'
+];
 
 let walletData = {};
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; drawBalance(); }
-function getWalletCurrency(m) { if (m === '🏦👤 SPARKASSE ВАЛЕРА') return 'EUR'; if (m === '💳👤 Валера') return 'UAH'; if (m === '🍯 КОПИЛКА') return 'EUR'; return UAH_WALLETS.some(k => m.includes(k)) ? 'UAH' : 'EUR'; }
+function getWalletCurrency(m) { return UAH_WALLETS.includes(m) ? 'UAH' : 'EUR'; }
 
 function drawBalance() {
     const r = parseFloat(document.getElementById('baseRate').value)||50.75; let total = 0;
@@ -70,7 +93,7 @@ function drawBalance() {
         const curr = getWalletCurrency(m);
         const eq = curr === 'EUR' ? v.eur : v.uah/r;
         if(OPERATIVE.includes(m)) total += eq;
-        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m==='🏦 SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
+        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m.includes('SPARKASSE') && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
     }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
