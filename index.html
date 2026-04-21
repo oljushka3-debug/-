@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v47.1</title>
+<title>SmartWallet v47.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v47.1</span>
+<span class="opacity-100 text-blue-500">v47.2</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -102,7 +102,7 @@ function draw(data) {
         walletData[cellF].eur += parseFloat(String(row[8]||"0").replace(',','.'))||0;
         walletData[cellF].uah += parseFloat(String(row[10]||"0").replace(',','.'))||0;
     });
-    data.rows.slice(1,30).reverse().forEach(r => {
+    data.rows.slice(1).reverse().slice(0,30).forEach(r => {
         let cellF = norm(String(r[5] || "").trim());
         if(!ORDER.includes(cellF)) return;
         const curr = getWalletCurrency(cellF);
