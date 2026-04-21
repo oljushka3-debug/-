@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.9.5</title>
+<title>SmartWallet v46.9.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.9.5</span>
+<span class="opacity-100 text-blue-500">v46.9.6</span>
 </div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
 </div>
@@ -34,21 +34,21 @@
 <div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
 <input type="text" id="merchant" list="shopList" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
 <datalist id="shopList">
-  <option value="EDEKA"><option value="Lidl"><option value="Kaufland"><option value="Netto"><option value="Rossman"><option value="dm"><option value="PayPal"><option value="Tankstelle"><option value="Woolworth"><option value="Aldi"><option value="Apple"><option value="Scribd"><option value="Post"><option value="Telekom"><option value="Health AG (Dentarra)"><option value="Galeria"><option value="Teddi"><option value="Sekond Hand"><option value="Перевод (Вход)"><option value="Перевод (Выход)"><option value="Стипендия"><option value="Страховка"><option value="Кафе"><option value="Стоянка">
+<option value="EDEKA"><option value="Lidl"><option value="Kaufland"><option value="Netto"><option value="Rossman"><option value="dm"><option value="PayPal"><option value="Tankstelle"><option value="Woolworth"><option value="Aldi"><option value="Apple"><option value="Scribd"><option value="Post"><option value="Telekom"><option value="Health AG (Dentarra)"><option value="Galeria"><option value="Teddi"><option value="Sekond Hand">
 </datalist>
 <div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
 <div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
 <div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
 <div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select>
 <select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase">
-  <option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 КОПИЛКА</option>
+<option>🍎 Продукты / Быт</option><option>🏠 Жилье / Связь</option><option>🚬 Табак</option><option>🍷 Алкоголь</option><option>☕️ Кафе / Отдых</option><option>💊 Здоровье / Красота</option><option>🚗 Транспорт</option><option>🏦 Банк / Комиссии</option><option>🙇‍♀️ Учеба</option><option>🛍 Остальное / Шопинг</option><option>🏖️ Развлечения</option><option>💰 КОПИЛКА</option>
 </select></div>
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby7VcepAyo3binIsky51KQeCV8mTcNUXlHv79dkinMomzZmb8F1gkO6ldolBhDI8z3U/exec";
 
-// ЭТАЛОННЫЕ НАЗВАНИЯ (должны совпадать с тем, что вы хотите видеть на экране)
+// ЭТАЛОННЫЙ СПИСОК (10 кошельков)
 const ORDER = [
   '💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🏦👤 SPARKASSE ВАЛЕРА', '🏦 SPARKASSE ОЛЯ', 
   '💵 НАЛИЧНЫЕ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', 
@@ -62,32 +62,32 @@ let walletData = {};
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); drawBalance(); }
 function getWalletCurrency(m) { return UAH_WALLETS.includes(m) ? 'UAH' : 'EUR'; }
 
-// ГИБКИЙ МАППИНГ: сопоставляет старые имена из Google Формы с новыми ключами в приложении
-function normalizeWalletName(name) {
-    if (!name) return "";
-    let n = name.trim().toUpperCase();
-    if (n === "ВАЛЕРА" || n === "👤 ВАЛЕРА") return "💳👤 Валера";
-    if (n === "ПРИВАТ ОЛЯ" || n === "💃 ПРИВАТ ОЛЯ") return "💃 ПРИВАТ ОЛЯ";
-    if (n === "SPARKASSE ВАЛЕРА" || n === "🏦👤 SPARKASSE ВАЛЕРА") return "🏦👤 SPARKASSE ВАЛЕРА";
-    if (n === "SPARKASSE" || n === "🏦 SPARKASSE") return "🏦 SPARKASSE ОЛЯ";
-    if (n === "НАЛИЧНЫЕ" || n === "💵 НАЛИЧНЫЕ") return "💵 НАЛИЧНЫЕ";
-    if (n === "СВИНКА" || n === "🐷 СВИНКА") return "🐷 СВИНКА";
-    if (n === "КОНВЕРТ" || n === "✉️ КОНВЕРТ") return "✉️ КОНВЕРТ";
-    if (n === "КРЕДИТКА ОЛЯ" || n === "💳🎀 КРЕДИТКА ОЛЯ") return "💳🎀 КРЕДИТКА ОЛЯ";
-    if (n === "КРЕДИТКА ВАЛЕРА" || n === "💳👤 КРЕДИТКА ВАЛЕРА") return "💳👤 КРЕДИТКА ВАЛЕРА";
-    if (n === "КОПИЛКА" || n === "🍯 КОПИЛКА") return "🍯 КОПИЛКА";
+// Функция нормализации имен (чтобы код понимал старые записи из таблицы)
+function norm(name) {
+    if(!name) return "";
+    let n = name.toUpperCase();
+    if(n.includes("ВАЛЕРА") && !n.includes("SPARKASSE") && !n.includes("КРЕДИТКА")) return '💳👤 Валера';
+    if(n.includes("ПРИВАТ")) return '💃 ПРИВАТ ОЛЯ';
+    if(n.includes("SPARKASSE") && n.includes("ВАЛЕРА")) return '🏦👤 SPARKASSE ВАЛЕРА';
+    if(n.includes("SPARKASSE") && !n.includes("ВАЛЕРА")) return '🏦 SPARKASSE ОЛЯ';
+    if(n.includes("НАЛИЧНЫЕ")) return '💵 НАЛИЧНЫЕ';
+    if(n.includes("СВИНКА")) return '🐷 СВИНКА';
+    if(n.includes("КОНВЕРТ")) return '✉️ КОНВЕРТ';
+    if(n.includes("КРЕДИТКА") && n.includes("ОЛЯ")) return '💳🎀 КРЕДИТКА ОЛЯ';
+    if(n.includes("КРЕДИТКА") && n.includes("ВАЛЕРА")) return '💳👤 КРЕДИТКА ВАЛЕРА';
+    if(n.includes("КОПИЛКА")) return '🍯 КОПИЛКА';
     return name;
 }
 
 function drawBalance() {
-    const r = parseFloat(document.getElementById('baseRate').value)||52.3535; let total = 0;
+    const r = parseFloat(document.getElementById('baseRate').value)||50.75; let total = 0;
     const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
     ORDER.forEach(m => {
         const v = walletData[m]||{uah:0,eur:0};
         const curr = getWalletCurrency(m);
         const eq = curr === 'EUR' ? v.eur : v.uah/r;
         if(OPERATIVE.includes(m)) total += eq;
-        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m.includes('SPARKASSE') && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
+        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m==='🏦 SPARKASSE ОЛЯ' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
     }); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
@@ -95,28 +95,27 @@ function draw(data) {
     if(!data||!data.rows) return; walletData = {}; const hist = document.getElementById('history'); hist.innerHTML = "";
     data.rows.forEach((row, i) => {
         if(i === 0) return; 
-        let cellF = normalizeWalletName(String(row[5] || ""));
+        let cellF = norm(String(row[5] || "").trim());
         if(!ORDER.includes(cellF)) return;
         if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
-        const valE = parseFloat(String(row[8] || "0").replace(',','.')) || 0;
-        const valU = parseFloat(String(row[10] || "0").replace(',','.')) || 0;
-        walletData[cellF].eur += valE; walletData[cellF].uah += valU;
+        walletData[cellF].eur += parseFloat(String(row[8]||"0").replace(',','.'))||0;
+        walletData[cellF].uah += parseFloat(String(row[10]||"0").replace(',','.'))||0;
     });
-    data.rows.slice(1,30).forEach(r => {
-        let cellF = normalizeWalletName(String(r[5] || ""));
+    data.rows.slice(1,25).forEach(r => {
+        let cellF = norm(String(r[5] || "").trim());
         if(!ORDER.includes(cellF)) return;
         const curr = getWalletCurrency(cellF);
-        const vE=parseFloat(String(r[8] || "0").replace(',','.'))||0, vU=parseFloat(String(r[10] || "0").replace(',','.'))||0;
+        const vE=parseFloat(String(r[8]||"0").replace(',','.'))||0, vU=parseFloat(String(r[10]||"0").replace(',','.'))||0;
         if(vE===0 && vU===0) return; const amt = curr === 'UAH' ? vU : vE;
         hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm"><div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p><p class="text-[5px] opacity-30 font-black">${cellF} • ${r[13]||'ОТДЕЛ'}</p></div><div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(curr==='UAH'?0:2)}${curr==='UAH'?'₴':'€'}</div></div>`;
     }); drawBalance();
 }
 
 async function save(e) { e.preventDefault(); const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.innerText="..."; const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value); let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t }; if(t==='expense') { p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value; const rows=document.querySelectorAll('.item-row'); if(rows.length>1) p.items=Array.from(rows).map(row=>({nameRU:row.querySelector('.nameRU').value,qty:parseFloat(row.querySelector('.qty').value)||1,priceUnit:parseFloat(row.querySelector('.priceUnit').value)||0,totalUah:parseFloat(row.querySelector('.totalUah').value)||0})); else { const f=rows[0]; p.nameRU=f.querySelector('.nameRU').value; p.qty=parseFloat(f.querySelector('.qty').value)||1; p.priceUnit=parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah=parseFloat(f.querySelector('.totalUah').value)||0; } } else if(t==='transfer') { p.from=document.getElementById('tFrom').value; p.to=document.getElementById('tTo').value; p.eur=parseFloat(document.getElementById('trEur').value)||0; p.uah=parseFloat(document.getElementById('trUah').value)||0; } else if(t==='income') { p.account=document.getElementById('acc').value; p.category="💰 Доход"; p.totalEur=parseFloat(document.getElementById('valEur').value)||0; p.totalUah=parseFloat(document.getElementById('valUah').value)||0; } await fetch(API_URL,{method:'POST',body:JSON.stringify(p)}); location.reload(); }
-function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "52.3535"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
-function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" list="itemList" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
+function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "50.75"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
+function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
 function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
 function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
 function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
-window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"52.3535"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
+window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"50.75"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
 </script></body></html>
