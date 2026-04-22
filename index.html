@@ -2,7 +2,7 @@
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v47.6</title>
+<title>SmartWallet v47.7</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,7 +13,7 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v47.6</span>
+<span class="opacity-100 text-blue-500">v47.7</span>
 </div>
 <div class="mb-1 leading-tight">
   <div id="eurBalance" class="text-2xl tracking-tighter text-slate-800">€ 0,00</div>
@@ -50,7 +50,7 @@
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxsw74NKLE1qX8J1COO3lzebAGTOmpgMt90v-SisVRb3bvHt7nHdLo1HNkgWKOiDS1u/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzdRxBUDMpX_gn7OB3-SkUomKE8PtBnr2cG4AQPogGaDeTBeKbTCZIdqW-iT3-LzZXM/exec";
 const ORDER = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🏦👤 SPARKASSE ВАЛЕРА', '🏦 SPARKASSE ОЛЯ', '💵 НАЛИЧНЫЕ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🍯 КОПИЛКА'];
 const UAH_WALLETS = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА'];
 
@@ -127,7 +127,7 @@ function openModal(t){ document.getElementById('txType').value=t; document.getEl
 function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
 function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
 function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
-function calcTr(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('trEur').value=(document.getElementById('trUah').value/r).toFixed(2); else document.getElementById('trUah').value=(document.getElementById('trEur').value*r).toFixed(0); }
+function calcTr(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('trEur').value=(document.getElementById('trUah').value/r).toFixed(2); else document.getElementById('trUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
 function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
 window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"52.6363"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
 </script></body></html>
