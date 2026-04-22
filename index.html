@@ -1,8 +1,9 @@
+второй - /index.html-для программы oljushka3-debug.github.
 <!DOCTYPE html>
 <html lang="ru">
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v47.8</title>
+<title>SmartWallet v47.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
@@ -13,11 +14,11 @@
 <div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
 <div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
 <span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v47.8</span>
+<span class="opacity-100 text-blue-500">v47.6</span>
 </div>
 <div class="mb-1 leading-tight">
-  <div id="eurBalance" class="text-2xl tracking-tighter text-slate-800">€ 0,00</div>
-  <div id="totalBalance" class="text-[9px] text-blue-500 opacity-80 uppercase tracking-widest font-black">Ликвидный остаток: € 0,00</div>
+  <div id="eurBalance" class="text-2xl tracking-tighter text-slate-800">€ 0,00</div>
+  <div id="totalBalance" class="text-[9px] text-blue-500 opacity-80 uppercase tracking-widest font-black">Ликвидный остаток: € 0,00</div>
 </div>
 <div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic mt-2"></div>
 </div>
@@ -50,162 +51,84 @@
 <div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzdRxBUDMpX_gn7OB3-SkUomKE8PtBnr2cG4AQPogGaDeTBeKbTCZIdqW-iT3-LzZXM/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx8RBP7WqKlB36_-N-_2jGDkdMrpikxyaTepCkGh7bwwBsyEa7nj8BRS-pfm8_eaNhS/exec";
 const ORDER = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🏦👤 SPARKASSE ВАЛЕРА', '🏦 SPARKASSE ОЛЯ', '💵 НАЛИЧНЫЕ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🍯 КОПИЛКА'];
 const UAH_WALLETS = ['💳👤 Валера', '💃 ПРИВАТ ОЛЯ', '🐷 СВИНКА', '✉️ КОНВЕРТ', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА'];
 
 let walletData = {};
-
 function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); drawBalance(); }
 function getWalletCurrency(m) { return m.includes("SPARKASSE") ? 'EUR' : (UAH_WALLETS.includes(m) ? 'UAH' : 'EUR'); }
-function norm(n) { 
-    if(!n) return ""; 
-    let u = n.toUpperCase(); 
-    if(u.includes("SPARKASSE") && (u.includes("ВАЛЕРА")||u.includes("👤"))) return '🏦👤 SPARKASSE ВАЛЕРА'; 
-    if(u.includes("SPARKASSE")) return '🏦 SPARKASSE ОЛЯ'; 
-    if(u.includes("КРЕДИТКА") && u.includes("ВАЛЕРА")) return '💳👤 КРЕДИТКА ВАЛЕРА'; 
-    if(u.includes("КРЕДИТКА")) return '💳🎀 КРЕДИТКА ОЛЯ'; 
-    if(u.includes("ПРИВАТ")) return '💃 ПРИВАТ ОЛЯ'; 
-    if(u.includes("ВАЛЕРА")) return '💳👤 Валера'; 
-    if(u.includes("НАЛИЧНЫЕ")) return '💵 НАЛИЧНЫЕ'; 
-    if(u.includes("СВИНКА")) return '🐷 СВИНКА'; 
-    if(u.includes("КОНВЕРТ")) return '✉️ КОНВЕРТ'; 
-    if(u.includes("КОПИЛКА")) return '🍯 КОПИЛКА'; 
-    return n; 
-}
+function norm(n) { if(!n) return ""; let u = n.toUpperCase(); if(u.includes("SPARKASSE") && (u.includes("ВАЛЕРА")||u.includes("👤"))) return '🏦👤 SPARKASSE ВАЛЕРА'; if(u.includes("SPARKASSE")) return '🏦 SPARKASSE ОЛЯ'; if(u.includes("КРЕДИТКА") && u.includes("ВАЛЕРА")) return '💳👤 КРЕДИТКА ВАЛЕРА'; if(u.includes("КРЕДИТКА")) return '💳🎀 КРЕДИТКА ОЛЯ'; if(u.includes("ПРИВАТ")) return '💃 ПРИВАТ ОЛЯ'; if(u.includes("ВАЛЕРА")) return '💳👤 Валера'; if(u.includes("НАЛИЧНЫЕ")) return '💵 НАЛИЧНЫЕ'; if(u.includes("СВИНКА")) return '🐷 СВИНКА'; if(u.includes("КОНВЕРТ")) return '✉️ КОНВЕРТ'; if(u.includes("КОПИЛКА")) return '🍯 КОПИЛКА'; return n; }
 
 function drawBalance() {
-    const r = parseFloat(document.getElementById('baseRate').value) || 52.6363; 
-    let sumEurOnly = 0, sumTotalEq = 0;
-    const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
-    
-    ORDER.forEach(m => {
-        const v = walletData[m] || {uah:0, eur:0}, curr = getWalletCurrency(m), up = m.toUpperCase();
-        if (up.includes("SPARKASSE") || up.includes("НАЛИЧНЫЕ")) { sumEurOnly += v.eur; }
-        const isExcluded = up.includes("КРЕДИТКА") || up.includes("ПУМБ") || up.includes("КОПИЛКА");
-        if (!isExcluded) {
-            if (curr === 'EUR') sumTotalEq += v.eur;
-            else if (m === '💳👤 Валера' || m === '💃 ПРИВАТ ОЛЯ') sumTotalEq += (v.uah / r);
-        }
-        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${(m==='🏦 SPARKASSE ОЛЯ' || m==='💵 НАЛИЧНЫЕ') && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
-    }); 
-    document.getElementById('eurBalance').innerText = '€ ' + sumEurOnly.toLocaleString('de-DE',{minimumFractionDigits:2});
-    document.getElementById('totalBalance').innerText = 'Ликвидный остаток: € ' + sumTotalEq.toLocaleString('de-DE',{minimumFractionDigits:2});
+    const r = parseFloat(document.getElementById('baseRate').value) || 52.6363; 
+    let sumEurOnly = 0, sumTotalEq = 0;
+    const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
+    
+    ORDER.forEach(m => {
+        const v = walletData[m] || {uah:0, eur:0}, curr = getWalletCurrency(m), up = m.toUpperCase();
+        if (up.includes("SPARKASSE") || up.includes("НАЛИЧНЫЕ")) { sumEurOnly += v.eur; }
+        const isExcluded = up.includes("КРЕДИТКА") || up.includes("ПУМБ") || up.includes("КОПИЛКА");
+        if (!isExcluded) {
+            if (curr === 'EUR') sumTotalEq += v.eur;
+            else if (m === '💳👤 Валера' || m === '💃 ПРИВАТ ОЛЯ') sumTotalEq += (v.uah / r);
+        }
+        grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center"><div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div><div class="text-[8px] font-black ${m==='🏦 SPARKASSE ОЛЯ' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
+    }); 
+    document.getElementById('eurBalance').innerText = '€ ' + sumEurOnly.toLocaleString('de-DE',{minimumFractionDigits:2});
+    document.getElementById('totalBalance').innerText = 'Ликвидный остаток: € ' + sumTotalEq.toLocaleString('de-DE',{minimumFractionDigits:2});
 }
 
 function draw(data) {
-    if(!data||!data.rows) return; walletData = {}; const hist = document.getElementById('history'); hist.innerHTML = "";
-    // Считаем балансы
-    data.rows.forEach((row, i) => {
-        if(i === 0) return; 
-        let cf = norm(String(row[5] || "").trim());
-        if(!ORDER.includes(cf)) return;
-        if(!walletData[cf]) walletData[cf]={uah:0,eur:0};
-        walletData[cf].eur += parseFloat(String(row[8]||"0").replace(',','.'))||0;
-        walletData[cf].uah += parseFloat(String(row[10]||"0").replace(',','.'))||0;
-    });
-    // Рисуем последние 40 записей
-    data.rows.slice(1).slice(0,40).forEach(r => {
-        let cf = norm(String(r[5]||"").trim()); if(!ORDER.includes(cf)) return;
-        const cur = getWalletCurrency(cf), vE=parseFloat(String(r[8]||"0").replace(',','.'))||0, vU=parseFloat(String(r[10]||"0").replace(',','.'))||0;
-        if(vE===0 && vU===0) return; const amt = cur === 'UAH' ? vU : vE;
-        hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm"><div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p><p class="text-[5px] opacity-30 font-black">${cf} • ${r[13]||'ОТДЕЛ'}</p></div><div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(cur==='UAH'?0:2)}${cur==='UAH'?'₴':'€'}</div></div>`;
-    }); drawBalance();
+    if(!data||!data.rows) return; walletData = {}; const hist = document.getElementById('history'); hist.innerHTML = "";
+    data.rows.forEach((row, i) => {
+        if(i === 0) return; let cf = norm(String(row[5] || "").trim());
+        if(!ORDER.includes(cf)) return;
+        if(!walletData[cf]) walletData[cf]={uah:0,eur:0};
+        walletData[cf].eur += parseFloat(String(row[8]||"0").replace(',','.'))||0;
+        walletData[cf].uah += parseFloat(String(row[10]||"0").replace(',','.'))||0;
+    });
+    data.rows.slice(1).slice(0,40).forEach(r => {
+        let cf = norm(String(r[5]||"").trim()); if(!ORDER.includes(cf)) return;
+        const cur = getWalletCurrency(cf), vE=parseFloat(String(r[8]||"0").replace(',','.'))||0, vU=parseFloat(String(r[10]||"0").replace(',','.'))||0;
+        if(vE===0 && vU===0) return; const amt = cur === 'UAH' ? vU : vE;
+        hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm"><div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p><p class="text-[5px] opacity-30 font-black">${cf} • ${r[13]||'ОТДЕЛ'}</p></div><div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(cur==='UAH'?0:2)}${cur==='UAH'?'₴':'€'}</div></div>`;
+    }); drawBalance();
 }
 
-async function save(e) { 
-    e.preventDefault(); 
-    const btn=document.getElementById('saveBtn'); 
-    btn.disabled=true; btn.innerText="ОТПРАВКА..."; 
-    const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value); 
-    let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t }; 
+async function save(e) { 
+    e.preventDefault(); 
+    const btn=document.getElementById('saveBtn'); 
+    btn.disabled=true; btn.innerText="..."; 
+    const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value); 
+    let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t }; 
 
-    if(t==='expense') { 
-        p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value; 
-        const rows=document.querySelectorAll('.item-row'); 
-        // Всегда пакуем в items для консистентности бэкенда
-        p.items = Array.from(rows).map(row=>({
-            nameRU: row.querySelector('.nameRU').value || p.merchant,
-            qty: parseFloat(row.querySelector('.qty').value)||1,
-            priceUnit: parseFloat(row.querySelector('.priceUnit').value)||0,
-            totalUah: parseFloat(row.querySelector('.totalUah').value)||0
-        }));
-        await fetch(API_URL,{method:'POST',body:JSON.stringify(p)});
-    } else if(t==='income') { 
-        p.account=document.getElementById('acc').value; p.category="💰 Доход"; 
-        p.totalEur=parseFloat(document.getElementById('valEur').value)||0; 
-        p.totalUah=parseFloat(document.getElementById('valUah').value)||0; 
-        await fetch(API_URL,{method:'POST',body:JSON.stringify(p)});
-    } else if(t==='transfer') { 
-        const from = document.getElementById('tFrom').value, to = document.getElementById('tTo').value;
-        const eVal = parseFloat(document.getElementById('trEur').value)||0, uVal = parseFloat(document.getElementById('trUah').value)||0;
-        // Отправляем две части перевода
-        await fetch(API_URL,{method:'POST',body:JSON.stringify({...p, account:from, type:'expense', totalEur:eVal, totalUah:uVal, category:'🔄 Перевод', merchant:'В: ' + to})});
-        await fetch(API_URL,{method:'POST',body:JSON.stringify({...p, account:to, type:'income', totalEur:eVal, totalUah:uVal, category:'🔄 Перевод', merchant:'ОТ: ' + from})});
-    } 
-    location.reload(); 
+    if(t==='expense') { 
+        p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value; 
+        const rows=document.querySelectorAll('.item-row'); 
+        if(rows.length>1) {
+            p.items=Array.from(rows).map(row=>({nameRU:row.querySelector('.nameRU').value,qty:parseFloat(row.querySelector('.qty').value)||1,priceUnit:parseFloat(row.querySelector('.priceUnit').value)||0,totalUah:parseFloat(row.querySelector('.totalUah').value)||0})); 
+        } else {
+            const f=rows[0]; p.nameRU=f.querySelector('.nameRU').value; p.qty=parseFloat(f.querySelector('.qty').value)||1; p.priceUnit=parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah=parseFloat(f.querySelector('.totalUah').value)||0; 
+        }
+        await fetch(API_URL,{method:'POST',body:JSON.stringify(p)});
+    } else if(t==='income') { 
+        p.account=document.getElementById('acc').value; p.category="💰 Доход"; p.totalEur=parseFloat(document.getElementById('valEur').value)||0; p.totalUah=parseFloat(document.getElementById('valUah').value)||0; 
+        await fetch(API_URL,{method:'POST',body:JSON.stringify(p)});
+    } else if(t==='transfer') { 
+        const from = document.getElementById('tFrom').value, to = document.getElementById('tTo').value;
+        const eVal = parseFloat(document.getElementById('trEur').value)||0, uVal = parseFloat(document.getElementById('trUah').value)||0;
+        await fetch(API_URL,{method:'POST',body:JSON.stringify({...p, account:from, type:'expense', totalEur:eVal, totalUah:uVal, category:'🔄 Перевод', merchant:'В: ' + to})});
+        await fetch(API_URL,{method:'POST',body:JSON.stringify({...p, account:to, type:'income', totalEur:eVal, totalUah:uVal, category:'🔄 Перевод', merchant:'ОТ: ' + from})});
+    } 
+    location.reload(); 
 }
 
-function openModal(t){ 
-    document.getElementById('txType').value=t; 
-    document.getElementById('modal').classList.remove('hidden'); 
-    document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "52.6363"; 
-    ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); 
-    const selects=document.querySelectorAll('.wallet-select'); 
-    selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); 
-    if(t==='expense'){ 
-        document.getElementById('expenseSection').classList.remove('hidden'); 
-        document.getElementById('accCatGroup').classList.remove('hidden'); 
-        document.getElementById('itemsList').innerHTML=""; 
-        addItemRow(); 
-    } else if(t==='income'){ 
-        document.getElementById('incomeSection').classList.remove('hidden'); 
-        document.getElementById('accCatGroup').classList.remove('hidden'); 
-    } else if(t==='transfer'){ 
-        document.getElementById('transferSection').classList.remove('hidden'); 
-    } 
-    document.getElementById('date').valueAsDate=new Date(); 
-}
-
-function addItemRow() { 
-    document.getElementById('itemsList').insertAdjacentHTML('beforeend', `
-    <div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> 
-        <div class="grid grid-cols-2 gap-1 mb-1">
-            <input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic">
-            <input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')">
-        </div> 
-        <div class="grid grid-cols-2 gap-1">
-            <input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')">
-            <input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')">
-        </div>
-    </div>`); 
-}
-
-function calcRow(el,s){ 
-    const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); 
-    if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); 
-    else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); 
-}
-
-function calcSimple(s){ 
-    const r=parseFloat(document.getElementById('customRate').value); 
-    if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); 
-    else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); 
-}
-
-function calcTr(s){ 
-    const r=parseFloat(document.getElementById('customRate').value); 
-    if(s==='UAH') document.getElementById('trEur').value=(document.getElementById('trUah').value/r).toFixed(2); 
-    else document.getElementById('trUah').value=(document.getElementById('valEur').value*r).toFixed(0); 
-}
-
+function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "52.6363"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
+function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
+function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
+function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
+function calcTr(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('trEur').value=(document.getElementById('trUah').value/r).toFixed(2); else document.getElementById('trUah').value=(document.getElementById('trEur').value*r).toFixed(0); }
 function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
-
-window.onload=()=>{ 
-    const r=localStorage.getItem('wallet_base_rate')||"52.6363"; 
-    document.getElementById('baseRate').value=r; 
-    const s=document.createElement('script'); 
-    s.src=API_URL+"?callback=draw&_t="+Date.now(); 
-    document.body.appendChild(s); 
-};
+window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"52.6363"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
 </script></body></html>
