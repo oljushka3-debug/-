@@ -1,153 +1,78 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartWallet v46.6</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head><body class="bg-slate-50 text-slate-900 p-2 pb-10 italic font-bold">
-<button onclick="location.reload()" class="fixed top-3 right-3 z-50 bg-white/80 w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center shadow-sm">
-<i class="fa-solid fa-rotate text-blue-500 text-[10px]"></i>
-</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartWallet v104.1</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .rate { color: #888; font-size: 0.9em; text-align: left; margin-bottom: 10px; }
+        .balance-main { font-size: 3em; font-weight: bold; color: #2c3e50; margin: 20px 0; }
+        .btn-group { display: flex; justify-content: space-between; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: opacity 0.3s; }
+        .btn-red { background-color: #e74c3c; }
+        .btn-gray { background-color: #95a5a6; }
+        .btn-green { background-color: #2ecc71; }
+        button:hover { opacity: 0.8; }
+        .wallet-list { margin-top: 30px; text-align: left; }
+        .wallet-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
 
-<div class="bg-white p-3 rounded-[25px] border border-slate-100 mb-2 shadow-lg text-center">
-<div class="flex justify-between items-center mb-1 text-[7px] opacity-40 uppercase font-black">
-<span>Курс: <input type="number" id="baseRate" step="0.0001" oninput="syncRate(this.value)" class="w-14 bg-slate-50 rounded px-1 text-blue-600 outline-none"></span>
-<span class="opacity-100 text-blue-500">v46.6</span>
-</div><h1 id="mainBalance" class="text-2xl mb-1 tracking-tighter text-slate-800">0.00</h1>
-<div id="walletsGrid" class="grid grid-cols-3 gap-1 text-[7px] uppercase font-black italic"></div>
+<div class="container">
+    <div id="rate-display" class="rate">КУРС: загрузка...</div>
+    <div id="balance-display" class="balance-main">0.00</div>
+    
+    <div class="btn-group">
+        <button class="btn-red" onclick="window.open('ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ')">РАСХОД</button>
+        <button class="btn-gray" onclick="window.open('ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ')">ПЕРЕВОД</button>
+        <button class="btn-green" onclick="window.open('ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ')">ДОХОД</button>
+    </div>
+
+    <div id="loader" class="loader"></div>
+
+    <div class="wallet-list" id="wallet-container">
+        </div>
 </div>
-
-<div class="flex gap-1 mb-2 font-black">
-<button onclick="openModal('expense')" class="flex-1 bg-rose-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Расход</button>
-<button onclick="openModal('transfer')" class="flex-1 bg-slate-100 py-3 rounded-xl text-[9px] text-slate-600 uppercase shadow-sm">Перевод</button>
-<button onclick="openModal('income')" class="flex-1 bg-emerald-500 py-3 rounded-xl text-[9px] text-white uppercase shadow-sm">Доход</button>
-</div>
-
-<div id="history" class="space-y-1 text-xs font-black"></div>
-
-<div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 z-50 font-bold">
-<div class="bg-white w-full max-w-sm rounded-[30px] p-4 shadow-2xl overflow-y-auto max-h-[90vh]">
-<h2 id="modalTitle" class="text-sm text-slate-800 mb-3 uppercase text-center font-black">ЗАПИСЬ</h2>
-<form onsubmit="save(event)" class="space-y-2">
-<input type="hidden" id="txType">
-<div class="grid grid-cols-2 gap-2"><input type="date" id="date" class="bg-slate-50 p-2 rounded-lg border text-[9px] font-black"><input type="number" id="customRate" step="0.0001" oninput="syncRate(this.value)" class="bg-blue-50 p-2 rounded-lg border text-[9px] text-blue-600 font-black"></div>
-
-<input type="text" id="merchant" list="shopList" placeholder="Описание / Магазин" class="w-full bg-slate-50 p-2 rounded-lg border text-[10px] uppercase italic font-black">
-<datalist id="shopList">
-<option value="EDEKA">
-<option value="Lidl">
-<option value="Kaufland">
-<option value="Netto">
-<option value="Rossman">
-<option value="dm">
-<option value="PayPal">
-<option value="Tankstelle">
-<option value="Woolworth">
-<option value="Aldi">
-<option value="Apple">
-<option value="Scribd">
-<option value="Post">
-<option value="Telekom">
-<option value="Health AG (Dentarra)">
-<option value="Galeria">
-<option value="Teddi">
-<option value="Sekond Hand">
-<option value="Перевод (Вход)">
-<option value="Перевод (Выход)">
-<option value="Стипендия">
-<option value="Страховка">
-<option value="Кафе">
-<option value="Стоянка">
-</datalist>
-
-<div id="expenseSection" class="hidden space-y-2"><div id="itemsList" class="space-y-1"></div><button type="button" onclick="addItemRow()" class="w-full py-1.5 border-2 border-dashed border-rose-100 rounded-lg text-rose-300 text-[7px] uppercase font-black">+ ТОВАР</button></div>
-<div id="incomeSection" class="hidden bg-emerald-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><div><label class="text-[5px] block font-black">₴</label><input type="number" id="valUah" step="0.01" oninput="calcSimple('UAH')" class="w-full bg-transparent text-sm text-emerald-600 text-center font-black"></div><div><label class="text-[5px] block font-black">€</label><input type="number" id="valEur" step="0.01" oninput="calcSimple('EUR')" class="w-full bg-transparent text-sm text-center font-black"></div></div>
-<div id="transferSection" class="hidden space-y-2"><div class="grid grid-cols-2 gap-1 text-[8px] font-black"><select id="tFrom" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase italic"></select><select id="tTo" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase text-blue-600 italic"></select></div><div class="bg-blue-50 p-2 rounded-xl grid grid-cols-2 gap-2 text-center"><input type="number" id="trEur" placeholder="€" step="0.01" class="bg-transparent text-xs font-black"><input type="number" id="trUah" placeholder="₴" step="0.01" class="bg-transparent text-blue-600 text-xs font-black"></div></div>
-<div id="accCatGroup" class="grid grid-cols-2 gap-1 text-[8px] font-black italic"><select id="acc" class="wallet-select bg-slate-50 p-2 rounded-lg border uppercase"></select>
-<select id="cat" class="bg-slate-50 p-2 rounded-lg border uppercase">
-<option>🍎 Продукты / Быт</option>
-<option>🏠 Жилье / Связь</option>
-<option>🚬 Табак</option>
-<option>🍷 Алкоголь</option>
-<option>☕️ Кафе / Отдых</option>
-<option>💊 Здоровье / Красота</option>
-<option>🚗 Транспорт</option>
-<option>🏦 Банк / Комиссии</option>
-<option>🙇‍♀️ Учеба</option>
-<option>🛍 Остальное / Шопинг</option>
-<option>🏖️ Развлечения</option>
-<option>💰 КОПИЛКА</option>
-</select></div>
-<div class="flex gap-2 pt-1"><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 py-2 rounded-lg uppercase text-[8px] text-slate-300">ОТМЕНА</button><button id="saveBtn" class="flex-[2] bg-blue-600 text-white py-2 rounded-lg uppercase text-[8px] shadow-md font-black italic">ЗАПИСАТЬ</button></div></form></div></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzm3TNmBF7ifDnHIg-ifnX9hTCsHW-2OZzyxIDFYpgZRbg2k8_iEI7DioBMztYTNTCY/exec";
-const ORDER = ['🏦 SPARKASSE', '🏦👤 SPARKASSE ВАЛЕРА', '💵 НАЛИЧНЫЕ', '🇺🇦💃 ПРИВАТ ОЛЯ', '👤 ВАЛЕРА', '🍯 КОПИЛКА', '💳🎀 КРЕДИТКА ОЛЯ', '💳👤 КРЕДИТКА ВАЛЕРА', '🐷 СВИНКА', '✉️ КОНВЕРТ'];
-const UAH_WALLETS = ['ПРИВАТ', '👤 ВАЛЕРА', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
-const OPERATIVE = ['ПРИВАТ', 'ВАЛЕРА', 'SPARKASSE', 'НАЛИЧНЫЕ', 'КРЕДИТКА', 'СВИНКА', 'КОНВЕРТ'];
+    // ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШУ ИЗ APPS SCRIPT
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec";
 
-let walletData = {};
+    async function fetchData() {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        try {
+            const response = await fetch(scriptUrl + "?action=getData");
+            const data = await response.json();
+            
+            document.getElementById('rate-display').innerText = "КУРС: " + data.rate;
+            document.getElementById('balance-display').innerText = data.liquid;
+            
+            const container = document.getElementById('wallet-container');
+            container.innerHTML = "";
+            
+            data.wallets.forEach(wallet => {
+                const item = document.createElement('div');
+                item.className = 'wallet-item';
+                item.innerHTML = `<span>${wallet.name}</span><strong>${wallet.val}</strong>`;
+                container.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки данных:", error);
+            document.getElementById('balance-display').innerText = "Ошибка";
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
 
-function syncRate(v) { if(!v) return; localStorage.setItem('wallet_base_rate', v); document.getElementById('baseRate').value = v; drawBalance(); }
+    // Загрузка данных при открытии страницы
+    fetchData();
+</script>
 
-function getWalletCurrency(m) {
-if (m === '🏦👤 SPARKASSE ВАЛЕРА') return 'EUR'; // Теперь евровая
-if (m === '👤 ВАЛЕРА') return 'UAH';
-if (m === '🍯 КОПИЛКА') return 'EUR';
-return UAH_WALLETS.some(k => m.includes(k)) ? 'UAH' : 'EUR';
-}
-
-function drawBalance() {
-const r = parseFloat(document.getElementById('baseRate').value)||50.75; let total = 0;
-const grid = document.getElementById('walletsGrid'); grid.innerHTML = "";
-ORDER.forEach(m => {
-const v = walletData[m]||{uah:0,eur:0};
-const curr = getWalletCurrency(m);
-const eq = curr === 'EUR' ? v.eur : v.uah/r;
-if(OPERATIVE.some(k=>m.includes(k))) total+=eq;
-grid.innerHTML += `<div class="bg-slate-50 p-1 rounded-lg border flex flex-col items-center">
-<div class="text-[5.5px] text-slate-400 text-center leading-tight h-[14px] flex items-center">${m}</div>
-<div class="text-[8px] font-black ${m==='🏦 SPARKASSE' && v.eur < 10 ? 'text-rose-500' : ''}">${curr==='UAH'?'₴'+Math.round(v.uah):'€'+v.eur.toFixed(2)}</div></div>`;
-}); document.getElementById('mainBalance').innerText = '€ ' + total.toLocaleString('de-DE',{minimumFractionDigits:2});
-}
-
-function draw(data) {
-if(!data||!data.rows) return;
-walletData = {};
-const hist = document.getElementById('history'); hist.innerHTML = "";
-
-data.rows.forEach((row, i) => {
-if(i === 0) return;
-let cellF = String(row[5] || "").trim();
-if(!cellF || !ORDER.includes(cellF)) return;
-
-if(!walletData[cellF]) walletData[cellF]={uah:0,eur:0};
-const valE = parseFloat(String(row[8] || "0").replace(',','.')) || 0;
-const valU = parseFloat(String(row[10] || "0").replace(',','.')) || 0;
-walletData[cellF].eur += valE;
-walletData[cellF].uah += valU;
-});
-
-data.rows.slice(1,25).forEach(r => {
-let cellF = String(r[5] || "").trim();
-if(!ORDER.includes(cellF)) return;
-const curr = getWalletCurrency(cellF);
-const vE=parseFloat(String(r[8] || "0").replace(',','.'))||0, vU=parseFloat(String(r[10] || "0").replace(',','.'))||0;
-if(vE===0 && vU===0) return;
-const amt = curr === 'UAH' ? vU : vE;
-hist.innerHTML += `<div class="bg-white p-2 rounded-xl flex justify-between items-center border border-slate-50 mb-1 shadow-sm">
-<div><p class="text-[9px] text-slate-700 font-black uppercase">${r[4]||r[2]}</p>
-<p class="text-[5px] opacity-30 font-black">${cellF} • ${r[13]||'ОТДЕЛ'}</p></div>
-<div class="${amt>0?'text-emerald-500':'text-rose-500'} text-[10px] font-black italic">${amt>0?'+':''}${Math.abs(amt).toFixed(curr==='UAH'?0:2)}${curr==='UAH'?'₴':'€'}</div></div>`;
-}); drawBalance();
-}
-
-async function save(e) { e.preventDefault(); const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.innerText="..."; const t=document.getElementById('txType').value, r=parseFloat(document.getElementById('customRate').value); let p = { date:document.getElementById('date').value, rate:r, merchant:document.getElementById('merchant').value, action:t }; if(t==='expense') { p.account=document.getElementById('acc').value; p.category=document.getElementById('cat').value; const rows=document.querySelectorAll('.item-row'); if(rows.length>1) p.items=Array.from(rows).map(row=>({nameRU:row.querySelector('.nameRU').value,qty:parseFloat(row.querySelector('.qty').value)||1,priceUnit:parseFloat(row.querySelector('.priceUnit').value)||0,totalUah:parseFloat(row.querySelector('.totalUah').value)||0})); else { const f=rows[0]; p.nameRU=f.querySelector('.nameRU').value; p.qty=parseFloat(f.querySelector('.qty').value)||1; p.priceUnit=parseFloat(f.querySelector('.priceUnit').value)||0; p.totalUah=parseFloat(f.querySelector('.totalUah').value)||0; } } else if(t==='transfer') { p.from=document.getElementById('tFrom').value; p.to=document.getElementById('tTo').value; p.eur=parseFloat(document.getElementById('trEur').value)||0; p.uah=parseFloat(document.getElementById('trUah').value)||0; } else if(t==='income') { p.account=document.getElementById('acc').value; p.category="💰 Доход"; p.totalEur=parseFloat(document.getElementById('valEur').value)||0; p.totalUah=parseFloat(document.getElementById('valUah').value)||0; } await fetch(API_URL,{method:'POST',body:JSON.stringify(p)}); location.reload(); }
-function openModal(t){ document.getElementById('txType').value=t; document.getElementById('modal').classList.remove('hidden'); document.getElementById('customRate').value = localStorage.getItem('wallet_base_rate') || "50.75"; ['expenseSection','transferSection','incomeSection','accCatGroup'].forEach(id=>document.getElementById(id).classList.add('hidden')); const selects=document.querySelectorAll('.wallet-select'); selects.forEach(s=>{ s.innerHTML=""; ORDER.forEach(m=>{ s.innerHTML+=`<option value="${m}">${m}</option>`; }); }); if(t==='expense'){ document.getElementById('expenseSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); document.getElementById('itemsList').innerHTML=""; addItemRow(); } else if(t==='income'){ document.getElementById('incomeSection').classList.remove('hidden'); document.getElementById('accCatGroup').classList.remove('hidden'); } else if(t==='transfer'){ document.getElementById('transferSection').classList.remove('hidden'); } document.getElementById('date').valueAsDate=new Date(); }
-function addItemRow() { document.getElementById('itemsList').insertAdjacentHTML('beforeend', `<div class="item-row bg-slate-50 p-2 rounded-lg border mb-1"> <div class="grid grid-cols-2 gap-1 mb-1"><input type="text" placeholder="Товар" class="nameRU bg-white p-1 rounded text-[8px] font-black italic"><input type="number" value="1" class="qty bg-white p-1 rounded text-[8px] text-center font-black" oninput="calcRow(this,'eur')"></div> <div class="grid grid-cols-2 gap-1"><input type="number" step="0.01" placeholder="€" class="priceUnit bg-white p-1 rounded text-[8px] font-black" oninput="calcRow(this,'eur')"><input type="number" step="0.01" placeholder="₴" class="totalUah bg-blue-50 p-1 rounded text-[8px] text-blue-600 font-black" oninput="calcRow(this,'uah')"></div></div>`); }
-function calcRow(el,s){ const row=el.closest('.item-row'), r=parseFloat(document.getElementById('customRate').value), q=parseFloat(row.querySelector('.qty').value)||1, pu=row.querySelector('.priceUnit'), tu=row.querySelector('.totalUah'); if(s==='eur') tu.value=((parseFloat(pu.value)||0)*q*r).toFixed(0); else pu.value=((parseFloat(tu.value)||0)/r/q).toFixed(2); }
-function calcSimple(s){ const r=parseFloat(document.getElementById('customRate').value); if(s==='UAH') document.getElementById('valEur').value=(document.getElementById('valUah').value/r).toFixed(2); else document.getElementById('valUah').value=(document.getElementById('valEur').value*r).toFixed(0); }
-function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
-window.onload=()=>{ const r=localStorage.getItem('wallet_base_rate')||"50.75"; document.getElementById('baseRate').value=r; const s=document.createElement('script'); s.src=API_URL+"?callback=draw&_t="+Date.now(); document.body.appendChild(s); };
-</script></body></html>
+</body>
+</html>
