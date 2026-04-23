@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v106.1</title>
+    <title>SmartWallet v108.2</title>
     <style>
         body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
         .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .rate { font-size: 13px; color: #5f6368; text-align: left; margin-bottom: 15px; font-weight: bold; background: #e8f0fe; padding: 5px 10px; border-radius: 5px; display: inline-block; }
+        .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin-bottom: 4px; }
         .total-balance { font-size: 18px; color: #70757a; margin-bottom: 5px; }
         .liquid-balance { font-size: 38px; color: #202124; font-weight: bold; margin-bottom: 20px; }
-        .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin-bottom: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
         .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; font-size: 14px; transition: opacity 0.2s; }
         .btn-expense { background-color: #db4437; }
@@ -48,38 +48,55 @@
 </div>
 
 <script>
-    // Твоя НОВАЯ ссылка развертывания
-    const BASE_URL = 'https://script.google.com/macros/s/AKfycby53vR3uxaAYKE9nH7tTEUk0IZbvaCRlwci7OWiDDMb-9haMW1ZU8DCoRRh-9pL770U/exec';
-    const API_URL = BASE_URL + (BASE_URL.includes('?') ? '&' : '?') + 'action=getData';
+    const API_URL = 'https://script.google.com/macros/s/AKfycby53vR3uxaAYKE9nH7tTEUk0IZbvaCRlwci7OWiDDMb-9haMW1ZU8DCoRRh-9pL770U/exec';
 
     async function loadData() {
         try {
             const response = await fetch(API_URL);
             const data = await response.json();
             
+            // 1. Отображаем курс
             document.getElementById('rate-display').innerText = `КУРС: ${data.rate}`;
-            document.getElementById('liquid-balance').innerText = `${data.liquid} €`;
             
-            // Список карт для расчета "Общего баланса"
-            const totalWallets = ["💳👤 ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "🏦 SPARKASSE ОЛЯ", "💵 НАЛИЧНЫЕ"];
+            // 2. Списки для фильтрации
+            const liquidKeys = ["SPARKASSE", "НАЛИЧНЫЕ"];
+            const totalKeys = ["ВАЛЕРА", "ПРИВАТ", "SPARKASSE", "НАЛИЧНЫЕ"];
+            
             let totalSum = 0;
+            let liquidSum = 0;
+            
             const container = document.getElementById('wallets');
             container.innerHTML = '';
 
             data.wallets.forEach(w => {
                 const item = document.createElement('div');
                 item.className = 'wallet-item';
-                let uahPart = w.valUah ? `<span class="wallet-val-uah">${w.valUah}</span>` : '';
-                item.innerHTML = `<span class="wallet-name">${w.name}</span><div class="wallet-val-container"><span class="wallet-val">${w.val}</span>${uahPart}</div>`;
-                container.appendChild(item);
-
-                // Суммируем только основные счета
-                if (totalWallets.some(name => w.name.includes(name))) {
-                    let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
-                    if (!isNaN(cleanVal)) totalSum += cleanVal;
+                
+                // Очистка числа для расчетов
+                let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
+                
+                // Считаем Ликвидный
+                if (liquidKeys.some(k => w.name.toUpperCase().includes(k))) {
+                    liquidSum += cleanVal;
                 }
+                
+                // Считаем Общий
+                if (totalKeys.some(k => w.name.toUpperCase().includes(k))) {
+                    totalSum += cleanVal;
+                }
+
+                item.innerHTML = `
+                    <span class="wallet-name">${w.name}</span>
+                    <div class="wallet-val-container">
+                        <span class="wallet-val">${w.val}</span>
+                    </div>`;
+                container.appendChild(item);
             });
+
+            // 3. Вывод итогов с форматированием
             document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+            document.getElementById('liquid-balance').innerText = liquidSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+
         } catch (e) {
             console.error("Ошибка загрузки:", e);
             document.getElementById('liquid-balance').innerText = "Ошибка данных";
