@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v105.5</title>
+    <title>SmartWallet v105.6</title>
     <style>
         body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
@@ -39,18 +39,16 @@
     </div>
 
     <div class="btn-group">
-        <a href="https://script.google.com/macros/s/AKfycbyp6TCFXqyhurFhfbmbnRBCQFNNjTCrqIMX4gsLDiogMJZ-AZGFkzg9La9HeCTh5cn5/exec" class="btn btn-expense">РАСХОД</a>
-        <a href="https://script.google.com/macros/s/AKfycbyp6TCFXqyhurFhfbmbnRBCQFNNjTCrqIMX4gsLDiogMJZ-AZGFkzg9La9HeCTh5cn5/exec" class="btn btn-transfer">ПЕРЕВОД</a>
-        <a href="https://script.google.com/macros/s/AKfycbyp6TCFXqyhurFhfbmbnRBCQFNNjTCrqIMX4gsLDiogMJZ-AZGFkzg9La9HeCTh5cn5/exec" class="btn btn-income">ДОХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-expense">РАСХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-transfer">ПЕРЕВОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-income">ДОХОД</a>
     </div>
 
     <div id="wallets" class="wallet-list"></div>
 </div>
 
 <script>
-    // Твоя ссылка
-    const BASE_URL = 'https://script.google.com/macros/s/AKfycbyp6TCFXqyhurFhfbmbnRBCQFNNjTCrqIMX4gsLDiogMJZ-AZGFkzg9La9HeCTh5cn5/exec';
-    // Добавляем параметр getData правильно
+    const BASE_URL = 'https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec';
     const API_URL = BASE_URL + (BASE_URL.includes('?') ? '&' : '?') + 'action=getData';
 
     async function loadData() {
@@ -58,23 +56,19 @@
             const response = await fetch(API_URL);
             const data = await response.json();
             
-            // 1. Ставим курс и ликвидный баланс
             document.getElementById('rate-display').innerText = `КУРС: ${data.rate}`;
             document.getElementById('liquid-balance').innerText = `${data.liquid} €`;
             
-            // 2. Список карт для расчета "Общего баланса"
             const totalWallets = ["💳👤 ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "🏦 SPARKASSE ОЛЯ", "💵 НАЛИЧНЫЕ"];
             let totalSum = 0;
             
             const container = document.getElementById('wallets');
             container.innerHTML = '';
 
-            // 3. Перебираем кошельки
             data.wallets.forEach(w => {
                 const item = document.createElement('div');
                 item.className = 'wallet-item';
                 
-                // Если карта гривневая, добавляем строчку с UAH
                 let uahPart = w.valUah ? `<span class="wallet-val-uah">${w.valUah}</span>` : '';
                 
                 item.innerHTML = `
@@ -86,7 +80,6 @@
                 `;
                 container.appendChild(item);
 
-                // Считаем сумму для Общего баланса (чистим строку от знаков и пробелов)
                 if (totalWallets.some(name => w.name.includes(name))) {
                     let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
                     if (!isNaN(cleanVal)) {
@@ -95,16 +88,14 @@
                 }
             });
 
-            // 4. Выводим посчитанный Общий баланс
             document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
 
         } catch (e) {
-            console.error("Критическая ошибка:", e);
+            console.error("Ошибка:", e);
             document.getElementById('liquid-balance').innerText = "Ошибка данных";
         }
     }
 
-    // Запуск загрузки
     loadData();
 </script>
 </body>
