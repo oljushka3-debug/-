@@ -3,75 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v104.4</title>
+    <title>SmartWallet v105.1</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .rate { color: #888; font-size: 0.9em; text-align: left; margin-bottom: 10px; }
-        .balance-main { font-size: 3em; font-weight: bold; color: #2c3e50; margin: 20px 0; }
-        .btn-group { display: flex; justify-content: space-between; gap: 10px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
-        button:active { transform: scale(0.95); }
-        .btn-red { background-color: #e74c3c; }
-        .btn-gray { background-color: #95a5a6; }
-        .btn-green { background-color: #2ecc71; }
-        .wallet-list { margin-top: 30px; text-align: left; }
-        .wallet-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 1.1em; }
-        .wallet-item strong { color: #2c3e50; }
+        body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .rate { font-size: 12px; color: #888; text-align: left; margin-bottom: 10px; font-weight: bold; }
+        
+        /* Стили для балансов */
+        .total-balance { font-size: 18px; color: #5f6368; margin-bottom: 5px; }
+        .liquid-balance { font-size: 36px; color: #202124; font-weight: bold; margin-bottom: 20px; }
+        .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #70757a; margin-bottom: 4px; }
+
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; font-size: 14px; }
+        .btn-expense { background-color: #db4437; }
+        .btn-transfer { background-color: #7f8c8d; }
+        .btn-income { background-color: #0f9d58; }
+        
+        .wallet-list { list-style: none; padding: 0; margin: 0; }
+        .wallet-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f3f4; font-size: 15px; color: #3c4043; }
+        .wallet-name { font-weight: 500; }
+        .wallet-val { font-weight: bold; color: #202124; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="rate-display" class="rate">КУРС: загрузка...</div>
-    <div id="balance-display" class="balance-main">0.00 €</div>
+<div class="card">
+    <div class="rate" id="rate-display">КУРС: ...</div>
     
-    <div class="btn-group">
-        <button class="btn-red" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=header')">РАСХОД</button>
-        <button class="btn-gray" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=header')">ПЕРЕВОД</button>
-        <button class="btn-green" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=header')">ДОХОД</button>
+    <div class="header">
+        <div class="label">Общий баланс</div>
+        <div class="total-balance" id="total-balance">0.00 €</div>
+        
+        <div class="label">Ликвидный (Доступно)</div>
+        <div class="liquid-balance" id="liquid-balance">0.00 €</div>
     </div>
 
-    <div class="wallet-list" id="wallet-container">
+    <div class="btn-group">
+        <a href="ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ" class="btn btn-expense">РАСХОД</a>
+        <a href="ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ" class="btn btn-transfer">ПЕРЕВОД</a>
+        <a href="ССЫЛКА_НА_ВАШУ_ГУГЛ_ФОРМУ" class="btn btn-income">ДОХОД</a>
+    </div>
+
+    <div id="wallets" class="wallet-list">
         </div>
 </div>
 
 <script>
-    // Вставлена ваша актуальная ссылка
-    const scriptUrl = "https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec";
+    // ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШ URL ИЗ ИЗОБРАЖЕНИЯ image_b3cf3f.png
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec?action=getData';
 
-    async function fetchData() {
+    async function loadData() {
         try {
-            // Запрашиваем данные у Google Скрипта
-            const response = await fetch(scriptUrl + "?action=getData");
+            const response = await fetch(API_URL);
             const data = await response.json();
             
-            // Вывод курса (например, 52.2)
-            document.getElementById('rate-display').innerText = "КУРС: " + data.rate;
+            document.getElementById('rate-display').innerText = `КУРС: ${data.rate}`;
+            document.getElementById('liquid-balance').innerText = `${data.liquid} €`;
             
-            // Вывод ликвидного баланса в центр (например, 2.236,318 €)
-            document.getElementById('balance-display').innerText = data.liquid + " €";
-            
-            const container = document.getElementById('wallet-container');
-            container.innerHTML = "";
-            
-            // Отрисовка каждой карты из полученного списка
-            if (data.wallets && data.wallets.length > 0) {
-                data.wallets.forEach(wallet => {
-                    const item = document.createElement('div');
-                    item.className = 'wallet-item';
-                    item.innerHTML = `<span>${wallet.name}</span><strong>${wallet.val}</strong>`;
-                    container.appendChild(item);
-                });
-            }
-        } catch (e) { 
-            console.error("Ошибка загрузки данных:", e);
-            document.getElementById('balance-display').innerText = "Ошибка сети";
+            // Расчет Общего баланса для экрана (Валера + Приват + Sparkasse + Наличные)
+            const totalWallets = ["💳👤 ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "🏦 SPARKASSE ОЛЯ", "💵 НАЛИЧНЫЕ"];
+            let totalSum = 0;
+
+            const container = document.getElementById('wallets');
+            container.innerHTML = '';
+
+            data.wallets.forEach(w => {
+                // Отрисовка списка
+                const div = document.createElement('div');
+                div.className = 'wallet-item';
+                div.innerHTML = `<span class="wallet-name">${w.name}</span><span class="wallet-val">${w.val}</span>`;
+                container.appendChild(div);
+
+                // Суммируем для Общего баланса
+                if (totalWallets.some(name => w.name.includes(name))) {
+                    let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
+                    if (!isNaN(cleanVal)) totalSum += cleanVal;
+                }
+            });
+
+            document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+
+        } catch (e) {
+            console.error("Ошибка загрузки:", e);
+            document.getElementById('liquid-balance').innerText = "Ошибка";
         }
     }
-    
-    // Запускаем получение данных при открытии страницы
-    fetchData();
+
+    loadData();
 </script>
+
 </body>
 </html>
