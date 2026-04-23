@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v108.2</title>
+    <title>SmartWallet v108.31</title>
     <style>
         body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
@@ -39,16 +39,17 @@
     </div>
 
     <div class="btn-group">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog/viewform?usp=dialog" target="_blank" class="btn btn-expense">РАСХОД</a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog/viewform?usp=dialog" target="_blank" class="btn btn-transfer">ПЕРЕВОД</a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog/viewform?usp=dialog" target="_blank" class="btn btn-income">ДОХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform" target="_blank" class="btn btn-expense">РАСХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform" target="_blank" class="btn btn-transfer">ПЕРЕВОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform" target="_blank" class="btn btn-income">ДОХОД</a>
     </div>
 
     <div id="wallets" class="wallet-list"></div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycby53vR3uxaAYKE9nH7tTEUk0IZbvaCRlwci7OWiDDMb-9haMW1ZU8DCoRRh-9pL770U/exec';
+    // НОВЫЙ URL ВЕБ-ПРИЛОЖЕНИЯ
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwKMS4xNWED8KAqRYb4B6p3UUguWqI6KkSuufoyBnBnLeu9_Wd68myOsSx2VsVmTAEL/exec';
 
     async function loadData() {
         try {
@@ -56,11 +57,13 @@
             const data = await response.json();
             
             // 1. Отображаем курс
-            document.getElementById('rate-display').innerText = `КУРС: ${data.rate}`;
+            const exchangeRate = parseFloat(data.exchangeRate) || 0;
+            document.getElementById('rate-display').innerText = `КУРС: ${exchangeRate.toFixed(2)}`;
             
             // 2. Списки для фильтрации
             const liquidKeys = ["SPARKASSE", "НАЛИЧНЫЕ"];
             const totalKeys = ["ВАЛЕРА", "ПРИВАТ", "SPARKASSE", "НАЛИЧНЫЕ"];
+            const uahWallets = ["ПРИВАТ", "ВАЛЕРА"];
             
             let totalSum = 0;
             let liquidSum = 0;
@@ -68,32 +71,41 @@
             const container = document.getElementById('wallets');
             container.innerHTML = '';
 
-            data.wallets.forEach(w => {
+            // Преобразуем объект wallets в массив для итерации
+            const walletEntries = Object.entries(data.wallets);
+
+            walletEntries.forEach(([key, value]) => {
                 const item = document.createElement('div');
                 item.className = 'wallet-item';
                 
-                // Очистка числа для расчетов
-                let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
+                // Обработка названия и значения
+                const walletName = key.toUpperCase();
+                let cleanVal = parseFloat(value) || 0;
                 
-                // Считаем Ликвидный
-                if (liquidKeys.some(k => w.name.toUpperCase().includes(k))) {
-                    liquidSum += cleanVal;
-                }
-                
-                // Считаем Общий
-                if (totalKeys.some(k => w.name.toUpperCase().includes(k))) {
-                    totalSum += cleanVal;
+                // Расчет сумм
+                if (liquidKeys.some(k => walletName.includes(k))) liquidSum += cleanVal;
+                if (totalKeys.some(k => walletName.includes(k))) totalSum += cleanVal;
+
+                // Форматирование для вывода
+                let eurDisplay = cleanVal.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+                let uahDisplay = "";
+
+                // Если кошелек гривневый, показываем UAH (баланс в EUR * курс)
+                if (uahWallets.some(k => walletName.includes(k))) {
+                    let uahVal = cleanVal * exchangeRate;
+                    uahDisplay = `<span class="wallet-val-uah">${uahVal.toLocaleString('de-DE', {minimumFractionDigits: 0})} UAH</span>`;
                 }
 
                 item.innerHTML = `
-                    <span class="wallet-name">${w.name}</span>
+                    <span class="wallet-name">${key}</span>
                     <div class="wallet-val-container">
-                        <span class="wallet-val">${w.val}</span>
+                        <span class="wallet-val">${eurDisplay}</span>
+                        ${uahDisplay}
                     </div>`;
                 container.appendChild(item);
             });
 
-            // 3. Вывод итогов с форматированием
+            // 3. Вывод итогов
             document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
             document.getElementById('liquid-balance').innerText = liquidSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
 
