@@ -3,53 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v104.2</title>
+    <title>SmartWallet v104.4</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
         .rate { color: #888; font-size: 0.9em; text-align: left; margin-bottom: 10px; }
         .balance-main { font-size: 3em; font-weight: bold; color: #2c3e50; margin: 20px 0; }
         .btn-group { display: flex; justify-content: space-between; gap: 10px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
         .btn-red { background-color: #e74c3c; }
         .btn-gray { background-color: #95a5a6; }
         .btn-green { background-color: #2ecc71; }
         .wallet-list { margin-top: 30px; text-align: left; }
-        .wallet-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .wallet-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 1.1em; }
+        .wallet-item strong { color: #2c3e50; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="rate-display" class="rate">КУРС: ...</div>
-    <div id="balance-display" class="balance-main">0.00</div>
+    <div id="rate-display" class="rate">КУРС: загрузка...</div>
+    <div id="balance-display" class="balance-main">0.00 €</div>
     
     <div class="btn-group">
-        <button class="btn-red" onclick="window.open('https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec')">РАСХОД</button>
-        <button class="btn-gray" onclick="window.open('https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec')">ПЕРЕВОД</button>
-        <button class="btn-green" onclick="window.open('https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec')">ДОХОД</button>
+        <button class="btn-red" onclick="window.open('https://docs.google.com/forms/')">РАСХОД</button>
+        <button class="btn-gray" onclick="window.open('https://docs.google.com/forms/')">ПЕРЕВОД</button>
+        <button class="btn-green" onclick="window.open('https://docs.google.com/forms/')">ДОХОД</button>
     </div>
 
-    <div class="wallet-list" id="wallet-container"></div>
+    <div class="wallet-list" id="wallet-container">
+        </div>
 </div>
 
 <script>
-    // ВСТАВЬТЕ ССЫЛКУ ИЗ ГУГЛ СКРИПТА (ВЕБ-ПРИЛОЖЕНИЕ)
+    // Вставлена ваша актуальная ссылка
     const scriptUrl = "https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec";
 
     async function fetchData() {
         try {
+            // Запрашиваем данные у Google Скрипта
             const response = await fetch(scriptUrl + "?action=getData");
             const data = await response.json();
+            
+            // Вывод курса (например, 52.2)
             document.getElementById('rate-display').innerText = "КУРС: " + data.rate;
-            document.getElementById('balance-display').innerText = data.liquid;
+            
+            // Вывод ликвидного баланса в центр (например, 2.236,318 €)
+            document.getElementById('balance-display').innerText = data.liquid + " €";
+            
             const container = document.getElementById('wallet-container');
             container.innerHTML = "";
-            data.wallets.forEach(wallet => {
-                container.innerHTML += `<div class="wallet-item"><span>${wallet.name}</span><strong>${wallet.val}</strong></div>`;
-            });
-        } catch (e) { console.error(e); }
+            
+            // Отрисовка каждой карты из полученного списка
+            if (data.wallets && data.wallets.length > 0) {
+                data.wallets.forEach(wallet => {
+                    const item = document.createElement('div');
+                    item.className = 'wallet-item';
+                    item.innerHTML = `<span>${wallet.name}</span><strong>${wallet.val}</strong>`;
+                    container.appendChild(item);
+                });
+            }
+        } catch (e) { 
+            console.error("Ошибка загрузки данных:", e);
+            document.getElementById('balance-display').innerText = "Ошибка сети";
+        }
     }
+    
+    // Запускаем получение данных при открытии страницы
     fetchData();
 </script>
 </body>
