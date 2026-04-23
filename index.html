@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v105.6</title>
+    <title>SmartWallet v106.1</title>
     <style>
         body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
@@ -39,16 +39,17 @@
     </div>
 
     <div class="btn-group">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-expense">РАСХОД</a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-transfer">ПЕРЕВОД</a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl8jDqUq_O1z8r1r-3nC43H3Rmrm8XWsFqgkU0dha05boKZ3K/viewform" target="_blank" class="btn btn-income">ДОХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog" target="_blank" class="btn btn-expense">РАСХОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog" target="_blank" class="btn btn-transfer">ПЕРЕВОД</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCyLxCypteUHKKaf1JlcqXEAaOBzd4qedwmw3rjhvS_PMwOQ/viewform?usp=dialog" target="_blank" class="btn btn-income">ДОХОД</a>
     </div>
 
     <div id="wallets" class="wallet-list"></div>
 </div>
 
 <script>
-    const BASE_URL = 'https://script.google.com/macros/s/AKfycbxju5ngg1YSTEHyL2Ms6633h3Rmrm8XWsFqgkU0dha05boKZ3KghcuQPLTFLDKqFu3r/exec';
+    // Твоя НОВАЯ ссылка развертывания
+    const BASE_URL = 'https://script.google.com/macros/s/AKfycbyp6TCFXqyhurFhfbmbnRBCQFNNjTCrqIMX4gsLDiogMJZ-AZGFkzg9La9HeCTh5cn5/exec';
     const API_URL = BASE_URL + (BASE_URL.includes('?') ? '&' : '?') + 'action=getData';
 
     async function loadData() {
@@ -59,43 +60,31 @@
             document.getElementById('rate-display').innerText = `КУРС: ${data.rate}`;
             document.getElementById('liquid-balance').innerText = `${data.liquid} €`;
             
+            // Список карт для расчета "Общего баланса"
             const totalWallets = ["💳👤 ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "🏦 SPARKASSE ОЛЯ", "💵 НАЛИЧНЫЕ"];
             let totalSum = 0;
-            
             const container = document.getElementById('wallets');
             container.innerHTML = '';
 
             data.wallets.forEach(w => {
                 const item = document.createElement('div');
                 item.className = 'wallet-item';
-                
                 let uahPart = w.valUah ? `<span class="wallet-val-uah">${w.valUah}</span>` : '';
-                
-                item.innerHTML = `
-                    <span class="wallet-name">${w.name}</span>
-                    <div class="wallet-val-container">
-                        <span class="wallet-val">${w.val}</span>
-                        ${uahPart}
-                    </div>
-                `;
+                item.innerHTML = `<span class="wallet-name">${w.name}</span><div class="wallet-val-container"><span class="wallet-val">${w.val}</span>${uahPart}</div>`;
                 container.appendChild(item);
 
+                // Суммируем только основные счета
                 if (totalWallets.some(name => w.name.includes(name))) {
                     let cleanVal = parseFloat(w.val.replace(/[^-0-9,]/g, '').replace(',', '.'));
-                    if (!isNaN(cleanVal)) {
-                        totalSum += cleanVal;
-                    }
+                    if (!isNaN(cleanVal)) totalSum += cleanVal;
                 }
             });
-
             document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
-
         } catch (e) {
-            console.error("Ошибка:", e);
+            console.error("Ошибка загрузки:", e);
             document.getElementById('liquid-balance').innerText = "Ошибка данных";
         }
     }
-
     loadData();
 </script>
 </body>
