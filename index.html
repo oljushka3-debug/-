@@ -29,7 +29,7 @@
 <body>
 
 <div class="card">
-    <div id="rate-display" class="rate">КУРС: ...</div>
+    <div id="rate-display" class="rate">КУРС: Загрузка...</div>
     
     <div class="header">
         <div class="label">Общий баланс</div>
@@ -48,49 +48,41 @@
 </div>
 
 <script>
-    // НОВЫЙ URL ВЕБ-ПРИЛОЖЕНИЯ
     const API_URL = 'https://script.google.com/macros/s/AKfycbwKMS4xNWED8KAqRYb4B6p3UUguWqI6KkSuufoyBnBnLeu9_Wd68myOsSx2VsVmTAEL/exec';
 
     async function loadData() {
+        const container = document.getElementById('wallets');
         try {
             const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Сетевая ошибка');
             const data = await response.json();
             
-            // 1. Отображаем курс
+            if (!data.wallets) throw new Error('Данные wallets пусты');
+
             const exchangeRate = parseFloat(data.exchangeRate) || 0;
             document.getElementById('rate-display').innerText = `КУРС: ${exchangeRate.toFixed(2)}`;
             
-            // 2. Списки для фильтрации
             const liquidKeys = ["SPARKASSE", "НАЛИЧНЫЕ"];
             const totalKeys = ["ВАЛЕРА", "ПРИВАТ", "SPARKASSE", "НАЛИЧНЫЕ"];
             const uahWallets = ["ПРИВАТ", "ВАЛЕРА"];
             
             let totalSum = 0;
             let liquidSum = 0;
-            
-            const container = document.getElementById('wallets');
             container.innerHTML = '';
 
-            // Преобразуем объект wallets в массив для итерации
-            const walletEntries = Object.entries(data.wallets);
-
-            walletEntries.forEach(([key, value]) => {
-                const item = document.createElement('div');
-                item.className = 'wallet-item';
-                
-                // Обработка названия и значения
+            Object.entries(data.wallets).forEach(([key, value]) => {
                 const walletName = key.toUpperCase();
                 let cleanVal = parseFloat(value) || 0;
                 
-                // Расчет сумм
                 if (liquidKeys.some(k => walletName.includes(k))) liquidSum += cleanVal;
                 if (totalKeys.some(k => walletName.includes(k))) totalSum += cleanVal;
 
-                // Форматирование для вывода
+                const item = document.createElement('div');
+                item.className = 'wallet-item';
+                
                 let eurDisplay = cleanVal.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
                 let uahDisplay = "";
 
-                // Если кошелек гривневый, показываем UAH (баланс в EUR * курс)
                 if (uahWallets.some(k => walletName.includes(k))) {
                     let uahVal = cleanVal * exchangeRate;
                     uahDisplay = `<span class="wallet-val-uah">${uahVal.toLocaleString('de-DE', {minimumFractionDigits: 0})} UAH</span>`;
@@ -105,13 +97,12 @@
                 container.appendChild(item);
             });
 
-            // 3. Вывод итогов
             document.getElementById('total-balance').innerText = totalSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
             document.getElementById('liquid-balance').innerText = liquidSum.toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
 
         } catch (e) {
-            console.error("Ошибка загрузки:", e);
-            document.getElementById('liquid-balance').innerText = "Ошибка данных";
+            console.error("Ошибка:", e);
+            container.innerHTML = '<div style="text-align:center; color:red;">Ошибка обновления данных</div>';
         }
     }
     loadData();
