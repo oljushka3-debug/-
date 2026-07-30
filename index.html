@@ -572,10 +572,8 @@ async function submitAllReceiptItems() {
 const cards = document.querySelectorAll('#receipt-items .receipt-item-card');
 if (!cards.length) return;
 
-setStatus('receipt-status', 'Записываю позиции...', false);
-let successCount = 0;
-
-for (const card of cards) {
+const items = [];
+cards.forEach(card => {
 const idx = card.dataset.idx;
 const wallet = card.querySelector('.ri-wallet').value;
 const shop = card.querySelector('.ri-shop').value.trim();
@@ -585,17 +583,27 @@ const price = parseFloat(card.querySelector('.ri-price').value) || 0;
 const category = card.querySelector('.ri-category').value;
 const currency = card.querySelector(`input[name="ri-currency-${idx}"]:checked`).value;
 
-if (!item || price <= 0) continue;
+if (!item || price <= 0) return;
+items.push({ wallet_raw: wallet, shop, item_ru: item, qty, price, currency, category });
+});
 
+if (!items.length) {
+setStatus('receipt-status', 'Нет заполненных позиций для записи', true);
+return;
+}
+
+setStatus('receipt-status', 'Записываю позиции...', false);
 try {
-const res = await postToBackend({ source: 'dashboard', type: 'expense', wallet, shop, item_ru: item, qty, unit_price: price, currency, category });
-if (res.ok) successCount++;
-} catch (e) {
-console.error('Ошибка записи позиции:', e);
+const res = await postToBackend({ source: 'dashboard', type: 'expense_batch', items });
+if (res.ok) {
+setStatus('receipt-status', res.message, false);
+} else {
+setStatus('receipt-status', res.message, true);
 }
+} catch (e) {
+setStatus('receipt-status', 'Ошибка сети: ' + e.message, true);
 }
 
-setStatus('receipt-status', `✅ Записано позиций: ${successCount} из ${cards.length}`, false);
 loadData();
 setTimeout(() => closeModal('receipt'), 1500);
 }
