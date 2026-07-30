@@ -1,401 +1,614 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartWallet v109.0</title>
-    <style>
-        body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
-        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .rate { font-size: 13px; color: #5f6368; text-align: left; margin-bottom: 8px; font-weight: bold; background: #e8f0fe; padding: 5px 10px; border-radius: 5px; display: inline-block; }
-        .period { font-size: 12px; color: #5f6368; text-align: left; margin-bottom: 15px; }
-        .rate-warning { font-size: 12px; color: #b06000; background: #fef7e0; padding: 8px 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
-        .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin-bottom: 4px; }
-        .total-balance { font-size: 18px; color: #70757a; margin-bottom: 5px; }
-        .liquid-balance { font-size: 38px; color: #202124; font-weight: bold; margin-bottom: 8px; }
-        .credit-line-balance { font-size: 13px; color: #5f6368; font-weight: 600; margin-bottom: 20px; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
-        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; font-size: 14px; transition: opacity 0.2s; }
-        .btn-expense { background-color: #db4437; }
-        .btn-transfer { background-color: #70757a; }
-        .btn-income { background-color: #0f9d58; }
-        .btn:hover { opacity: 0.9; }
-        .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin: 18px 0 4px; padding-top: 10px; border-top: 1px solid #f1f3f4; }
-        .wallet-list { list-style: none; padding: 0; margin: 0; }
-        .wallet-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f3f4; }
-        .wallet-name { font-size: 15px; color: #3c4043; font-weight: 500; }
-        .wallet-val-container { text-align: right; }
-        .wallet-val { font-size: 15px; font-weight: bold; color: #202124; }
-        .wallet-val.credit-line { color: #5f6368; }
-        .wallet-val-uah { font-size: 11px; color: #80868b; display: block; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWallet v110.0</title>
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; padding: 16px; box-sizing: border-box; }
-        .modal-overlay.open { display: block; }
-        .modal-card { background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; margin: 30px auto; box-sizing: border-box; }
-        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
-        .field-label { font-size: 12px; color: #5f6368; margin: 10px 0 4px; }
-        .field-input, .field-select { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        .field-row { display: flex; gap: 8px; }
-        .field-row .field-input, .field-row .field-select { flex: 1; }
-        .radio-row { display: flex; gap: 16px; margin-top: 4px; }
-        .radio-row label { font-size: 14px; display: flex; align-items: center; gap: 4px; }
-        .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
-        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .modal-btn-cancel { background: #f1f3f4; color: #3c4043; }
-        .modal-btn-submit { background: #1a73e8; color: white; }
-        .modal-status { font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
-        .modal-status.error { color: #db4437; }
-        .modal-status.success { color: #0f9d58; }
-    </style>
+<!-- ===== PWA: делает сайт "устанавливаемым" как приложение ===== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a73e8">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SmartWallet">
+<link rel="icon" href="icon-192.png" type="image/png">
+<style>
+body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+.card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 25px; }
+.header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+.rate { font-size: 13px; color: #5f6368; text-align: left; margin-bottom: 8px; font-weight: bold; background: #e8f0fe; padding: 5px 10px; border-radius: 5px; display: inline-block; }
+.period { font-size: 12px; color: #5f6368; text-align: left; margin-bottom: 15px; }
+.rate-warning { font-size: 12px; color: #b06000; background: #fef7e0; padding: 8px 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin-bottom: 4px; }
+.total-balance { font-size: 18px; color: #70757a; margin-bottom: 5px; }
+.liquid-balance { font-size: 38px; color: #202124; font-weight: bold; margin-bottom: 8px; }
+.credit-line-balance { font-size: 13px; color: #5f6368; font-weight: 600; margin-bottom: 20px; }
+.btn-group { display: flex; gap: 10px; margin-bottom: 12px; }
+.btn { flex: 1; padding: 14px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; font-size: 14px; transition: opacity 0.2s; }
+.btn-expense { background-color: #db4437; }
+.btn-transfer { background-color: #70757a; }
+.btn-income { background-color: #0f9d58; }
+.btn:hover { opacity: 0.9; }
+.btn-photo { width: 100%; padding: 13px; margin-bottom: 25px; border: 2px dashed #1a73e8; background: #fff; color: #1a73e8; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; box-sizing: border-box; }
+.btn-photo:hover { background: #e8f0fe; }
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin: 18px 0 4px; padding-top: 10px; border-top: 1px solid #f1f3f4; }
+.wallet-list { list-style: none; padding: 0; margin: 0; }
+.wallet-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f3f4; }
+.wallet-name { font-size: 15px; color: #3c4043; font-weight: 500; }
+.wallet-val-container { text-align: right; }
+.wallet-val { font-size: 15px; font-weight: bold; color: #202124; }
+.wallet-val.credit-line { color: #5f6368; }
+.wallet-val-uah { font-size: 11px; color: #80868b; display: block; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; padding: 16px; box-sizing: border-box; }
+.modal-overlay.open { display: block; }
+.modal-card { background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; margin: 30px auto; box-sizing: border-box; }
+.modal-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+.field-label { font-size: 12px; color: #5f6368; margin: 10px 0 4px; }
+.field-input, .field-select { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+.field-row { display: flex; gap: 8px; }
+.field-row .field-input, .field-row .field-select { flex: 1; }
+.radio-row { display: flex; gap: 16px; margin-top: 4px; }
+.radio-row label { font-size: 14px; display: flex; align-items: center; gap: 4px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+.modal-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; }
+.modal-btn-cancel { background: #f1f3f4; color: #3c4043; }
+.modal-btn-submit { background: #1a73e8; color: white; }
+.modal-status { font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
+.modal-status.error { color: #db4437; }
+.modal-status.success { color: #0f9d58; }
+.receipt-preview { width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; margin: 10px 0; background: #f1f3f4; display: none; }
+.receipt-item-card { border: 1px solid #dadce0; border-radius: 10px; padding: 12px; margin-top: 14px; position: relative; }
+.receipt-item-remove { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #db4437; font-size: 18px; cursor: pointer; line-height: 1; }
+</style>
 </head>
 <body>
-
 <div class="card">
-    <div id="rate-display" class="rate">КУРС: Загрузка...</div>
-    <div id="period-display" class="period">Период: —</div>
-    <div id="rate-warning" class="rate-warning"></div>
-
-    <div class="header">
-        <div class="label">Баланс за период (netto)</div>
-        <div class="liquid-balance" id="liquid-balance">0.00 €</div>
-        <div class="label">Ликвидный за период</div>
-        <div class="total-balance" id="total-balance">0.00 €</div>
-        <div class="credit-line-balance" id="debts-balance">Кредитная линия: 0.00 €</div>
-    </div>
-
-    <div class="btn-group">
-        <button onclick="openModal('expense')" class="btn btn-expense">РАСХОД</button>
-        <button onclick="openModal('transfer')" class="btn btn-transfer">ПЕРЕВОД</button>
-        <button onclick="openModal('income')" class="btn btn-income">ДОХОД</button>
-    </div>
-
-    <div id="wallets" class="wallet-list"></div>
-    <div id="debts" class="wallet-list"></div>
-    <div id="external" class="wallet-list"></div>
+<div id="rate-display" class="rate">КУРС: Загрузка...</div>
+<div id="period-display" class="period">Период: —</div>
+<div id="rate-warning" class="rate-warning"></div>
+<div class="header">
+<div class="label">Баланс за период (netto)</div>
+<div class="liquid-balance" id="liquid-balance">0.00 €</div>
+<div class="label">Ликвидный за период</div>
+<div class="total-balance" id="total-balance">0.00 €</div>
+<div class="credit-line-balance" id="debts-balance">Кредитная линия: 0.00 €</div>
+</div>
+<div class="btn-group">
+<button onclick="openModal('expense')" class="btn btn-expense">РАСХОД</button>
+<button onclick="openModal('transfer')" class="btn btn-transfer">ПЕРЕВОД</button>
+<button onclick="openModal('income')" class="btn btn-income">ДОХОД</button>
+</div>
+<button onclick="openModal('receipt')" class="btn-photo">📸 Сфотографировать чек</button>
+<div id="wallets" class="wallet-list"></div>
+<div id="debts" class="wallet-list"></div>
+<div id="external" class="wallet-list"></div>
 </div>
 
 <!-- ===== Модалка: РАСХОД ===== -->
 <div class="modal-overlay" id="modal-expense">
-    <div class="modal-card">
-        <div class="modal-title">📕 Расход</div>
-        <div class="field-label">Кошелёк</div>
-        <select class="field-select" id="exp-wallet"></select>
-        <div class="field-label">Магазин</div>
-        <input class="field-input" id="exp-shop" placeholder="Например, Лидл">
-        <div class="field-label">Товар</div>
-        <input class="field-input" id="exp-item" placeholder="Например, хлеб">
-        <div class="field-row" style="margin-top:10px;">
-            <div style="flex:1;">
-                <div class="field-label">Кол-во</div>
-                <input class="field-input" id="exp-qty" type="number" step="0.01" value="1">
-            </div>
-            <div style="flex:1;">
-                <div class="field-label">Цена за единицу</div>
-                <input class="field-input" id="exp-price" type="number" step="0.01" placeholder="0.00">
-            </div>
-        </div>
-        <div class="field-label">Валюта</div>
-        <div class="radio-row">
-            <label><input type="radio" name="exp-currency" value="EUR" checked> EUR</label>
-            <label><input type="radio" name="exp-currency" value="UAH"> UAH</label>
-        </div>
-        <div class="field-label">Категория</div>
-        <select class="field-select" id="exp-category"></select>
-        <div class="modal-status" id="exp-status"></div>
-        <div class="modal-actions">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal('expense')">Отмена</button>
-            <button class="modal-btn modal-btn-submit" onclick="submitExpense()">Записать</button>
-        </div>
-    </div>
+<div class="modal-card">
+<div class="modal-title">📕 Расход</div>
+<div class="field-label">Кошелёк</div>
+<select class="field-select" id="exp-wallet"></select>
+<div class="field-label">Магазин</div>
+<input class="field-input" id="exp-shop" placeholder="Например, Лидл">
+<div class="field-label">Товар</div>
+<input class="field-input" id="exp-item" placeholder="Например, хлеб">
+<div class="field-row" style="margin-top:10px;">
+<div style="flex:1;">
+<div class="field-label">Кол-во</div>
+<input class="field-input" id="exp-qty" type="number" step="0.01" value="1">
+</div>
+<div style="flex:1;">
+<div class="field-label">Цена за единицу</div>
+<input class="field-input" id="exp-price" type="number" step="0.01" placeholder="0.00">
+</div>
+</div>
+<div class="field-label">Валюта</div>
+<div class="radio-row">
+<label><input type="radio" name="exp-currency" value="EUR" checked> EUR</label>
+<label><input type="radio" name="exp-currency" value="UAH"> UAH</label>
+</div>
+<div class="field-label">Категория</div>
+<select class="field-select" id="exp-category"></select>
+<div class="modal-status" id="exp-status"></div>
+<div class="modal-actions">
+<button class="modal-btn modal-btn-cancel" onclick="closeModal('expense')">Отмена</button>
+<button class="modal-btn modal-btn-submit" onclick="submitExpense()">Записать</button>
+</div>
+</div>
 </div>
 
 <!-- ===== Модалка: ДОХОД ===== -->
 <div class="modal-overlay" id="modal-income">
-    <div class="modal-card">
-        <div class="modal-title">💰 Доход</div>
-        <div class="field-label">Кошелёк</div>
-        <select class="field-select" id="inc-wallet"></select>
-        <div class="field-label">Сумма</div>
-        <input class="field-input" id="inc-amount" type="number" step="0.01" placeholder="0.00">
-        <div class="field-label">Валюта</div>
-        <div class="radio-row">
-            <label><input type="radio" name="inc-currency" value="EUR" checked> EUR</label>
-            <label><input type="radio" name="inc-currency" value="UAH"> UAH</label>
-        </div>
-        <div class="field-label">Описание</div>
-        <input class="field-input" id="inc-description" placeholder="Например, зарплата">
-        <div class="modal-status" id="inc-status"></div>
-        <div class="modal-actions">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal('income')">Отмена</button>
-            <button class="modal-btn modal-btn-submit" onclick="submitIncome()">Записать</button>
-        </div>
-    </div>
+<div class="modal-card">
+<div class="modal-title">💰 Доход</div>
+<div class="field-label">Кошелёк</div>
+<select class="field-select" id="inc-wallet"></select>
+<div class="field-label">Сумма</div>
+<input class="field-input" id="inc-amount" type="number" step="0.01" placeholder="0.00">
+<div class="field-label">Валюта</div>
+<div class="radio-row">
+<label><input type="radio" name="inc-currency" value="EUR" checked> EUR</label>
+<label><input type="radio" name="inc-currency" value="UAH"> UAH</label>
+</div>
+<div class="field-label">Описание</div>
+<input class="field-input" id="inc-description" placeholder="Например, зарплата">
+<div class="modal-status" id="inc-status"></div>
+<div class="modal-actions">
+<button class="modal-btn modal-btn-cancel" onclick="closeModal('income')">Отмена</button>
+<button class="modal-btn modal-btn-submit" onclick="submitIncome()">Записать</button>
+</div>
+</div>
 </div>
 
 <!-- ===== Модалка: ПЕРЕВОД ===== -->
 <div class="modal-overlay" id="modal-transfer">
-    <div class="modal-card">
-        <div class="modal-title">🔄 Перевод</div>
-        <div class="field-label">Откуда</div>
-        <select class="field-select" id="tr-from"></select>
-        <div class="field-label">Куда</div>
-        <select class="field-select" id="tr-to"></select>
-        <div class="field-label">Сумма</div>
-        <input class="field-input" id="tr-amount" type="number" step="0.01" placeholder="0.00">
-        <div class="field-label">Валюта</div>
-        <div class="radio-row">
-            <label><input type="radio" name="tr-currency" value="EUR" checked> EUR</label>
-            <label><input type="radio" name="tr-currency" value="UAH"> UAH</label>
-        </div>
-        <div class="modal-status" id="tr-status"></div>
-        <div class="modal-actions">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal('transfer')">Отмена</button>
-            <button class="modal-btn modal-btn-submit" onclick="submitTransfer()">Перевести</button>
-        </div>
-    </div>
+<div class="modal-card">
+<div class="modal-title">🔄 Перевод</div>
+<div class="field-label">Откуда</div>
+<select class="field-select" id="tr-from"></select>
+<div class="field-label">Куда</div>
+<select class="field-select" id="tr-to"></select>
+<div class="field-label">Сумма</div>
+<input class="field-input" id="tr-amount" type="number" step="0.01" placeholder="0.00">
+<div class="field-label">Валюта</div>
+<div class="radio-row">
+<label><input type="radio" name="tr-currency" value="EUR" checked> EUR</label>
+<label><input type="radio" name="tr-currency" value="UAH"> UAH</label>
+</div>
+<div class="modal-status" id="tr-status"></div>
+<div class="modal-actions">
+<button class="modal-btn modal-btn-cancel" onclick="closeModal('transfer')">Отмена</button>
+<button class="modal-btn modal-btn-submit" onclick="submitTransfer()">Перевести</button>
+</div>
+</div>
+</div>
+
+<!-- ===== Модалка: ФОТО ЧЕКА ===== -->
+<div class="modal-overlay" id="modal-receipt">
+<div class="modal-card">
+<div class="modal-title">📸 Фото чека</div>
+<div class="field-label">Выбери или сфотографируй чек</div>
+<input type="file" accept="image/*" capture="environment" id="receipt-file" class="field-input">
+<img id="receipt-preview" class="receipt-preview">
+<button class="modal-btn modal-btn-submit" style="width:100%; margin-top:10px; box-sizing:border-box;" id="receipt-recognize-btn" onclick="recognizeReceipt()" disabled>🔎 Распознать чек</button>
+<div class="modal-status" id="receipt-status"></div>
+<div id="receipt-items"></div>
+<button class="modal-btn modal-btn-submit" style="width:100%; display:none; margin-top:14px; box-sizing:border-box;" id="receipt-submit-all" onclick="submitAllReceiptItems()">✅ Записать всё</button>
+<div class="modal-actions">
+<button class="modal-btn modal-btn-cancel" style="width:100%;" onclick="closeModal('receipt')">Закрыть</button>
+</div>
+</div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwQjY_QdmcDr_8bHU95rYNmNnvD4f0wCCqnT52-Rl05c8sUgQ_YCAIudESGAtjK_NTx/exec/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbwQjY_QdmcDr_8bHU95rYNmNnvD4f0wCCqnT52-Rl05c8sUgQ_YCAIudESGAtjK_NTx/exec';
 
-    // Точные имена кошельков — никакого substring-поиска, чтобы
-    // "КРЕДИТКА ВАЛЕРА" не подхватывалась ключом "ВАЛЕРА" и т.п.
-    const LIQUID_WALLETS = ["🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💵 НАЛИЧНЫЕ"];
-    const MAIN_WALLETS = ["🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "💳👤 Валера", "💵 НАЛИЧНЫЕ"];
-    const SAVINGS_WALLETS = ["🐷 СВИНКА", "✉️ КОНВЕРТ", "🍯 КОПИЛКА", "📅 В ПЛАНАХ"];
-    const CREDIT_LINE_WALLETS = ["💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА"];
-    const EXTERNAL_WALLETS = ["👤 Виталя", "🏦👤 SPARKASSE Виталий", "👤👤 Родственники"];
-    // Гривневые кошельки (нативная валюта UAH) — показываем и EUR (по курсу), и UAH.
-    // Евровые (SPARKASSE*, НАЛИЧНЫЕ, КОПИЛКА, В ПЛАНАХ) — только EUR, без доп.строки.
-    const UAH_DISPLAY_WALLETS = [
-        "💳👤 Валера", "💃 ПРИВАТ ОЛЯ", "🐷 СВИНКА", "✉️ КОНВЕРТ",
-        "💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА", "👤 Виталя", "👤👤 Родственники"
-    ];
+// Точные имена кошельков — никакого substring-поиска, чтобы
+// "КРЕДИТКА ВАЛЕРА" не подхватывалась ключом "ВАЛЕРА" и т.п.
+const LIQUID_WALLETS = ["🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💵 НАЛИЧНЫЕ"];
+const MAIN_WALLETS = ["🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💃 ПРИВАТ ОЛЯ", "💳👤 Валера", "💵 НАЛИЧНЫЕ"];
+const SAVINGS_WALLETS = ["🐷 СВИНКА", "✉️ КОНВЕРТ", "🍯 КОПИЛКА", "📅 В ПЛАНАХ"];
+const CREDIT_LINE_WALLETS = ["💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА"];
+const EXTERNAL_WALLETS = ["👤 Виталя", "🏦👤 SPARKASSE Виталий", "👤👤 Родственники"];
 
-    function fmtEUR(val) {
-        return (parseFloat(val) || 0).toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
-    }
+// Гривневые кошельки (нативная валюта UAH) — показываем и EUR (по курсу), и UAH.
+// Евровые (SPARKASSE*, НАЛИЧНЫЕ, КОПИЛКА, В ПЛАНАХ) — только EUR, без доп.строки.
+const UAH_DISPLAY_WALLETS = [
+"💳👤 Валера", "💃 ПРИВАТ ОЛЯ", "🐷 СВИНКА", "✉️ КОНВЕРТ",
+"💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА", "👤 Виталя", "👤👤 Родственники"
+];
 
-    function renderWalletItem(container, key, value, rate, uahValue) {
-        const cleanVal = parseFloat(value) || 0;
-        const item = document.createElement('div');
-        item.className = 'wallet-item';
+function fmtEUR(val) {
+return (parseFloat(val) || 0).toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+}
 
-        let uahDisplay = "";
-        if (UAH_DISPLAY_WALLETS.includes(key) && uahValue !== undefined) {
-            uahDisplay = `<span class="wallet-val-uah">${uahValue.toLocaleString('de-DE', {minimumFractionDigits: 0})} UAH</span>`;
-        }
+function renderWalletItem(container, key, value, rate, uahValue) {
+const cleanVal = parseFloat(value) || 0;
+const item = document.createElement('div');
+item.className = 'wallet-item';
+let uahDisplay = "";
+if (UAH_DISPLAY_WALLETS.includes(key) && uahValue !== undefined) {
+uahDisplay = `<span class="wallet-val-uah">${uahValue.toLocaleString('de-DE', {minimumFractionDigits: 0})} UAH</span>`;
+}
+const isCreditLine = CREDIT_LINE_WALLETS.includes(key);
+item.innerHTML = `
+<span class="wallet-name">${key}</span>
+<div class="wallet-val-container">
+<span class="wallet-val${isCreditLine ? ' credit-line' : ''}">${fmtEUR(cleanVal)}</span>
+${uahDisplay}
+</div>`;
+container.appendChild(item);
+}
 
-        const isCreditLine = CREDIT_LINE_WALLETS.includes(key);
-        item.innerHTML = `
-            <span class="wallet-name">${key}</span>
-            <div class="wallet-val-container">
-                <span class="wallet-val${isCreditLine ? ' credit-line' : ''}">${fmtEUR(cleanVal)}</span>
-                ${uahDisplay}
-            </div>`;
-        container.appendChild(item);
-    }
+async function loadData() {
+const walletsContainer = document.getElementById('wallets');
+const creditLineContainer = document.getElementById('debts');
+const externalContainer = document.getElementById('external');
+try {
+const response = await fetch(API_URL);
+if (!response.ok) throw new Error('Сетевая ошибка');
+const data = await response.json();
+if (!data.wallets) throw new Error('Данные wallets пусты');
 
-    async function loadData() {
-        const walletsContainer = document.getElementById('wallets');
-        const creditLineContainer = document.getElementById('debts');
-        const externalContainer = document.getElementById('external');
+const exchangeRate = parseFloat(data.exchangeRate) || 0;
+document.getElementById('rate-display').innerText = `КУРС: ${exchangeRate.toFixed(2)}`;
 
-        try {
-            const response = await fetch(API_URL);
-            if (!response.ok) throw new Error('Сетевая ошибка');
-            const data = await response.json();
-            if (!data.wallets) throw new Error('Данные wallets пусты');
+if (data.periodStart && data.periodEnd) {
+document.getElementById('period-display').innerText = `Период: ${data.periodStart} – ${data.periodEnd}`;
+}
 
-            const exchangeRate = parseFloat(data.exchangeRate) || 0;
-            document.getElementById('rate-display').innerText = `КУРС: ${exchangeRate.toFixed(2)}`;
-            if (data.periodStart && data.periodEnd) {
-                document.getElementById('period-display').innerText = `Период: ${data.periodStart} – ${data.periodEnd}`;
-            }
-            const warningEl = document.getElementById('rate-warning');
-            if (data.rateIsStale) {
-                warningEl.style.display = 'block';
-                warningEl.innerText = `⚠️ Курс не обновлялся сегодня (последняя запись от ${data.rateDate}). Проверьте актуальный курс перед новыми тратами.`;
-            } else {
-                warningEl.style.display = 'none';
-            }
+const warningEl = document.getElementById('rate-warning');
+if (data.rateIsStale) {
+warningEl.style.display = 'block';
+warningEl.innerText = `⚠️ Курс не обновлялся сегодня (последняя запись от ${data.rateDate}). Проверьте актуальный курс перед новыми тратами.`;
+} else {
+warningEl.style.display = 'none';
+}
 
-            walletsContainer.innerHTML = '';
-            creditLineContainer.innerHTML = '<div class="section-label">Кредитная линия (резерв, отдельно)</div>';
-            externalContainer.innerHTML = '<div class="section-label">Виталя / Родственники (отдельно)</div>';
+walletsContainer.innerHTML = '';
+creditLineContainer.innerHTML = '<div class="section-label">Кредитная линия (резерв, отдельно)</div>';
+externalContainer.innerHTML = '<div class="section-label">Виталя / Родственники (отдельно)</div>';
 
-            let liquidSum = 0, assetsSum = 0, creditLineSum = 0;
+let liquidSum = 0, assetsSum = 0, creditLineSum = 0;
 
-            Object.entries(data.wallets).forEach(([key, value]) => {
-                const cleanVal = parseFloat(value) || 0;
+Object.entries(data.wallets).forEach(([key, value]) => {
+const cleanVal = parseFloat(value) || 0;
+if (LIQUID_WALLETS.includes(key)) liquidSum += cleanVal;
+if (MAIN_WALLETS.includes(key)) assetsSum += cleanVal;
+if (CREDIT_LINE_WALLETS.includes(key)) creditLineSum += cleanVal;
 
-                if (LIQUID_WALLETS.includes(key)) liquidSum += cleanVal;
-                if (MAIN_WALLETS.includes(key)) assetsSum += cleanVal;
-                if (CREDIT_LINE_WALLETS.includes(key)) creditLineSum += cleanVal;
+if (MAIN_WALLETS.includes(key) || SAVINGS_WALLETS.includes(key)) {
+renderWalletItem(walletsContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
+} else if (CREDIT_LINE_WALLETS.includes(key)) {
+renderWalletItem(creditLineContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
+} else if (EXTERNAL_WALLETS.includes(key)) {
+renderWalletItem(externalContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
+}
+});
 
-                if (MAIN_WALLETS.includes(key) || SAVINGS_WALLETS.includes(key)) {
-                    renderWalletItem(walletsContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
-                } else if (CREDIT_LINE_WALLETS.includes(key)) {
-                    renderWalletItem(creditLineContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
-                } else if (EXTERNAL_WALLETS.includes(key)) {
-                    renderWalletItem(externalContainer, key, cleanVal, exchangeRate, data.walletsUAH ? data.walletsUAH[key] : undefined);
-                }
-            });
+const netTotal = assetsSum;
+document.getElementById('liquid-balance').innerText = fmtEUR(netTotal);
+document.getElementById('total-balance').innerText = fmtEUR(liquidSum);
+document.getElementById('debts-balance').innerText = `Кредитная линия: ${fmtEUR(creditLineSum)}`;
 
-            const netTotal = assetsSum;
+} catch (e) {
+console.error("Ошибка:", e);
+walletsContainer.innerHTML = '<div style="text-align:center; color:red;">Ошибка обновления данных</div>';
+}
+}
 
-            document.getElementById('liquid-balance').innerText = fmtEUR(netTotal);
-            document.getElementById('total-balance').innerText = fmtEUR(liquidSum);
-            document.getElementById('debts-balance').innerText = `Кредитная линия: ${fmtEUR(creditLineSum)}`;
+loadData();
 
-        } catch (e) {
-            console.error("Ошибка:", e);
-            walletsContainer.innerHTML = '<div style="text-align:center; color:red;">Ошибка обновления данных</div>';
-        }
-    }
-    loadData();
+// ===================================================================
+// ФОРМЫ РАСХОД / ПЕРЕВОД / ДОХОД (прямо на дашборде, без Google-формы)
+// ===================================================================
 
-    // ===================================================================
-    // ФОРМЫ РАСХОД / ПЕРЕВОД / ДОХОД (прямо на дашборде, без Google-формы)
-    // ===================================================================
+// Полный список кошельков — те же самые точные названия, что и в скрипте.
+const ALL_WALLETS = [
+"🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💃 ПРИВАТ ОЛЯ",
+"💳👤 Валера", "💵 НАЛИЧНЫЕ", "🐷 СВИНКА", "✉️ КОНВЕРТ",
+"🍯 КОПИЛКА", "💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА",
+"👤 Виталя", "🏦👤 SPARKASSE Виталий", "👤👤 Родственники", "📅 В ПЛАНАХ"
+];
 
-    // Полный список кошельков — те же самые точные названия, что и в скрипте.
-    const ALL_WALLETS = [
-        "🏦 SPARKASSE ОЛЯ", "🏦👤 SPARKASSE ВАЛЕРА", "💃 ПРИВАТ ОЛЯ",
-        "💳👤 Валера", "💵 НАЛИЧНЫЕ", "🐷 СВИНКА", "✉️ КОНВЕРТ",
-        "🍯 КОПИЛКА", "💳🎀 КРЕДИТКА ОЛЯ", "💳👤 КРЕДИТКА ВАЛЕРА",
-        "👤 Виталя", "🏦👤 SPARKASSE Виталий", "👤👤 Родственники", "📅 В ПЛАНАХ"
-    ];
-    const EXPENSE_CATEGORIES = [
-        "🍎 Продукты / Быт", "🏠 Жилье / Счета / Мобильная связь", "🚬 Табак / Алкоголь / Отдых",
-        "💊 Здоровье / Красота", "🚗 Транспорт", "🏦 Банк", "🙇‍♀️ Учеба",
-        "🛍 Остальное", "🏖️ Развлечения", "💰 КОПИЛКА"
-    ];
+const EXPENSE_CATEGORIES = [
+"🍎 Продукты / Быт", "🏠 Жилье / Счета / Мобильная связь", "🚬 Табак / Алкоголь / Отдых",
+"💊 Здоровье / Красота", "🚗 Транспорт", "🏦 Банк", "🙇‍♀️ Учеба",
+"🛍 Остальное", "🏖️ Развлечения", "💰 КОПИЛКА"
+];
 
-    function fillSelect(selectEl, options) {
-        selectEl.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
-    }
-    fillSelect(document.getElementById('exp-wallet'), ALL_WALLETS);
-    fillSelect(document.getElementById('inc-wallet'), ALL_WALLETS);
-    fillSelect(document.getElementById('tr-from'), ALL_WALLETS);
-    fillSelect(document.getElementById('tr-to'), ALL_WALLETS);
-    fillSelect(document.getElementById('exp-category'), EXPENSE_CATEGORIES);
+function fillSelect(selectEl, options) {
+selectEl.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+}
 
-    function openModal(type) {
-        const overlay = document.getElementById('modal-' + type);
-        overlay.classList.add('open');
-        overlay.scrollTop = 0;
-    }
-    function closeModal(type) {
-        document.getElementById('modal-' + type).classList.remove('open');
-        document.getElementById(
-            type === 'expense' ? 'exp-status' : type === 'income' ? 'inc-status' : 'tr-status'
-        ).innerText = '';
-    }
+fillSelect(document.getElementById('exp-wallet'), ALL_WALLETS);
+fillSelect(document.getElementById('inc-wallet'), ALL_WALLETS);
+fillSelect(document.getElementById('tr-from'), ALL_WALLETS);
+fillSelect(document.getElementById('tr-to'), ALL_WALLETS);
+fillSelect(document.getElementById('exp-category'), EXPENSE_CATEGORIES);
 
-    async function postToBackend(payload) {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // намеренно text/plain — иначе браузер шлёт preflight-запрос, который Apps Script не обрабатывает
-            body: JSON.stringify(payload)
-        });
-        return await response.json();
-    }
+function openModal(type) {
+const overlay = document.getElementById('modal-' + type);
+overlay.classList.add('open');
+overlay.scrollTop = 0;
+}
 
-    function setStatus(elId, text, isError) {
-        const el = document.getElementById(elId);
-        el.innerText = text;
-        el.className = 'modal-status ' + (isError ? 'error' : 'success');
-    }
+function closeModal(type) {
+document.getElementById('modal-' + type).classList.remove('open');
+const statusMap = { expense: 'exp-status', income: 'inc-status', transfer: 'tr-status', receipt: 'receipt-status' };
+document.getElementById(statusMap[type]).innerText = '';
+if (type === 'receipt') resetReceiptModal();
+}
 
-    async function submitExpense() {
-        const wallet = document.getElementById('exp-wallet').value;
-        const shop = document.getElementById('exp-shop').value.trim();
-        const item = document.getElementById('exp-item').value.trim();
-        const qty = parseFloat(document.getElementById('exp-qty').value) || 1;
-        const price = parseFloat(document.getElementById('exp-price').value);
-        const currency = document.querySelector('input[name="exp-currency"]:checked').value;
-        const category = document.getElementById('exp-category').value;
+async function postToBackend(payload) {
+const response = await fetch(API_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // намеренно text/plain — иначе браузер шлёт preflight-запрос, который Apps Script не обрабатывает
+body: JSON.stringify(payload)
+});
+return await response.json();
+}
 
-        if (!item || isNaN(price) || price <= 0) {
-            setStatus('exp-status', 'Заполните товар и цену', true);
-            return;
-        }
-        setStatus('exp-status', 'Записываю...', false);
-        try {
-            const res = await postToBackend({ source: 'dashboard', type: 'expense', wallet, shop, item_ru: item, qty, unit_price: price, currency, category });
-            if (res.ok) {
-                setStatus('exp-status', res.message, false);
-                document.getElementById('exp-shop').value = '';
-                document.getElementById('exp-item').value = '';
-                document.getElementById('exp-price').value = '';
-                loadData();
-                setTimeout(() => closeModal('expense'), 1200);
-            } else {
-                setStatus('exp-status', res.message, true);
-            }
-        } catch (e) {
-            setStatus('exp-status', 'Ошибка сети: ' + e.message, true);
-        }
-    }
+function setStatus(elId, text, isError) {
+const el = document.getElementById(elId);
+el.innerText = text;
+el.className = 'modal-status ' + (isError ? 'error' : 'success');
+}
 
-    async function submitIncome() {
-        const wallet = document.getElementById('inc-wallet').value;
-        const amount = parseFloat(document.getElementById('inc-amount').value);
-        const currency = document.querySelector('input[name="inc-currency"]:checked').value;
-        const description = document.getElementById('inc-description').value.trim();
+async function submitExpense() {
+const wallet = document.getElementById('exp-wallet').value;
+const shop = document.getElementById('exp-shop').value.trim();
+const item = document.getElementById('exp-item').value.trim();
+const qty = parseFloat(document.getElementById('exp-qty').value) || 1;
+const price = parseFloat(document.getElementById('exp-price').value);
+const currency = document.querySelector('input[name="exp-currency"]:checked').value;
+const category = document.getElementById('exp-category').value;
 
-        if (isNaN(amount) || amount <= 0) {
-            setStatus('inc-status', 'Укажите сумму', true);
-            return;
-        }
-        setStatus('inc-status', 'Записываю...', false);
-        try {
-            const res = await postToBackend({ source: 'dashboard', type: 'income', wallet, amount, currency, description });
-            if (res.ok) {
-                setStatus('inc-status', res.message, false);
-                document.getElementById('inc-amount').value = '';
-                document.getElementById('inc-description').value = '';
-                loadData();
-                setTimeout(() => closeModal('income'), 1200);
-            } else {
-                setStatus('inc-status', res.message, true);
-            }
-        } catch (e) {
-            setStatus('inc-status', 'Ошибка сети: ' + e.message, true);
-        }
-    }
+if (!item || isNaN(price) || price <= 0) {
+setStatus('exp-status', 'Заполните товар и цену', true);
+return;
+}
 
-    async function submitTransfer() {
-        const fromWallet = document.getElementById('tr-from').value;
-        const toWallet = document.getElementById('tr-to').value;
-        const amount = parseFloat(document.getElementById('tr-amount').value);
-        const currency = document.querySelector('input[name="tr-currency"]:checked').value;
+setStatus('exp-status', 'Записываю...', false);
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'expense', wallet, shop, item_ru: item, qty, unit_price: price, currency, category });
+if (res.ok) {
+setStatus('exp-status', res.message, false);
+document.getElementById('exp-shop').value = '';
+document.getElementById('exp-item').value = '';
+document.getElementById('exp-price').value = '';
+loadData();
+setTimeout(() => closeModal('expense'), 1200);
+} else {
+setStatus('exp-status', res.message, true);
+}
+} catch (e) {
+setStatus('exp-status', 'Ошибка сети: ' + e.message, true);
+}
+}
 
-        if (fromWallet === toWallet) {
-            setStatus('tr-status', 'Выберите разные кошельки', true);
-            return;
-        }
-        if (isNaN(amount) || amount <= 0) {
-            setStatus('tr-status', 'Укажите сумму', true);
-            return;
-        }
-        setStatus('tr-status', 'Перевожу...', false);
-        try {
-            const res = await postToBackend({ source: 'dashboard', type: 'transfer', fromWallet, toWallet, amount, currency });
-            if (res.ok) {
-                setStatus('tr-status', res.message, false);
-                document.getElementById('tr-amount').value = '';
-                loadData();
-                setTimeout(() => closeModal('transfer'), 1200);
-            } else {
-                setStatus('tr-status', res.message, true);
-            }
-        } catch (e) {
-            setStatus('tr-status', 'Ошибка сети: ' + e.message, true);
-        }
-    }
+async function submitIncome() {
+const wallet = document.getElementById('inc-wallet').value;
+const amount = parseFloat(document.getElementById('inc-amount').value);
+const currency = document.querySelector('input[name="inc-currency"]:checked').value;
+const description = document.getElementById('inc-description').value.trim();
+
+if (isNaN(amount) || amount <= 0) {
+setStatus('inc-status', 'Укажите сумму', true);
+return;
+}
+
+setStatus('inc-status', 'Записываю...', false);
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'income', wallet, amount, currency, description });
+if (res.ok) {
+setStatus('inc-status', res.message, false);
+document.getElementById('inc-amount').value = '';
+document.getElementById('inc-description').value = '';
+loadData();
+setTimeout(() => closeModal('income'), 1200);
+} else {
+setStatus('inc-status', res.message, true);
+}
+} catch (e) {
+setStatus('inc-status', 'Ошибка сети: ' + e.message, true);
+}
+}
+
+async function submitTransfer() {
+const fromWallet = document.getElementById('tr-from').value;
+const toWallet = document.getElementById('tr-to').value;
+const amount = parseFloat(document.getElementById('tr-amount').value);
+const currency = document.querySelector('input[name="tr-currency"]:checked').value;
+
+if (fromWallet === toWallet) {
+setStatus('tr-status', 'Выберите разные кошельки', true);
+return;
+}
+if (isNaN(amount) || amount <= 0) {
+setStatus('tr-status', 'Укажите сумму', true);
+return;
+}
+
+setStatus('tr-status', 'Перевожу...', false);
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'transfer', fromWallet, toWallet, amount, currency });
+if (res.ok) {
+setStatus('tr-status', res.message, false);
+document.getElementById('tr-amount').value = '';
+loadData();
+setTimeout(() => closeModal('transfer'), 1200);
+} else {
+setStatus('tr-status', res.message, true);
+}
+} catch (e) {
+setStatus('tr-status', 'Ошибка сети: ' + e.message, true);
+}
+}
+
+// ===================================================================
+// ФОТО ЧЕКА — распознавание через тот же бэкенд (Gemini), что и в боте
+// ===================================================================
+
+let receiptImageBase64 = null;
+let receiptImageMime = 'image/jpeg';
+
+document.getElementById('receipt-file').addEventListener('change', function(e) {
+const file = e.target.files[0];
+if (!file) return;
+setStatus('receipt-status', 'Обрабатываю фото...', false);
+resizeImageToBase64(file, 1280, 0.72).then(({ base64, mime }) => {
+receiptImageBase64 = base64;
+receiptImageMime = mime;
+const preview = document.getElementById('receipt-preview');
+preview.src = 'data:' + mime + ';base64,' + base64;
+preview.style.display = 'block';
+document.getElementById('receipt-recognize-btn').disabled = false;
+setStatus('receipt-status', '', false);
+}).catch(() => {
+setStatus('receipt-status', 'Не удалось обработать фото, попробуй другое', true);
+});
+});
+
+// Сжимаем фото перед отправкой — быстрее и надёжнее на мобильном интернете
+function resizeImageToBase64(file, maxDim, quality) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = function(e) {
+const img = new Image();
+img.onload = function() {
+let w = img.width, h = img.height;
+if (w > h && w > maxDim) { h = h * (maxDim / w); w = maxDim; }
+else if (h > maxDim) { w = w * (maxDim / h); h = maxDim; }
+const canvas = document.createElement('canvas');
+canvas.width = w; canvas.height = h;
+canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+const dataUrl = canvas.toDataURL('image/jpeg', quality);
+resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg' });
+};
+img.onerror = reject;
+img.src = e.target.result;
+};
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
+
+// Пытаемся сопоставить то, что распознал Gemini (wallet_raw), с реальными кошельками
+function guessWallet(raw) {
+if (!raw) return ALL_WALLETS[0];
+const r = String(raw).toLowerCase().trim();
+let found = ALL_WALLETS.find(w => w.toLowerCase() === r);
+if (found) return found;
+found = ALL_WALLETS.find(w => w.toLowerCase().includes(r) || r.includes(w.toLowerCase().replace(/[^\wа-яё ]/gi, '').trim()));
+return found || ALL_WALLETS[0];
+}
+
+async function recognizeReceipt() {
+if (!receiptImageBase64) return;
+setStatus('receipt-status', '🔎 Распознаю чек, подожди немного...', false);
+document.getElementById('receipt-recognize-btn').disabled = true;
+
+try {
+const res = await postToBackend({
+source: 'dashboard',
+type: 'receipt_photo',
+mediaBase64: receiptImageBase64,
+mediaMime: receiptImageMime
+});
+
+if (!res.ok) {
+setStatus('receipt-status', res.message || 'Не удалось распознать чек', true);
+document.getElementById('receipt-recognize-btn').disabled = false;
+return;
+}
+
+if (res.action === 'transfer') {
+closeModal('receipt');
+document.getElementById('tr-from').value = guessWallet(res.transfer.fromWallet);
+document.getElementById('tr-to').value = guessWallet(res.transfer.toWallet);
+document.getElementById('tr-amount').value = res.transfer.amount;
+const curRadio = document.querySelector(`input[name="tr-currency"][value="${res.transfer.currency}"]`);
+if (curRadio) curRadio.checked = true;
+openModal('transfer');
+setStatus('tr-status', '📋 Данные заполнены из чека — проверь и подтверди', false);
+return;
+}
+
+renderReceiptItems(res.items || []);
+setStatus('receipt-status', `✅ Найдено позиций: ${(res.items || []).length}. Проверь и запиши.`, false);
+
+} catch (e) {
+setStatus('receipt-status', 'Ошибка сети: ' + e.message, true);
+document.getElementById('receipt-recognize-btn').disabled = false;
+}
+}
+
+function renderReceiptItems(items) {
+const container = document.getElementById('receipt-items');
+container.innerHTML = '';
+
+items.forEach((item, idx) => {
+const card = document.createElement('div');
+card.className = 'receipt-item-card';
+card.dataset.idx = idx;
+card.innerHTML = `
+<button type="button" class="receipt-item-remove" onclick="this.parentElement.remove()">✕</button>
+<div class="field-label">Кошелёк</div>
+<select class="field-select ri-wallet"></select>
+<div class="field-label">Магазин</div>
+<input class="field-input ri-shop" value="${(item.shop || '').replace(/"/g, '&quot;')}">
+<div class="field-label">Товар</div>
+<input class="field-input ri-item" value="${(item.item_ru || '').replace(/"/g, '&quot;')}">
+<div class="field-row" style="margin-top:8px;">
+<div style="flex:1;"><div class="field-label">Кол-во</div><input class="field-input ri-qty" type="number" step="0.01" value="${item.qty || 1}"></div>
+<div style="flex:1;"><div class="field-label">Цена</div><input class="field-input ri-price" type="number" step="0.01" value="${item.price || 0}"></div>
+</div>
+<div class="field-label">Категория</div>
+<select class="field-select ri-category"></select>
+<div class="radio-row" style="margin-top:8px;">
+<label><input type="radio" name="ri-currency-${idx}" value="EUR" ${item.currency !== 'UAH' ? 'checked' : ''}> EUR</label>
+<label><input type="radio" name="ri-currency-${idx}" value="UAH" ${item.currency === 'UAH' ? 'checked' : ''}> UAH</label>
+</div>
+`;
+container.appendChild(card);
+
+const walletSelect = card.querySelector('.ri-wallet');
+fillSelect(walletSelect, ALL_WALLETS);
+walletSelect.value = guessWallet(item.wallet_raw);
+
+const categorySelect = card.querySelector('.ri-category');
+fillSelect(categorySelect, EXPENSE_CATEGORIES);
+if (EXPENSE_CATEGORIES.includes(item.category)) categorySelect.value = item.category;
+});
+
+document.getElementById('receipt-submit-all').style.display = items.length ? 'block' : 'none';
+}
+
+async function submitAllReceiptItems() {
+const cards = document.querySelectorAll('#receipt-items .receipt-item-card');
+if (!cards.length) return;
+
+setStatus('receipt-status', 'Записываю позиции...', false);
+let successCount = 0;
+
+for (const card of cards) {
+const idx = card.dataset.idx;
+const wallet = card.querySelector('.ri-wallet').value;
+const shop = card.querySelector('.ri-shop').value.trim();
+const item = card.querySelector('.ri-item').value.trim();
+const qty = parseFloat(card.querySelector('.ri-qty').value) || 1;
+const price = parseFloat(card.querySelector('.ri-price').value) || 0;
+const category = card.querySelector('.ri-category').value;
+const currency = card.querySelector(`input[name="ri-currency-${idx}"]:checked`).value;
+
+if (!item || price <= 0) continue;
+
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'expense', wallet, shop, item_ru: item, qty, unit_price: price, currency, category });
+if (res.ok) successCount++;
+} catch (e) {
+console.error('Ошибка записи позиции:', e);
+}
+}
+
+setStatus('receipt-status', `✅ Записано позиций: ${successCount} из ${cards.length}`, false);
+loadData();
+setTimeout(() => closeModal('receipt'), 1500);
+}
+
+function resetReceiptModal() {
+receiptImageBase64 = null;
+document.getElementById('receipt-file').value = '';
+document.getElementById('receipt-preview').style.display = 'none';
+document.getElementById('receipt-preview').src = '';
+document.getElementById('receipt-items').innerHTML = '';
+document.getElementById('receipt-submit-all').style.display = 'none';
+document.getElementById('receipt-recognize-btn').disabled = true;
+}
 </script>
 </body>
 </html>
