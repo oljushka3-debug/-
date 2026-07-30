@@ -177,6 +177,7 @@ body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5;
 <div class="modal-status" id="receipt-status"></div>
 <div id="receipt-items"></div>
 <button class="modal-btn modal-btn-submit" style="width:100%; display:none; margin-top:14px; box-sizing:border-box;" id="receipt-submit-all" onclick="submitAllReceiptItems()">✅ Записать всё</button>
+<div class="modal-status" id="receipt-submit-status"></div>
 <div class="modal-actions">
 <button class="modal-btn modal-btn-cancel" style="width:100%;" onclick="closeModal('receipt')">Закрыть</button>
 </div>
@@ -588,24 +589,36 @@ items.push({ wallet_raw: wallet, shop, item_ru: item, qty, price, currency, cate
 });
 
 if (!items.length) {
-setStatus('receipt-status', 'Нет заполненных позиций для записи', true);
+setStatus('receipt-submit-status', 'Нет заполненных позиций для записи', true);
 return;
 }
 
-setStatus('receipt-status', 'Записываю позиции...', false);
+const submitBtn = document.getElementById('receipt-submit-all');
+const originalBtnText = submitBtn.innerText;
+submitBtn.disabled = true;
+submitBtn.innerText = '⏳ Записываю в таблицу...';
+setStatus('receipt-submit-status', `Отправляю ${items.length} поз. в таблицу, подожди немного...`, false);
+
 try {
 const res = await postToBackend({ source: 'dashboard', type: 'expense_batch', items });
 if (res.ok) {
-setStatus('receipt-status', res.message, false);
+submitBtn.innerText = '✅ Записано!';
+setStatus('receipt-submit-status', res.message, false);
 } else {
-setStatus('receipt-status', res.message, true);
+submitBtn.disabled = false;
+submitBtn.innerText = originalBtnText;
+setStatus('receipt-submit-status', res.message, true);
+return;
 }
 } catch (e) {
-setStatus('receipt-status', 'Ошибка сети: ' + e.message, true);
+submitBtn.disabled = false;
+submitBtn.innerText = originalBtnText;
+setStatus('receipt-submit-status', 'Ошибка сети: ' + e.message, true);
+return;
 }
 
 loadData();
-setTimeout(() => closeModal('receipt'), 1500);
+setTimeout(() => closeModal('receipt'), 1800);
 }
 
 function resetReceiptModal() {
@@ -614,7 +627,11 @@ document.getElementById('receipt-file').value = '';
 document.getElementById('receipt-preview').style.display = 'none';
 document.getElementById('receipt-preview').src = '';
 document.getElementById('receipt-items').innerHTML = '';
-document.getElementById('receipt-submit-all').style.display = 'none';
+const submitBtn = document.getElementById('receipt-submit-all');
+submitBtn.style.display = 'none';
+submitBtn.disabled = false;
+submitBtn.innerText = '✅ Записать всё';
+document.getElementById('receipt-submit-status').innerText = '';
 document.getElementById('receipt-recognize-btn').disabled = true;
 }
 </script>
