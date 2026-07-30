@@ -583,7 +583,7 @@ const price = parseFloat(card.querySelector('.ri-price').value) || 0;
 const category = card.querySelector('.ri-category').value;
 const currency = card.querySelector(`input[name="ri-currency-${idx}"]:checked`).value;
 
-if (!item || price <= 0) return;
+if (!item || isNaN(price) || price === 0) return;
 items.push({ wallet_raw: wallet, shop, item_ru: item, qty, price, currency, category });
 });
 
