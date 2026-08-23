@@ -236,7 +236,7 @@ const UAH_DISPLAY_WALLETS = [
 ];
 
 function fmtEUR(val) {
-return (parseFloat(val) || 0).toLocaleString('de-DE', {minimumFractionDigits: 2}) + " €";
+return (parseFloat(val) || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
 }
 
 function renderWalletItem(container, key, value, rate, uahValue) {
@@ -245,7 +245,7 @@ const item = document.createElement('div');
 item.className = 'wallet-item';
 let uahDisplay = "";
 if (UAH_DISPLAY_WALLETS.includes(key) && uahValue !== undefined) {
-uahDisplay = `<span class="wallet-val-uah">${uahValue.toLocaleString('de-DE', {minimumFractionDigits: 0})} UAH</span>`;
+uahDisplay = `<span class="wallet-val-uah">${uahValue.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} UAH</span>`;
 }
 const isCreditLine = CREDIT_LINE_WALLETS.includes(key);
 item.innerHTML = `
