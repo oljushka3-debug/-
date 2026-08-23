@@ -60,12 +60,45 @@ body { font-family: 'Google Sans', Arial, sans-serif; background-color: #f0f2f5;
 .receipt-preview { width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; margin: 10px 0; background: #f1f3f4; display: none; }
 .receipt-item-card { border: 1px solid #dadce0; border-radius: 10px; padding: 12px; margin-top: 14px; position: relative; }
 .receipt-item-remove { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #db4437; font-size: 18px; cursor: pointer; line-height: 1; }
+.rate-period-row { display: flex; align-items: center; gap: 6px; }
+.edit-icon-btn { cursor: pointer; font-size: 13px; color: #1a73e8; background: none; border: none; padding: 0 2px; line-height: 1; }
+.edit-icon-btn:hover { opacity: 0.7; }
+.inline-edit-form { display: none; gap: 6px; align-items: center; margin: 8px 0 4px; flex-wrap: wrap; }
+.inline-edit-form.open { display: flex; }
+.inline-edit-form input { padding: 6px 8px; border: 1px solid #dadce0; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+.inline-edit-form input[type="number"] { width: 90px; }
+.inline-edit-btn { padding: 6px 10px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+.inline-edit-save { background: #1a73e8; color: white; }
+.inline-edit-cancel { background: #f1f3f4; color: #3c4043; }
+.inline-edit-status { font-size: 12px; margin-bottom: 6px; min-height: 14px; }
+.inline-edit-status.error { color: #db4437; }
+.inline-edit-status.success { color: #0f9d58; }
 </style>
 </head>
 <body>
 <div class="card">
+<div class="rate-period-row">
 <div id="rate-display" class="rate">КУРС: Загрузка...</div>
+<button type="button" class="edit-icon-btn" onclick="toggleRateEdit()" title="Изменить курс">✏️</button>
+</div>
+<div class="inline-edit-form" id="rate-edit-form">
+<input class="field-input" type="number" step="0.01" id="rate-edit-input" placeholder="Курс">
+<button type="button" class="inline-edit-btn inline-edit-save" onclick="saveRate()">Сохранить</button>
+<button type="button" class="inline-edit-btn inline-edit-cancel" onclick="toggleRateEdit()">Отмена</button>
+</div>
+<div class="inline-edit-status" id="rate-edit-status"></div>
+<div class="rate-period-row">
 <div id="period-display" class="period">Период: —</div>
+<button type="button" class="edit-icon-btn" onclick="togglePeriodEdit()" title="Изменить период">✏️</button>
+</div>
+<div class="inline-edit-form" id="period-edit-form">
+<input class="field-input" type="date" id="period-edit-start">
+<span style="font-size:13px;color:#5f6368;">–</span>
+<input class="field-input" type="date" id="period-edit-end">
+<button type="button" class="inline-edit-btn inline-edit-save" onclick="savePeriod()">Сохранить</button>
+<button type="button" class="inline-edit-btn inline-edit-cancel" onclick="togglePeriodEdit()">Отмена</button>
+</div>
+<div class="inline-edit-status" id="period-edit-status"></div>
 <div id="rate-warning" class="rate-warning"></div>
 <div class="header">
 <div class="label">Баланс за период (netto)</div>
@@ -224,6 +257,9 @@ ${uahDisplay}
 container.appendChild(item);
 }
 
+let lastPeriodStart = '';
+let lastPeriodEnd = '';
+
 async function loadData() {
 const walletsContainer = document.getElementById('wallets');
 const creditLineContainer = document.getElementById('debts');
@@ -239,6 +275,8 @@ document.getElementById('rate-display').innerText = `КУРС: ${exchangeRate.to
 
 if (data.periodStart && data.periodEnd) {
 document.getElementById('period-display').innerText = `Период: ${data.periodStart} – ${data.periodEnd}`;
+lastPeriodStart = data.periodStart;
+lastPeriodEnd = data.periodEnd;
 }
 
 const warningEl = document.getElementById('rate-warning');
@@ -336,7 +374,82 @@ return await response.json();
 function setStatus(elId, text, isError) {
 const el = document.getElementById(elId);
 el.innerText = text;
-el.className = 'modal-status ' + (isError ? 'error' : 'success');
+el.className = el.className.replace(/\s*(error|success)\b/g, '') + ' ' + (isError ? 'error' : 'success');
+}
+
+// ===================================================================
+// РЕДАКТИРОВАНИЕ КУРСА И ПЕРИОДА ПРЯМО НА ДАШБОРДЕ
+// ===================================================================
+
+function ddmmyyyyToIso(str) {
+const parts = (str || '').trim().split('.');
+if (parts.length !== 3) return '';
+return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function toggleRateEdit() {
+const form = document.getElementById('rate-edit-form');
+const willOpen = !form.classList.contains('open');
+form.classList.toggle('open', willOpen);
+document.getElementById('rate-edit-status').innerText = '';
+if (willOpen) {
+const current = parseFloat(document.getElementById('rate-display').innerText.replace('КУРС:', '').trim());
+document.getElementById('rate-edit-input').value = isNaN(current) || current === 0 ? '' : current;
+}
+}
+
+async function saveRate() {
+const newRate = parseFloat(document.getElementById('rate-edit-input').value);
+if (isNaN(newRate) || newRate <= 0) {
+setStatus('rate-edit-status', 'Укажите корректный курс', true);
+return;
+}
+setStatus('rate-edit-status', 'Сохраняю...', false);
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'set_rate', rate: newRate });
+if (res.ok) {
+setStatus('rate-edit-status', res.message, false);
+toggleRateEdit();
+loadData();
+} else {
+setStatus('rate-edit-status', res.message, true);
+}
+} catch (e) {
+setStatus('rate-edit-status', 'Ошибка сети: ' + e.message, true);
+}
+}
+
+function togglePeriodEdit() {
+const form = document.getElementById('period-edit-form');
+const willOpen = !form.classList.contains('open');
+form.classList.toggle('open', willOpen);
+document.getElementById('period-edit-status').innerText = '';
+if (willOpen) {
+document.getElementById('period-edit-start').value = ddmmyyyyToIso(lastPeriodStart);
+document.getElementById('period-edit-end').value = ddmmyyyyToIso(lastPeriodEnd);
+}
+}
+
+async function savePeriod() {
+const start = document.getElementById('period-edit-start').value;
+const end = document.getElementById('period-edit-end').value;
+if (!start || !end) {
+setStatus('period-edit-status', 'Укажите обе даты периода', true);
+return;
+}
+setStatus('period-edit-status', 'Сохраняю...', false);
+try {
+const res = await postToBackend({ source: 'dashboard', type: 'set_period', periodStart: start, periodEnd: end });
+if (res.ok) {
+setStatus('period-edit-status', res.message, false);
+togglePeriodEdit();
+loadData();
+} else {
+setStatus('period-edit-status', res.message, true);
+}
+} catch (e) {
+setStatus('period-edit-status', 'Ошибка сети: ' + e.message, true);
+}
 }
 
 async function submitExpense() {
