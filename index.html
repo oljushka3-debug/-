@@ -649,6 +649,7 @@ items.forEach((item, idx) => {
 const card = document.createElement('div');
 card.className = 'receipt-item-card';
 card.dataset.idx = idx;
+  card.dataset.date = item.date || '';
 card.innerHTML = `
 <button type="button" class="receipt-item-remove" onclick="this.parentElement.remove()">✕</button>
 <div class="field-label">Кошелёк</div>
@@ -698,7 +699,7 @@ const category = card.querySelector('.ri-category').value;
 const currency = card.querySelector(`input[name="ri-currency-${idx}"]:checked`).value;
 
 if (!item || isNaN(price) || price === 0) return;
-items.push({ wallet_raw: wallet, shop, item_ru: item, qty, price, currency, category });
+items.push({ wallet_raw: wallet, shop, item_ru: item, qty, price, currency, category, date: (card.dataset.date || null) });
 });
 
 if (!items.length) {
